@@ -56,6 +56,9 @@
                 try {
                     turnstileWidgetIds[buttonId] = turnstile.render('#' + containerId, {
                         sitekey: aoauth_public.bot_protection.site_key,
+                        size: 'invisible',
+                        execution: 'execute',
+                        appearance: 'execute',
                         callback: function(token) {
                             console.log('Turnstile callback received');
                             clearTimeout(turnstileTimeouts[buttonId]);
@@ -103,8 +106,9 @@
                         }
                     }, 30000);
                     
-                    // Execute the challenge
-                    turnstile.execute(turnstileWidgetIds[buttonId]);
+                    requestAnimationFrame(function() {
+                        turnstile.execute(turnstileWidgetIds[buttonId]);
+                    });
                     
                 } catch(err) {
                     console.error('Turnstile error:', err);

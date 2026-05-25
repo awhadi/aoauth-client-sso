@@ -700,23 +700,34 @@ class AOAUTH_Admin {
         if (!current_user_can('manage_options')) {
             wp_die(-1);
         }
+
+        $backup_password = isset($_POST['backup_password']) ? (string) wp_unslash($_POST['backup_password']) : '';
+        $include_encrypted_credentials = strlen($backup_password) > 0;
         
         $config = array(
             'settings' => get_option('aoauth_settings', array()),
             'applications' => get_option('aoauth_applications', array()),
             'version' => AOAUTH_VERSION,
-            'export_date' => current_time('mysql')
+            'export_date' => current_time('mysql'),
+            'credentials' => $include_encrypted_credentials ? 'password_encrypted' : 'excluded'
         );
         
         unset($config['settings']['turnstile_secret_key']);
         unset($config['settings']['recaptcha_secret_key']);
         
-        // Remove sensitive data from export
         if (!empty($config['applications'])) {
             foreach ($config['applications'] as &$app) {
-                unset($app['client_id']);
-                unset($app['client_secret']);
-                $app['_note'] = 'Client ID and Secret were removed for security. Please re-enter them after import.';
+                if ($include_encrypted_credentials) {
+                    $client_id = isset($app['client_id']) ? (string) $app['client_id'] : '';
+                    $client_secret = isset($app['client_secret']) ? aoauth_core()->get_security()->decrypt($app['client_secret']) : '';
+                    $app['client_id'] = $this->encrypt_backup_value($client_id, $backup_password);
+                    $app['client_secret'] = $this->encrypt_backup_value($client_secret, $backup_password);
+                    $app['_note'] = 'Client ID and Secret are password-encrypted. Use the same backup password during import.';
+                } else {
+                    unset($app['client_id']);
+                    unset($app['client_secret']);
+                    $app['_note'] = 'Client ID and Secret were removed for security. Please re-enter them after import, or export again with a backup password.';
+                }
             }
         }
         
@@ -725,6 +736,62 @@ class AOAUTH_Admin {
         header('Content-Disposition: attachment; filename="aoauth-config-' . date('Y-m-d') . '.json"');
         echo $json;
         exit;
+    }
+
+    private function encrypt_backup_value($value, $password) {
+        if ($value === '') {
+            return '';
+        }
+
+        $salt = random_bytes(16);
+        $iv = random_bytes(12);
+        $key = hash_pbkdf2('sha256', $password, $salt, 200000, 32, true);
+        $tag = '';
+        $ciphertext = openssl_encrypt($value, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag);
+
+        return array(
+            'aoauth_backup_encrypted' => 1,
+            'cipher' => 'aes-256-gcm',
+            'kdf' => 'pbkdf2-sha256',
+            'iterations' => 200000,
+            'salt' => base64_encode($salt),
+            'iv' => base64_encode($iv),
+            'tag' => base64_encode($tag),
+            'value' => base64_encode($ciphertext),
+        );
+    }
+
+    private function decrypt_backup_value($payload, $password) {
+        if (empty($payload)) {
+            return '';
+        }
+
+        if (!is_array($payload) || empty($payload['aoauth_backup_encrypted'])) {
+            return is_string($payload) ? $payload : '';
+        }
+
+        if ($password === '') {
+            return new WP_Error('missing_backup_password', __('This backup contains encrypted credentials. Please enter the backup password.', 'aoauth-client-sso'));
+        }
+
+        $salt = base64_decode($payload['salt'] ?? '', true);
+        $iv = base64_decode($payload['iv'] ?? '', true);
+        $tag = base64_decode($payload['tag'] ?? '', true);
+        $ciphertext = base64_decode($payload['value'] ?? '', true);
+        $iterations = max(100000, intval($payload['iterations'] ?? 200000));
+
+        if (!$salt || !$iv || !$tag || !$ciphertext) {
+            return new WP_Error('invalid_backup_payload', __('Encrypted credential payload is invalid.', 'aoauth-client-sso'));
+        }
+
+        $key = hash_pbkdf2('sha256', $password, $salt, $iterations, 32, true);
+        $decrypted = openssl_decrypt($ciphertext, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag);
+
+        if ($decrypted === false) {
+            return new WP_Error('invalid_backup_password', __('Could not decrypt credentials. Check the backup password.', 'aoauth-client-sso'));
+        }
+
+        return $decrypted;
     }
     
     public function ajax_import_config() {
@@ -740,6 +807,7 @@ class AOAUTH_Admin {
         
         $file_content = file_get_contents($_FILES['config_file']['tmp_name']);
         $config = json_decode($file_content, true);
+        $backup_password = isset($_POST['backup_password']) ? (string) wp_unslash($_POST['backup_password']) : '';
         
         if (!$config || !isset($config['settings']) || !isset($config['applications'])) {
             wp_send_json_error(array('message' => __('Invalid configuration file.', 'aoauth-client-sso')));
@@ -750,11 +818,28 @@ class AOAUTH_Admin {
         
         if (!empty($config['applications']) && is_array($config['applications'])) {
             foreach ($config['applications'] as $app) {
-                unset($app['client_id']);
-                unset($app['client_secret']);
+                if (isset($app['client_id'])) {
+                    $client_id = $this->decrypt_backup_value($app['client_id'], $backup_password);
+                    if (is_wp_error($client_id)) {
+                        wp_send_json_error(array('message' => $client_id->get_error_message()));
+                    }
+                    $app['client_id'] = $client_id;
+                }
+
+                if (isset($app['client_secret'])) {
+                    $client_secret = $this->decrypt_backup_value($app['client_secret'], $backup_password);
+                    if (is_wp_error($client_secret)) {
+                        wp_send_json_error(array('message' => $client_secret->get_error_message()));
+                    }
+                    $app['client_secret'] = $client_secret;
+                }
+
                 unset($app['_note']);
                 $app['enabled'] = 0;
                 $sanitized_app = $this->security->sanitize_provider_config($app);
+                if (!empty($sanitized_app['client_secret'])) {
+                    $sanitized_app['client_secret'] = $this->security->encrypt($sanitized_app['client_secret']);
+                }
                 $app_id = sanitize_key($sanitized_app['provider_name']);
                 if (!empty($app_id)) {
                     $sanitized_applications[$app_id] = $sanitized_app;
@@ -770,13 +855,17 @@ class AOAUTH_Admin {
     }
     
     private function sanitize_settings($settings) {
-        $settings = is_array($settings) ? $settings : array();
+        $raw_settings = is_array($settings) ? $settings : array();
         $defaults = AOAUTH_Core::get_default_settings();
-        $settings = array_merge($defaults, $settings);
+        $settings = array_merge($defaults, $raw_settings);
         $security = aoauth_core()->get_security();
         
-        $enable_turnstile = !empty($settings['enable_turnstile']) ? 1 : 0;
-        $enable_recaptcha = !empty($settings['enable_recaptcha']) ? 1 : 0;
+        $is_enabled = function($key) use ($raw_settings) {
+            return !empty($raw_settings[$key]) ? 1 : 0;
+        };
+        
+        $enable_turnstile = $is_enabled('enable_turnstile');
+        $enable_recaptcha = $is_enabled('enable_recaptcha');
         if ($enable_turnstile && $enable_recaptcha) {
             $enable_recaptcha = 0;
         }
@@ -786,20 +875,20 @@ class AOAUTH_Admin {
             $role = $defaults['default_role'];
         }
         
-        $allow_account_linking = !empty($settings['allow_account_linking']) ? 1 : 0;
+        $allow_account_linking = $is_enabled('allow_account_linking');
         
         $sanitized = array(
-            'enable_login_buttons' => !empty($settings['enable_login_buttons']) ? 1 : 0,
+            'enable_login_buttons' => $is_enabled('enable_login_buttons'),
             'login_button_theme' => sanitize_text_field($settings['login_button_theme']),
             'login_button_layout' => sanitize_text_field($settings['login_button_layout']),
-            'auto_create_users' => !empty($settings['auto_create_users']) ? 1 : 0,
+            'auto_create_users' => $is_enabled('auto_create_users'),
             'default_role' => $role,
             'allow_account_linking' => $allow_account_linking,
-            'delete_data_on_uninstall' => !empty($settings['delete_data_on_uninstall']) ? 1 : 0,
+            'delete_data_on_uninstall' => $is_enabled('delete_data_on_uninstall'),
             'security_level' => sanitize_text_field($settings['security_level']),
             'rate_limit_attempts' => max(1, min(100, intval($settings['rate_limit_attempts']))),
             'rate_limit_window' => max(60, min(DAY_IN_SECONDS, intval($settings['rate_limit_window']))),
-            'enable_logs' => !empty($settings['enable_logs']) ? 1 : 0,
+            'enable_logs' => $is_enabled('enable_logs'),
             'logs_retention_period' => sanitize_text_field($settings['logs_retention_period']),
             'enable_turnstile' => $enable_turnstile,
             'turnstile_site_key' => sanitize_text_field($settings['turnstile_site_key']),
@@ -810,9 +899,10 @@ class AOAUTH_Admin {
             'recaptcha_score_threshold' => max(0, min(1, floatval($settings['recaptcha_score_threshold']))),
             'linking_max_attempts' => $allow_account_linking ? max(1, min(20, intval($settings['linking_max_attempts']))) : intval($defaults['linking_max_attempts']),
             'linking_lockout_minutes' => $allow_account_linking ? max(1, min(1440, intval($settings['linking_lockout_minutes']))) : intval($defaults['linking_lockout_minutes']),
-            'linking_page_use_theme' => !empty($settings['linking_page_use_theme']) ? 1 : 0,
+            'linking_login_ban_minutes' => $allow_account_linking ? max(0, min(1440, intval($settings['linking_login_ban_minutes']))) : intval($defaults['linking_login_ban_minutes']),
+            'linking_page_use_theme' => 1,
             'linking_page_title' => sanitize_text_field($settings['linking_page_title']),
-            'bot_overlay_enabled' => !empty($settings['bot_overlay_enabled']) ? 1 : 0,
+            'bot_overlay_enabled' => $is_enabled('bot_overlay_enabled'),
             'bot_overlay_message' => sanitize_text_field($settings['bot_overlay_message']),
         );
         

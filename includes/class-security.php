@@ -237,6 +237,7 @@ class AOAUTH_Security {
         $settings = get_option('aoauth_settings', array());
         $max_attempts = intval($settings['linking_max_attempts'] ?? 5);
         $lockout_minutes = intval($settings['linking_lockout_minutes'] ?? 15);
+        $login_ban_minutes = intval($settings['linking_login_ban_minutes'] ?? 15);
         
         $transient_key = 'aoauth_linking_lock_' . md5($user_id . '_' . $linking_key);
         $lockout_until = get_transient($transient_key);
@@ -278,13 +279,17 @@ class AOAUTH_Security {
             // Lock out
             $lockout_until = time() + ($lockout_minutes * 60);
             set_transient('aoauth_linking_lock_' . md5($user_id . '_' . $linking_key), $lockout_until, $lockout_minutes * 60);
+            if ($login_ban_minutes > 0) {
+                set_transient('aoauth_login_ban_' . intval($user_id), time() + ($login_ban_minutes * 60), $login_ban_minutes * 60);
+            }
             delete_transient($attempts_key);
             
             // Log the lockout
             $logger = aoauth_core()->get_logger();
             $logger->log('account_linking_locked', array(
                 'user_id' => $user_id,
-                'lockout_minutes' => $lockout_minutes
+                'lockout_minutes' => $lockout_minutes,
+                'login_ban_minutes' => $login_ban_minutes
             ), $user_id, null, 'warning');
         } else {
             set_transient($attempts_key, $attempts, 15 * MINUTE_IN_SECONDS);
@@ -301,5 +306,14 @@ class AOAUTH_Security {
         $attempts_key = 'aoauth_linking_attempts_' . md5($user_id . '_' . $linking_key);
         delete_transient($attempts_key);
         delete_transient('aoauth_linking_lock_' . md5($user_id . '_' . $linking_key));
+    }
+
+    public function get_user_login_ban($user_id) {
+        $ban_until = get_transient('aoauth_login_ban_' . intval($user_id));
+        if ($ban_until !== false && $ban_until > time()) {
+            return $ban_until;
+        }
+
+        return false;
     }
 }

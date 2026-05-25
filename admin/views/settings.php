@@ -94,22 +94,8 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : '';
 
                     <div class="aoauth-setting-row">
                         <div class="aoauth-setting-label">
-                            <label for="linking_page_use_theme"><?php esc_html_e('Style Account Linking Page', 'aoauth-client-sso'); ?></label>
-                            <p class="aoauth-setting-help"><?php esc_html_e('Match account-linking confirmation and lockout pages to the selected login button theme.', 'aoauth-client-sso'); ?></p>
-                        </div>
-                        <div class="aoauth-setting-control">
-                            <label class="aoauth-toggle">
-                                <input type="hidden" name="linking_page_use_theme" value="0">
-                                <input type="checkbox" id="linking_page_use_theme" name="linking_page_use_theme" value="1" <?php checked(!empty($settings['linking_page_use_theme']), true); ?>>
-                                <span class="aoauth-toggle-slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="aoauth-setting-row">
-                        <div class="aoauth-setting-label">
                             <label for="linking_page_title"><?php esc_html_e('Linking Page Title', 'aoauth-client-sso'); ?></label>
-                            <p class="aoauth-setting-help"><?php esc_html_e('Shown above the password confirmation form when a user links an SSO provider to an existing account.', 'aoauth-client-sso'); ?></p>
+                            <p class="aoauth-setting-help"><?php esc_html_e('Shown above the password confirmation form. This page always follows the selected login button theme.', 'aoauth-client-sso'); ?></p>
                         </div>
                         <div class="aoauth-setting-control">
                             <input type="text" id="linking_page_title" name="linking_page_title" class="aoauth-form-control" value="<?php echo esc_attr($settings['linking_page_title'] ?? 'Link Your Account'); ?>">
@@ -196,6 +182,16 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : '';
                             </div>
                             <div class="aoauth-setting-control">
                                 <input type="number" id="linking_lockout_minutes" name="linking_lockout_minutes" class="aoauth-form-control aoauth-number-input" value="<?php echo esc_attr($settings['linking_lockout_minutes'] ?? 15); ?>" min="1" max="1440">
+                            </div>
+                        </div>
+
+                        <div class="aoauth-setting-row">
+                            <div class="aoauth-setting-label">
+                                <label for="linking_login_ban_minutes"><?php esc_html_e('Full Login Ban Duration (minutes)', 'aoauth-client-sso'); ?></label>
+                                <p class="aoauth-setting-help"><?php esc_html_e('After too many failed account-linking password attempts, block all WordPress login methods for this user for the selected time. Set to 0 to disable the full login ban.', 'aoauth-client-sso'); ?></p>
+                            </div>
+                            <div class="aoauth-setting-control">
+                                <input type="number" id="linking_login_ban_minutes" name="linking_login_ban_minutes" class="aoauth-form-control aoauth-number-input" value="<?php echo esc_attr($settings['linking_login_ban_minutes'] ?? 15); ?>" min="0" max="1440">
                             </div>
                         </div>
                     </div>

@@ -1,5 +1,28 @@
 aOAUTH Client SSO - Review and Hardening Notes
-Version: 1.6.6
+Version: 1.6.7
+
+Latest changes - Version 1.6.7 Firefox Turnstile, encrypted backup, and login-ban update:
+- Incremented plugin version from 1.6.6 to 1.6.7 in the plugin header and AOAUTH_VERSION.
+- Fixed Firefox Turnstile timeouts by rendering the widget in an offscreen but renderable container instead of a display:none container.
+- Added Turnstile invisible execution options and delayed execute() with requestAnimationFrame so Firefox can finish iframe/widget setup before execution.
+- Added optional password-protected settings export: leaving the password blank keeps credentials excluded, while entering a password includes Client IDs and Secrets encrypted with AES-256-GCM and PBKDF2-SHA256.
+- Added password-aware settings import that decrypts encrypted Client IDs and Secrets and stores provider secrets back using the plugin's internal secret encryption.
+- Added a configurable Full Login Ban Duration for users who exceed account-linking password attempts.
+- Added an authenticate filter that blocks all WordPress login methods for a temporarily banned user until the configured ban time expires.
+- Removed the account-linking theme disable behavior from the UI; account-linking pages now always follow the selected login theme.
+- Fixed checkbox sanitization so disabled checkboxes are read from raw submitted form data instead of merged defaults.
+
+Backup encryption options reviewed:
+- No credential export: safest operational default, but admins must re-enter Client IDs and Secrets after import.
+- Site-key encryption: convenient on the same WordPress site, but backups are not portable and can be decrypted by anyone with site database/key access.
+- Password-protected export: portable and safer for downloaded files when the password is kept separately. This is the implemented option.
+- Whole-file password encryption: strongest for complete backups, but requires a different import UX and more failure handling. It remains a good future enhancement.
+
+Verification performed for Version 1.6.7:
+- Ran PHP syntax checks for the plugin bootstrap, admin controller, core, security, user manager, and settings view.
+- Ran JavaScript syntax checks for admin/js/admin-script.js and public/js/public-script.js.
+- Confirmed the Turnstile container is no longer display:none and encrypted backup fields are password gated.
+- Created the versioned release archive at /Users/amirkhosroawhadi/Plugins/aoauth-ssh-client-v1.6.7.zip with aoauth-client-sso/ as the internal folder.
 
 Latest changes - Version 1.6.6 settings persistence and linking preview update:
 - Incremented plugin version from 1.6.5 to 1.6.6 in the plugin header and AOAUTH_VERSION.

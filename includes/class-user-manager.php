@@ -7,6 +7,35 @@ class AOAUTH_User_Manager {
     
     public function init() {
         add_action('init', array($this, 'handle_link_confirmation'));
+        add_filter('authenticate', array($this, 'block_banned_user_login'), 30, 3);
+    }
+
+    public function block_banned_user_login($user, $username, $password) {
+        if ($user instanceof WP_User) {
+            $target_user = $user;
+        } elseif (!empty($username)) {
+            $target_user = get_user_by('login', $username);
+            if (!$target_user && is_email($username)) {
+                $target_user = get_user_by('email', $username);
+            }
+        } else {
+            return $user;
+        }
+
+        if (!$target_user) {
+            return $user;
+        }
+
+        $ban_until = aoauth_core()->get_security()->get_user_login_ban($target_user->ID);
+        if (!$ban_until) {
+            return $user;
+        }
+
+        $remaining = max(1, ceil(($ban_until - time()) / 60));
+        return new WP_Error(
+            'aoauth_login_banned',
+            sprintf(__('Too many failed account-linking attempts. Login is temporarily blocked for %d minutes.', 'aoauth-client-sso'), $remaining)
+        );
     }
     
     public function process_oauth_user($user_info, $provider, $provider_slug) {
@@ -124,7 +153,7 @@ class AOAUTH_User_Manager {
     private function render_lockdown_message($message, $provider_slug) {
         $provider_name = ucfirst($provider_slug);
         $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
-        $theme = !empty($settings['linking_page_use_theme']) ? sanitize_html_class($settings['login_button_theme'] ?? 'modern') : 'modern';
+        $theme = sanitize_html_class($settings['login_button_theme'] ?? 'modern');
         ?>
         <!DOCTYPE html>
         <html <?php language_attributes(); ?> class="aoauth-account-linking-html">
@@ -160,7 +189,7 @@ class AOAUTH_User_Manager {
         }
         
         $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
-        $theme = !empty($settings['linking_page_use_theme']) ? sanitize_html_class($settings['login_button_theme'] ?? 'modern') : 'modern';
+        $theme = sanitize_html_class($settings['login_button_theme'] ?? 'modern');
         $page_title = !empty($settings['linking_page_title']) ? $settings['linking_page_title'] : __('Link Your Account', 'aoauth-client-sso');
         $provider_name = ucfirst($provider_slug);
         ?>

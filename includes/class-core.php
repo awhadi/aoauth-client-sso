@@ -80,6 +80,7 @@ class AOAUTH_Core {
             'recaptcha_score_threshold' => '0.5',
             'linking_max_attempts' => '5',
             'linking_lockout_minutes' => '15',
+            'linking_login_ban_minutes' => '15',
             'linking_page_use_theme' => '1',
             'linking_page_title' => 'Link Your Account',
             'bot_overlay_enabled' => '1',

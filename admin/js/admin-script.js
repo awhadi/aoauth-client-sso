@@ -416,7 +416,23 @@
         // EXPORT CONFIG
         // ============================================
         $('#aoauth-export-config-btn').on('click', function() {
-            window.location.href = aoauth_admin.ajaxurl + '?action=aoauth_export_config&nonce=' + aoauth_admin.nonce;
+            var password = window.prompt('Optional: enter a backup password to include encrypted Client IDs and Secrets. Leave blank to export settings without credentials.');
+            if (password === null) {
+                return;
+            }
+
+            var $form = $('<form>', {
+                method: 'POST',
+                action: aoauth_admin.ajaxurl
+            }).append(
+                $('<input>', { type: 'hidden', name: 'action', value: 'aoauth_export_config' }),
+                $('<input>', { type: 'hidden', name: 'nonce', value: aoauth_admin.nonce }),
+                $('<input>', { type: 'hidden', name: 'backup_password', value: password })
+            );
+
+            $('body').append($form);
+            $form.trigger('submit');
+            $form.remove();
         });
         
         // ============================================
@@ -434,6 +450,7 @@
             formData.append('action', 'aoauth_import_config');
             formData.append('nonce', aoauth_admin.nonce);
             formData.append('config_file', file);
+            formData.append('backup_password', window.prompt('If this backup was exported with a password, enter it now. Leave blank for non-encrypted backups.') || '');
             
             $.ajax({
                 url: aoauth_admin.ajaxurl,
@@ -651,11 +668,9 @@
         function updateLinkingPreview() {
             var selectedTheme = $('input[name="login_button_theme"]:checked').val() || 'modern';
             var title = $('#linking_page_title').val() || 'Link Your Account';
-            var enabled = $('#linking_page_use_theme').is(':checked');
 
             $('.aoauth-linking-preview-wrap')
-                .attr('data-preview-theme', selectedTheme)
-                .toggleClass('is-disabled', !enabled);
+                .attr('data-preview-theme', selectedTheme);
             $('.aoauth-linking-preview-title').text(title);
         }
 
@@ -666,7 +681,7 @@
             updateLinkingPreview();
         });
 
-        $('#linking_page_title, #linking_page_use_theme').on('input change', updateLinkingPreview);
+        $('#linking_page_title').on('input change', updateLinkingPreview);
         updateLinkingPreview();
     });
 })(jQuery);
