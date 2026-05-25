@@ -137,9 +137,13 @@ class AOAUTH_Debug {
     }
     
     private function sanitize_context($context) {
-        $sensitive_keys = array('password', 'secret', 'token', 'api_key', 'bearer');
+        $sensitive_keys = array('password', 'secret', 'token', 'api_key', 'bearer', 'authorization', 'state', 'nonce');
         
         array_walk_recursive($context, function(&$value, $key) use ($sensitive_keys) {
+            if (is_string($value) && (stripos((string) $key, 'url') !== false || stripos((string) $key, 'uri') !== false)) {
+                $value = $this->sanitize_url_for_log($value);
+            }
+
             // Check if this is a sensitive field
             $is_sensitive = false;
             foreach ($sensitive_keys as $sensitive) {
@@ -178,6 +182,37 @@ class AOAUTH_Debug {
         });
         
         return $context;
+    }
+
+    private function sanitize_url_for_log($url) {
+        $parts = wp_parse_url($url);
+        if (!is_array($parts) || empty($parts['query'])) {
+            return $url;
+        }
+
+        parse_str($parts['query'], $query);
+        foreach (array('client_id', 'client_secret', 'code', 'state', 'nonce', 'id_token', 'access_token', 'refresh_token') as $key) {
+            if (isset($query[$key])) {
+                $query[$key] = '***HIDDEN***';
+            }
+        }
+
+        $rebuilt = '';
+        if (!empty($parts['scheme'])) {
+            $rebuilt .= $parts['scheme'] . '://';
+        }
+        if (!empty($parts['host'])) {
+            $rebuilt .= $parts['host'];
+        }
+        if (!empty($parts['path'])) {
+            $rebuilt .= $parts['path'];
+        }
+        $rebuilt .= '?' . http_build_query($query, '', '&', PHP_QUERY_RFC3986);
+        if (!empty($parts['fragment'])) {
+            $rebuilt .= '#' . $parts['fragment'];
+        }
+
+        return $rebuilt;
     }
     
     public function debug($message, $context = array()) {

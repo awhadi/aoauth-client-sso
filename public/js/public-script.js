@@ -2,6 +2,48 @@
     var turnstileWidgetIds = {};
     var activeRequests = {};
     var turnstileTimeouts = {};
+
+    function createFlowId() {
+        return 'flow-' + Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 10);
+    }
+
+    function getUrlParam(url, key) {
+        try {
+            return new URL(url, window.location.href).searchParams.get(key) || '';
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function addUrlParam(url, key, value) {
+        try {
+            var parsedUrl = new URL(url, window.location.href);
+            parsedUrl.searchParams.set(key, value);
+            return parsedUrl.toString();
+        } catch (e) {
+            var separator = url.indexOf('?') === -1 ? '?' : '&';
+            return url + separator + encodeURIComponent(key) + '=' + encodeURIComponent(value);
+        }
+    }
+
+    function debugLog(level, message, context) {
+        if (typeof aoauth_public === 'undefined' || !aoauth_public.debug_enabled) {
+            return;
+        }
+
+        $.ajax({
+            url: aoauth_public.ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'aoauth_client_debug_log',
+                nonce: aoauth_public.nonce,
+                source: 'public',
+                level: level,
+                message: message,
+                context: JSON.stringify(context || {})
+            }
+        });
+    }
     
     function handleSSOClick(e) {
         e.preventDefault();
@@ -10,6 +52,8 @@
         var $btn = $(this);
         var loginUrl = $btn.attr('href');
         var buttonId = 'aoauth-btn-' + Math.random().toString(36).substr(2, 9);
+        var flowId = createFlowId();
+        var provider = getUrlParam(loginUrl, 'provider');
         
         if ($btn.hasClass('aoauth-button-loading')) {
             return false;
@@ -20,13 +64,21 @@
             aoauth_public.bot_protection.type !== 'none') {
             
             var protectionType = aoauth_public.bot_protection.type;
+            debugLog('info', 'SSO button clicked with bot protection', {
+                flow_id: flowId,
+                provider: provider,
+                bot_protection: protectionType
+            });
             
             showBeautifulLoader($btn);
             showBotOverlay($btn);
             
             if (protectionType === 'turnstile') {
                 if (typeof turnstile === 'undefined') {
-                    console.error('Turnstile not loaded');
+                    debugLog('error', 'Turnstile not loaded', {
+                        flow_id: flowId,
+                        provider: provider
+                    });
                     hideBeautifulLoader($btn);
                     alert('Bot protection not loaded. Please refresh the page.');
                     return false;
@@ -58,12 +110,19 @@
                         sitekey: aoauth_public.bot_protection.site_key,
                         size: 'invisible',
                         callback: function(token) {
-                            console.log('Turnstile callback received');
+                            debugLog('debug', 'Turnstile callback received', {
+                                flow_id: flowId,
+                                provider: provider
+                            });
                             clearTimeout(turnstileTimeouts[buttonId]);
-                            verifyToken(token, 'turnstile', loginUrl, $btn, containerId, buttonId);
+                            verifyToken(token, 'turnstile', loginUrl, $btn, containerId, buttonId, flowId, provider);
                         },
                         'error-callback': function(errorCode) {
-                            console.error('Turnstile error:', errorCode);
+                            debugLog('error', 'Turnstile error callback', {
+                                flow_id: flowId,
+                                provider: provider,
+                                error_code: errorCode
+                            });
                             clearTimeout(turnstileTimeouts[buttonId]);
                             hideBeautifulLoader($btn);
                             hideBotOverlay();
@@ -72,7 +131,10 @@
                             cleanupTurnstile(containerId, buttonId);
                         },
                         'expired-callback': function() {
-                            console.log('Turnstile expired');
+                            debugLog('warning', 'Turnstile expired', {
+                                flow_id: flowId,
+                                provider: provider
+                            });
                             clearTimeout(turnstileTimeouts[buttonId]);
                             hideBeautifulLoader($btn);
                             hideBotOverlay();
@@ -80,7 +142,10 @@
                             cleanupTurnstile(containerId, buttonId);
                         },
                         'timeout-callback': function() {
-                            console.log('Turnstile timeout');
+                            debugLog('warning', 'Turnstile timeout', {
+                                flow_id: flowId,
+                                provider: provider
+                            });
                             clearTimeout(turnstileTimeouts[buttonId]);
                             hideBeautifulLoader($btn);
                             hideBotOverlay();
@@ -93,7 +158,10 @@
                     // This handles cases where the widget gets stuck
                     turnstileTimeouts[buttonId] = setTimeout(function() {
                         if (turnstileWidgetIds[buttonId] && !activeRequests[loginUrl]) {
-                            console.log('Turnstile widget stuck - forcing reset');
+                            debugLog('warning', 'Turnstile widget stuck - forcing reset', {
+                                flow_id: flowId,
+                                provider: provider
+                            });
                             try {
                                 turnstile.reset(turnstileWidgetIds[buttonId]);
                             } catch(e) {}
@@ -105,7 +173,11 @@
                     }, 30000);
                     
                 } catch(err) {
-                    console.error('Turnstile error:', err);
+                    debugLog('error', 'Turnstile render error', {
+                        flow_id: flowId,
+                        provider: provider,
+                        error: err && err.message ? err.message : String(err)
+                    });
                     clearTimeout(turnstileTimeouts[buttonId]);
                     hideBeautifulLoader($btn);
                     hideBotOverlay();
@@ -115,7 +187,10 @@
                 
             } else if (protectionType === 'recaptcha') {
                 if (typeof grecaptcha === 'undefined') {
-                    console.error('reCAPTCHA not loaded');
+                    debugLog('error', 'reCAPTCHA not loaded', {
+                        flow_id: flowId,
+                        provider: provider
+                    });
                     hideBeautifulLoader($btn);
                     hideBotOverlay();
                     alert('Bot protection not loaded. Please refresh the page.');
@@ -125,9 +200,13 @@
                 setTimeout(function() {
                     grecaptcha.ready(function() {
                         grecaptcha.execute(aoauth_public.bot_protection.site_key, {action: 'login'}).then(function(token) {
-                            verifyToken(token, 'recaptcha', loginUrl, $btn, null, null);
+                            verifyToken(token, 'recaptcha', loginUrl, $btn, null, null, flowId, provider);
                         }).catch(function(err) {
-                            console.error('reCAPTCHA error:', err);
+                            debugLog('error', 'reCAPTCHA error', {
+                                flow_id: flowId,
+                                provider: provider,
+                                error: err && err.message ? err.message : String(err)
+                            });
                             hideBeautifulLoader($btn);
                             hideBotOverlay();
                             alert('Verification error. Please try again.');
@@ -141,8 +220,12 @@
         
         showBeautifulLoader($btn);
         showRedirectOverlay();
+        debugLog('info', 'SSO button clicked without bot protection', {
+            flow_id: flowId,
+            provider: provider
+        });
         setTimeout(function() {
-            window.location.href = loginUrl;
+            window.location.href = addUrlParam(loginUrl, 'aoauth_flow_id', flowId);
         }, 100);
         return false;
     }
@@ -247,7 +330,7 @@
         return messages[errorCode] || 'Verification failed. Please try again.';
     }
     
-    function verifyToken(token, type, loginUrl, $btn, containerId, buttonId) {
+    function verifyToken(token, type, loginUrl, $btn, containerId, buttonId, flowId, provider) {
         var action = type === 'turnstile' ? 'aoauth_verify_turnstile' : 'aoauth_verify_recaptcha';
         
         if (activeRequests[loginUrl]) {
@@ -261,6 +344,8 @@
             data: {
                 action: action,
                 token: token,
+                flow_id: flowId,
+                provider: provider,
                 nonce: aoauth_public.nonce
             },
             timeout: 30000,
@@ -270,6 +355,12 @@
                     if (response.data && response.data.verification) {
                         loginUrl += (loginUrl.indexOf('?') === -1 ? '?' : '&') + 'aoauth_bot_verification=' + encodeURIComponent(response.data.verification);
                     }
+                    loginUrl = addUrlParam(loginUrl, 'aoauth_flow_id', flowId);
+                    debugLog('info', 'Bot verification accepted by site', {
+                        flow_id: flowId,
+                        provider: provider,
+                        bot_protection: type
+                    });
                     
                     setTimeout(function() {
                         window.location.href = loginUrl;
@@ -283,7 +374,14 @@
             },
             error: function(xhr, status, error) {
                 delete activeRequests[loginUrl];
-                console.error('AJAX error:', error);
+                debugLog('error', 'Bot verification AJAX error', {
+                    flow_id: flowId,
+                    provider: provider,
+                    bot_protection: type,
+                    status: status,
+                    error: error,
+                    response_status: xhr.status
+                });
                 hideBeautifulLoader($btn);
                 hideBotOverlay();
                 alert('Verification error. Please refresh and try again.');
@@ -302,7 +400,9 @@
             try {
                 turnstile.remove(turnstileWidgetIds[buttonId]);
             } catch(e) {
-                console.log('Turnstile cleanup error:', e);
+                debugLog('warning', 'Turnstile cleanup error', {
+                    error: e && e.message ? e.message : String(e)
+                });
             }
             delete turnstileWidgetIds[buttonId];
         }

@@ -198,12 +198,19 @@ class AOAUTH_SSO_Handler {
     if (!empty($error)) {
         $message = !empty($error_description) ? $error_description : $error;
         $debug->error('OAuth error', array('error' => $error, 'description' => $error_description));
+        $this->logger->log('sso_callback_failed', array(
+            'reason' => 'provider_error',
+            'error' => $error
+        ), null, null, 'error');
         $this->redirect_with_error('OAuth Error: ' . $message);
         return;
     }
     
     if (empty($code) || empty($state)) {
         $debug->error('Missing code or state');
+        $this->logger->log('sso_callback_failed', array(
+            'reason' => 'missing_code_or_state'
+        ), null, null, 'error');
         $this->redirect_with_error('Invalid callback parameters.');
         return;
     }
@@ -218,6 +225,9 @@ class AOAUTH_SSO_Handler {
     
     if (false === $state_data) {
         $debug->error('State expired or not found');
+        $this->logger->log('sso_callback_failed', array(
+            'reason' => 'state_expired_or_not_found'
+        ), null, null, 'error');
         $this->redirect_with_error('Session expired or invalid. Please try logging in again.');
         return;
     }
@@ -226,6 +236,7 @@ class AOAUTH_SSO_Handler {
     
     $provider_slug = sanitize_text_field($state_data['provider']);
     $redirect_to = !empty($state_data['redirect_to']) ? esc_url_raw($state_data['redirect_to']) : '';
+    $flow_id = sanitize_text_field($state_data['flow_id'] ?? '');
     
     $debug->info('Processing callback', array('provider' => $provider_slug, 'redirect_to' => $redirect_to));
     
@@ -239,12 +250,22 @@ class AOAUTH_SSO_Handler {
     
     if (false === $provider) {
         $debug->error('Provider not found in config', array('slug' => $provider_slug));
+        $this->logger->log('sso_callback_failed', array(
+            'flow_id' => $flow_id,
+            'provider' => $provider_slug,
+            'reason' => 'provider_not_found'
+        ), null, $provider_slug, 'error');
         $this->redirect_with_error('Provider configuration not found.');
         return;
     }
     
     if (empty($provider['enabled'])) {
         $debug->error('Provider not enabled', array('slug' => $provider_slug));
+        $this->logger->log('sso_callback_failed', array(
+            'flow_id' => $flow_id,
+            'provider' => $provider_slug,
+            'reason' => 'provider_disabled'
+        ), null, $provider_slug, 'error');
         $this->redirect_with_error('This login provider is not enabled.');
         return;
     }
@@ -273,6 +294,11 @@ class AOAUTH_SSO_Handler {
             $validated_claims = $this->validate_id_token($tokens['id_token'], $provider, $state_data);
             if (is_wp_error($validated_claims)) {
                 $debug->error('ID token validation failed', array('error' => $validated_claims->get_error_message()));
+                $this->logger->log('sso_authentication_failed', array(
+                    'flow_id' => $flow_id,
+                    'provider' => $provider_slug,
+                    'reason' => 'id_token_validation_failed'
+                ), null, $provider_slug, 'error');
                 $this->redirect_with_error('Login failed: identity token validation failed.');
                 return;
             }
@@ -309,6 +335,7 @@ class AOAUTH_SSO_Handler {
         
         if (empty($extracted_email)) {
             $this->logger->log('email_extraction_failed', array(
+                'flow_id' => $flow_id,
                 'provider' => $provider_slug,
                 'available_fields' => array_keys(is_array($user_info) ? $user_info : array())
             ), null, $provider_slug, 'error');
@@ -336,6 +363,12 @@ class AOAUTH_SSO_Handler {
         
         if (is_wp_error($result)) {
             $debug->error('User processing failed', array('error' => $result->get_error_message()));
+            $this->logger->log('sso_authentication_failed', array(
+                'flow_id' => $flow_id,
+                'provider' => $provider_slug,
+                'reason' => 'user_processing_failed',
+                'error' => $result->get_error_message()
+            ), null, $provider_slug, 'error');
             $this->redirect_with_error($result->get_error_message());
             return;
         }
@@ -358,9 +391,11 @@ class AOAUTH_SSO_Handler {
         ));
         
         $this->logger->log('authentication_success', array(
+            'flow_id' => $flow_id,
             'user_id' => $result,
             'provider' => $provider_slug,
-            'redirect_url' => $redirect_url
+            'redirect_url' => $redirect_url,
+            'redirect_path' => $this->get_url_path_for_log($redirect_url)
         ), $result, $provider_slug, 'success');
         
         wp_safe_redirect($redirect_url);
@@ -370,6 +405,7 @@ class AOAUTH_SSO_Handler {
         $debug->error('Authentication exception', array('error' => $e->getMessage()));
         
         $this->logger->log('authentication_failed', array(
+            'flow_id' => $flow_id,
             'error' => $e->getMessage(),
             'provider' => $provider_slug
         ), null, $provider_slug, 'error');
@@ -801,12 +837,19 @@ class AOAUTH_SSO_Handler {
     
     if (empty($provider_slug)) {
         $debug->error('Provider not specified');
+        $this->logger->log('login_initiation_failed', array(
+            'reason' => 'provider_not_specified'
+        ), null, null, 'error');
         wp_die(esc_html__('Provider not specified.', 'aoauth-client-sso'));
     }
     
     $nonce = isset($_GET['_wpnonce']) ? $_GET['_wpnonce'] : (isset($_GET['nonce']) ? $_GET['nonce'] : '');
     if (!wp_verify_nonce($nonce, 'aoauth_login_' . $provider_slug)) {
         $debug->error('Nonce verification failed', array('provider' => $provider_slug));
+        $this->logger->log('login_initiation_failed', array(
+            'provider' => $provider_slug,
+            'reason' => 'nonce_verification_failed'
+        ), null, $provider_slug, 'error');
         wp_die(esc_html__('Security check failed.', 'aoauth-client-sso'));
     }
     
@@ -821,11 +864,21 @@ class AOAUTH_SSO_Handler {
     
     if (false === $provider) {
         $debug->error('Provider not found', array('slug' => $provider_slug));
+        $this->logger->log('login_initiation_failed', array(
+            'provider' => $provider_slug,
+            'reason' => 'provider_not_found',
+            'redirect_path' => $this->get_url_path_for_log($redirect_to)
+        ), null, $provider_slug, 'error');
         wp_die(esc_html__('Provider not found.', 'aoauth-client-sso'));
     }
     
     if (empty($provider['enabled'])) {
         $debug->error('Provider not enabled', array('slug' => $provider_slug));
+        $this->logger->log('login_initiation_failed', array(
+            'provider' => $provider_slug,
+            'reason' => 'provider_disabled',
+            'redirect_path' => $this->get_url_path_for_log($redirect_to)
+        ), null, $provider_slug, 'error');
         wp_die(esc_html__('Provider is not enabled.', 'aoauth-client-sso'));
     }
     
@@ -835,18 +888,27 @@ class AOAUTH_SSO_Handler {
         'send_credentials_in_header' => !empty($provider['send_credentials_in_header'])
     ));
     
-    if (!$this->verify_bot_protection_for_login()) {
+    $requested_flow_id = isset($_GET['aoauth_flow_id']) ? sanitize_text_field(wp_unslash($_GET['aoauth_flow_id'])) : '';
+    $bot_verification = $this->consume_bot_protection_verification_for_login($provider_slug, $requested_flow_id);
+    if (false === $bot_verification) {
         $debug->error('Bot protection verification missing or expired');
+        $this->logger->log('bot_protection_required_failed', array(
+            'provider' => $provider_slug,
+            'reason' => 'missing_or_expired_verification',
+            'redirect_path' => $this->get_url_path_for_log($redirect_to)
+        ), null, $provider_slug, 'error');
         wp_die(esc_html__('Bot verification is required. Please return to the login page and try again.', 'aoauth-client-sso'));
     }
     
     $state = $this->security->generate_secure_token(64);
     $oidc_nonce = $this->security->generate_secure_token(64);
+    $flow_id = !empty($bot_verification['flow_id']) ? sanitize_text_field($bot_verification['flow_id']) : $this->security->generate_secure_token(18);
     
     $state_data = array(
         'provider' => $provider_slug,
         'redirect_to' => $redirect_to,
         'oidc_nonce' => $oidc_nonce,
+        'flow_id' => $flow_id,
         'timestamp' => time(),
     );
     
@@ -865,21 +927,29 @@ class AOAUTH_SSO_Handler {
     ));
     
     $this->logger->log('login_initiated', array(
+        'flow_id' => $flow_id,
         'provider' => $provider_slug,
-        'redirect_to' => $redirect_to
+        'redirect_to' => $redirect_to,
+        'redirect_path' => $this->get_url_path_for_log($redirect_to),
+        'bot_protection' => !empty($bot_verification['type']) ? $bot_verification['type'] : 'none'
     ), null, $provider_slug, 'info');
     
     wp_redirect($auth_url);
     exit;
 }
     
-    private function verify_bot_protection_for_login() {
+    private function consume_bot_protection_verification_for_login($provider_slug, $requested_flow_id = '') {
         $settings = get_option('aoauth_settings', array());
         $bot_enabled = (!empty($settings['enable_turnstile']) && !empty($settings['turnstile_site_key']) && !empty($settings['turnstile_secret_key']))
             || (!empty($settings['enable_recaptcha']) && !empty($settings['recaptcha_site_key']) && !empty($settings['recaptcha_secret_key']));
         
         if (!$bot_enabled) {
-            return true;
+            return array(
+                'verified' => true,
+                'type' => 'none',
+                'flow_id' => !empty($requested_flow_id) ? $requested_flow_id : $this->security->generate_secure_token(18),
+                'provider' => $provider_slug
+            );
         }
         
         $verification = isset($_GET['aoauth_bot_verification']) ? sanitize_text_field(wp_unslash($_GET['aoauth_bot_verification'])) : '';
@@ -894,7 +964,35 @@ class AOAUTH_SSO_Handler {
         }
         
         delete_transient($transient_key);
-        return !empty($verification_data['verified']);
+        if (empty($verification_data['verified'])) {
+            return false;
+        }
+
+        $this->logger->log('bot_verification_consumed', array(
+            'flow_id' => $verification_data['flow_id'] ?? '',
+            'provider' => $provider_slug,
+            'type' => $verification_data['type'] ?? 'unknown'
+        ), null, $provider_slug, 'success');
+
+        return $verification_data;
+    }
+
+    private function get_url_path_for_log($url) {
+        if (empty($url)) {
+            return '';
+        }
+
+        $parts = wp_parse_url($url);
+        if (!is_array($parts)) {
+            return '';
+        }
+
+        $path = $parts['path'] ?? '/';
+        if (!empty($parts['query'])) {
+            $path .= '?' . $parts['query'];
+        }
+
+        return $path;
     }
     
     private function get_provider_by_slug($slug, $applications) {

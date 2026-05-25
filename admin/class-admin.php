@@ -28,6 +28,8 @@ class AOAUTH_Admin {
         add_action('wp_ajax_aoauth_test_connection', array($this, 'ajax_test_connection'));
         add_action('wp_ajax_aoauth_preview_theme', array($this, 'ajax_preview_theme'));
         add_action('wp_ajax_aoauth_factory_reset', array($this, 'ajax_factory_reset'));
+        add_action('wp_ajax_aoauth_client_debug_log', array($this, 'ajax_client_debug_log'));
+        add_action('wp_ajax_nopriv_aoauth_client_debug_log', array($this, 'ajax_client_debug_log'));
         
         // Account unlinking AJAX handlers
         add_action('wp_ajax_aoauth_unlink_account', array($this, 'ajax_unlink_account'));
@@ -225,6 +227,7 @@ class AOAUTH_Admin {
             wp_localize_script('aoauth-wizard', 'aoauth_admin', array(
                 'ajaxurl' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('aoauth_admin_nonce'),
+                'debug_enabled' => aoauth_core()->get_debug()->is_enabled(),
                 'providers' => aoauth_core()->get_providers_manager()->get_providers_list(),
                 'edit_mode' => !empty($edit_app_id),
                 'edit_app_id' => $edit_app_id,
@@ -899,6 +902,48 @@ class AOAUTH_Admin {
         }
         wp_send_json_success(array('message' => $message));
     }
+
+    public function ajax_client_debug_log() {
+        $debug = aoauth_core()->get_debug();
+        if (!$debug->is_enabled()) {
+            wp_send_json_success(array('logged' => false));
+        }
+
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+        $valid_nonce = wp_verify_nonce($nonce, 'aoauth_admin_nonce') || wp_verify_nonce($nonce, 'aoauth_public_nonce');
+        if (!$valid_nonce) {
+            wp_send_json_error(array('message' => __('Security check failed.', 'aoauth-client-sso')));
+        }
+
+        if (is_user_logged_in() && !current_user_can('manage_options') && is_admin()) {
+            wp_send_json_error(array('message' => __('Permission denied.', 'aoauth-client-sso')));
+        }
+
+        $level = isset($_POST['level']) ? sanitize_key(wp_unslash($_POST['level'])) : 'debug';
+        if (!in_array($level, array('debug', 'info', 'warning', 'error'), true)) {
+            $level = 'debug';
+        }
+
+        $message = isset($_POST['message']) ? sanitize_text_field(wp_unslash($_POST['message'])) : 'Client event';
+        $context = array();
+        if (isset($_POST['context'])) {
+            $raw_context = wp_unslash($_POST['context']);
+            if (is_string($raw_context)) {
+                $decoded_context = json_decode($raw_context, true);
+                if (is_array($decoded_context)) {
+                    $context = $decoded_context;
+                }
+            } elseif (is_array($raw_context)) {
+                $context = $raw_context;
+            }
+        }
+
+        $context['client_debug_source'] = isset($_POST['source']) ? sanitize_key(wp_unslash($_POST['source'])) : 'browser';
+        $context['user_agent'] = sanitize_text_field($_SERVER['HTTP_USER_AGENT'] ?? '');
+
+        $debug->log($level, 'Browser: ' . $message, $context);
+        wp_send_json_success(array('logged' => true));
+    }
     
     private function sanitize_settings($settings) {
         $raw_settings = is_array($settings) ? $settings : array();
@@ -1496,10 +1541,18 @@ public function ajax_unlink_account() {
         check_ajax_referer('aoauth_public_nonce', 'nonce');
         
         $token = sanitize_text_field($_POST['token'] ?? '');
+        $flow_id = isset($_POST['flow_id']) ? sanitize_text_field(wp_unslash($_POST['flow_id'])) : '';
+        $provider = isset($_POST['provider']) ? sanitize_key(wp_unslash($_POST['provider'])) : '';
         $settings = get_option('aoauth_settings', array());
         $secret = aoauth_core()->get_security()->decrypt_secret($settings['turnstile_secret_key'] ?? '');
         
         if (empty($token) || empty($secret)) {
+            $this->logger->log('bot_verification_failed', array(
+                'flow_id' => $flow_id,
+                'provider' => $provider,
+                'type' => 'turnstile',
+                'reason' => 'missing_verification_data'
+            ), null, $provider, 'error');
             wp_send_json_error(array('message' => __('Missing verification data.', 'aoauth-client-sso')));
         }
         
@@ -1512,22 +1565,32 @@ public function ajax_unlink_account() {
         ));
         
         if (is_wp_error($response)) {
-            $this->logger->log('turnstile_verification_failed', array(
+            $this->logger->log('bot_verification_failed', array(
+                'flow_id' => $flow_id,
+                'provider' => $provider,
+                'type' => 'turnstile',
                 'error' => $response->get_error_message()
-            ), null, null, 'error');
+            ), null, $provider, 'error');
             wp_send_json_error(array('message' => __('Verification service unavailable.', 'aoauth-client-sso')));
         }
         
         $body = json_decode(wp_remote_retrieve_body($response), true);
         
         if (!empty($body['success'])) {
-            $this->logger->log('turnstile_verification_success', array(), null, null, 'success');
-            wp_send_json_success(array('verification' => $this->create_bot_verification_token('turnstile')));
+            $this->logger->log('bot_verification_success', array(
+                'flow_id' => $flow_id,
+                'provider' => $provider,
+                'type' => 'turnstile'
+            ), null, $provider, 'success');
+            wp_send_json_success(array('verification' => $this->create_bot_verification_token('turnstile', $flow_id, $provider)));
         } else {
             $error_codes = isset($body['error-codes']) ? implode(', ', $body['error-codes']) : 'unknown';
-            $this->logger->log('turnstile_verification_failed', array(
+            $this->logger->log('bot_verification_failed', array(
+                'flow_id' => $flow_id,
+                'provider' => $provider,
+                'type' => 'turnstile',
                 'error_codes' => $error_codes
-            ), null, null, 'error');
+            ), null, $provider, 'error');
             wp_send_json_error(array('message' => __('Bot challenge failed. Please try again.', 'aoauth-client-sso')));
         }
     }
@@ -1539,11 +1602,19 @@ public function ajax_unlink_account() {
         check_ajax_referer('aoauth_public_nonce', 'nonce');
         
         $token = sanitize_text_field($_POST['token'] ?? '');
+        $flow_id = isset($_POST['flow_id']) ? sanitize_text_field(wp_unslash($_POST['flow_id'])) : '';
+        $provider = isset($_POST['provider']) ? sanitize_key(wp_unslash($_POST['provider'])) : '';
         $settings = get_option('aoauth_settings', array());
         $secret = aoauth_core()->get_security()->decrypt_secret($settings['recaptcha_secret_key'] ?? '');
         $expected_score = floatval($settings['recaptcha_score_threshold'] ?? 0.5);
         
         if (empty($token) || empty($secret)) {
+            $this->logger->log('bot_verification_failed', array(
+                'flow_id' => $flow_id,
+                'provider' => $provider,
+                'type' => 'recaptcha',
+                'reason' => 'missing_verification_data'
+            ), null, $provider, 'error');
             wp_send_json_error(array('message' => __('Missing verification data.', 'aoauth-client-sso')));
         }
         
@@ -1556,24 +1627,33 @@ public function ajax_unlink_account() {
         ));
         
         if (is_wp_error($response)) {
-            $this->logger->log('recaptcha_verification_failed', array(
+            $this->logger->log('bot_verification_failed', array(
+                'flow_id' => $flow_id,
+                'provider' => $provider,
+                'type' => 'recaptcha',
                 'error' => $response->get_error_message()
-            ), null, null, 'error');
+            ), null, $provider, 'error');
             wp_send_json_error(array('message' => __('Verification service unavailable.', 'aoauth-client-sso')));
         }
         
         $body = json_decode(wp_remote_retrieve_body($response), true);
         
         if (!empty($body['success']) && isset($body['score']) && $body['score'] >= $expected_score) {
-            $this->logger->log('recaptcha_verification_success', array(
+            $this->logger->log('bot_verification_success', array(
+                'flow_id' => $flow_id,
+                'provider' => $provider,
+                'type' => 'recaptcha',
                 'score' => $body['score']
-            ), null, null, 'success');
-            wp_send_json_success(array('verification' => $this->create_bot_verification_token('recaptcha')));
+            ), null, $provider, 'success');
+            wp_send_json_success(array('verification' => $this->create_bot_verification_token('recaptcha', $flow_id, $provider)));
         } else {
-            $this->logger->log('recaptcha_verification_failed', array(
+            $this->logger->log('bot_verification_failed', array(
+                'flow_id' => $flow_id,
+                'provider' => $provider,
+                'type' => 'recaptcha',
                 'score' => $body['score'] ?? 'unknown',
                 'error_codes' => implode(', ', $body['error-codes'] ?? array())
-            ), null, null, 'error');
+            ), null, $provider, 'error');
             wp_send_json_error(array('message' => sprintf(
                 __('Bot verification failed. Score %s is below threshold of %s.', 'aoauth-client-sso'),
                 $body['score'] ?? 'unknown',
@@ -1582,11 +1662,13 @@ public function ajax_unlink_account() {
         }
     }
     
-    private function create_bot_verification_token($type) {
+    private function create_bot_verification_token($type, $flow_id = '', $provider = '') {
         $token = aoauth_core()->get_security()->generate_secure_token(48);
         set_transient('aoauth_bot_' . md5($token), array(
             'verified' => true,
             'type' => sanitize_key($type),
+            'flow_id' => sanitize_text_field($flow_id),
+            'provider' => sanitize_key($provider),
             'created_at' => time(),
             'ip' => sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? '')
         ), 5 * MINUTE_IN_SECONDS);

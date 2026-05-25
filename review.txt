@@ -1,5 +1,24 @@
 aOAUTH Client SSO - Review and Hardening Notes
-Version: 1.6.9
+Version: 1.7.0
+
+Latest changes - Version 1.7.0 debug and SSO flow logging update:
+- Incremented plugin version from 1.6.9 to 1.7.0 in the plugin header and AOAUTH_VERSION.
+- Removed browser console logging from the admin wizard and public login script so provider secrets are no longer exposed in DevTools during normal use.
+- Added a gated browser-to-server debug event endpoint that only writes to AOAUTH_Debug when AOAUTH_DEBUG is enabled.
+- Updated wizard diagnostics to send collected config, save, and test events to the developer debug log instead of the browser console.
+- Updated public SSO diagnostics to send Turnstile, reCAPTCHA, and redirect preparation events to the developer debug log instead of the browser console.
+- Added flow IDs to SSO login tracking so one attempt can be followed through bot verification, login initiation, callback processing, authentication result, and WordPress redirect path.
+- Passed flow IDs through the login request for both bot-protected and non-bot SSO flows.
+- Added admin-facing audit events for login initiation failures, bot verification success/failure/consumption, callback failures, and SSO authentication failures.
+- Added sensitive-data masking at the audit logger boundary so plugin activity logs do not store raw secrets, tokens, passwords, authorization values, or full Client IDs.
+- Tightened developer debug sanitization for sensitive state/nonce values and OAuth URLs while still allowing deeper sensitive output only when AOAUTH_DEBUG_SHOW_SENSITIVE is explicitly enabled.
+
+Verification performed for Version 1.7.0:
+- Ran PHP syntax checks for the plugin bootstrap, admin controller, core, debug, logger, and SSO handler classes.
+- Ran JavaScript syntax checks for admin/js/wizard-script.js and public/js/public-script.js.
+- Confirmed there are no remaining console.* calls in admin/js or public/js.
+- Confirmed flow_id, bot_verification, and client debug event hooks are present in the updated logging paths.
+- Created the versioned release archive at /Users/amirkhosroawhadi/Plugins/aoauth-ssh-client-v1.7.0.zip with aoauth-client-sso/ as the internal folder.
 
 Latest changes - Version 1.6.9 backup-secret disclosure copy update:
 - Incremented plugin version from 1.6.8 to 1.6.9 in the plugin header and AOAUTH_VERSION.

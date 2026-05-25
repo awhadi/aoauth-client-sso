@@ -22,7 +22,7 @@ class AOAUTH_Logger {
         
         $data = array(
             'event_type' => $event_type,
-            'event_data' => maybe_serialize($event_data),
+            'event_data' => maybe_serialize($this->sanitize_event_data($event_data)),
             'user_id' => $user_id,
             'provider' => $provider,
             'status' => $status,
@@ -32,6 +32,35 @@ class AOAUTH_Logger {
         
         $wpdb->insert($this->table_name, $data);
         return $wpdb->insert_id;
+    }
+
+    private function sanitize_event_data($event_data) {
+        if (!is_array($event_data)) {
+            return $event_data;
+        }
+
+        $sensitive_fragments = array('password', 'secret', 'token', 'authorization', 'bearer', 'api_key');
+        array_walk_recursive($event_data, function(&$value, $key) use ($sensitive_fragments) {
+            if ($value === '' || $value === null) {
+                return;
+            }
+
+            $key = (string) $key;
+            if (stripos($key, 'client_id') !== false) {
+                $string_value = (string) $value;
+                $value = strlen($string_value) > 8 ? substr($string_value, 0, 8) . '****' : '****';
+                return;
+            }
+
+            foreach ($sensitive_fragments as $fragment) {
+                if (stripos($key, $fragment) !== false) {
+                    $value = '***HIDDEN***';
+                    return;
+                }
+            }
+        });
+
+        return $event_data;
     }
     
     public function get_logs($args = array()) {

@@ -279,7 +279,8 @@ class AOAUTH_Core {
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('aoauth_public_nonce'),
             'spinner_url' => includes_url('images/spinner.gif'),
-            'firefox' => strpos($_SERVER['HTTP_USER_AGENT'] ?? '', 'Firefox') !== false
+            'firefox' => strpos($_SERVER['HTTP_USER_AGENT'] ?? '', 'Firefox') !== false,
+            'debug_enabled' => $this->debug->is_enabled()
         );
         
         if ($turnstile_enabled) {

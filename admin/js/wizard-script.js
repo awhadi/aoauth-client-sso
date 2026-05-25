@@ -11,6 +11,25 @@
     function escapeHtml(text) {
         return $('<div />').text(text).html();
     }
+
+    function debugLog(level, message, context) {
+        if (typeof aoauth_admin === 'undefined' || !aoauth_admin.debug_enabled) {
+            return;
+        }
+
+        $.ajax({
+            url: aoauth_admin.ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'aoauth_client_debug_log',
+                nonce: aoauth_admin.nonce,
+                source: 'wizard',
+                level: level,
+                message: message,
+                context: JSON.stringify(context || {})
+            }
+        });
+    }
     
     function addScopeTag(scope) {
         var tag = $('<span class="aoauth-tag">' + escapeHtml(scope) + '<span class="aoauth-tag-remove">&times;</span></span>');
@@ -85,7 +104,7 @@
             if (roleRules) applicationConfig.role_mapping.rules = roleRules;
         }
         
-        console.log('Configuration collected:', applicationConfig);
+        debugLog('debug', 'Configuration collected', applicationConfig);
         return applicationConfig;
     }
     
@@ -164,7 +183,7 @@
             configToSave.draft = 0;
         }
         
-        console.log('Saving application:', configToSave);
+        debugLog('info', 'Saving application', configToSave);
         
         $.ajax({
             url: aoauth_admin.ajaxurl,
@@ -175,7 +194,10 @@
                 nonce: aoauth_admin.nonce
             },
             success: function(response) {
-                console.log('Save response:', response);
+                debugLog('debug', 'Save response', {
+                    success: !!response.success,
+                    message: response.data && response.data.message ? response.data.message : ''
+                });
                 if (response.success) {
                     if (callback) callback(response);
                 } else {
@@ -183,7 +205,11 @@
                 }
             },
             error: function(xhr, status, error) {
-                console.error('Save error:', error);
+                debugLog('error', 'Save error', {
+                    status: status,
+                    error: error,
+                    response_status: xhr.status
+                });
                 aoauthShowToast('Connection error while saving', 'error');
             }
         });
@@ -201,7 +227,7 @@
         $testStatus.show();
         $testResult.removeClass('success error').html('').hide();
         
-        console.log('Testing connection with config:', applicationConfig);
+        debugLog('info', 'Testing connection with config', applicationConfig);
         
         $.ajax({
             url: aoauth_admin.ajaxurl,
@@ -212,7 +238,10 @@
                 nonce: aoauth_admin.nonce
             },
             success: function(response) {
-                console.log('Test response:', response);
+                debugLog('debug', 'Test response', {
+                    success: !!response.success,
+                    message: response.data && response.data.message ? response.data.message : ''
+                });
                 $testBtn.prop('disabled', false).html('<span class="dashicons dashicons-yes-alt"></span> Test Connection');
                 
                 if (response.success) {
@@ -235,7 +264,11 @@
                 }
             },
             error: function(xhr, status, error) {
-                console.error('Test error:', error, xhr);
+                debugLog('error', 'Test error', {
+                    status: status,
+                    error: error,
+                    response_status: xhr.status
+                });
                 $testBtn.prop('disabled', false).html('<span class="dashicons dashicons-yes-alt"></span> Test Connection');
                 testPassed = false;
                 $finishBtn.prop('disabled', false); // Still allow saving even if test fails
