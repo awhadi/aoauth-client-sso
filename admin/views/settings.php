@@ -91,12 +91,50 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : '';
                             </select>
                         </div>
                     </div>
+
+                    <div class="aoauth-setting-row">
+                        <div class="aoauth-setting-label">
+                            <label for="linking_page_use_theme"><?php esc_html_e('Style Account Linking Page', 'aoauth-client-sso'); ?></label>
+                            <p class="aoauth-setting-help"><?php esc_html_e('Match account-linking confirmation and lockout pages to the selected login button theme.', 'aoauth-client-sso'); ?></p>
+                        </div>
+                        <div class="aoauth-setting-control">
+                            <label class="aoauth-toggle">
+                                <input type="hidden" name="linking_page_use_theme" value="0">
+                                <input type="checkbox" id="linking_page_use_theme" name="linking_page_use_theme" value="1" <?php checked(!empty($settings['linking_page_use_theme']), true); ?>>
+                                <span class="aoauth-toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="aoauth-setting-row">
+                        <div class="aoauth-setting-label">
+                            <label for="linking_page_title"><?php esc_html_e('Linking Page Title', 'aoauth-client-sso'); ?></label>
+                            <p class="aoauth-setting-help"><?php esc_html_e('Shown above the password confirmation form when a user links an SSO provider to an existing account.', 'aoauth-client-sso'); ?></p>
+                        </div>
+                        <div class="aoauth-setting-control">
+                            <input type="text" id="linking_page_title" name="linking_page_title" class="aoauth-form-control" value="<?php echo esc_attr($settings['linking_page_title'] ?? 'Link Your Account'); ?>">
+                        </div>
+                    </div>
+
+                    <div class="aoauth-linking-preview-wrap" data-preview-theme="<?php echo esc_attr($current_theme); ?>">
+                        <div class="aoauth-linking-preview-screen">
+                            <div class="aoauth-linking-preview-card">
+                                <div class="aoauth-linking-preview-icon">
+                                    <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/google.png'); ?>" alt="Google">
+                                </div>
+                                <strong class="aoauth-linking-preview-title"><?php echo esc_html($settings['linking_page_title'] ?? 'Link Your Account'); ?></strong>
+                                <span class="aoauth-linking-preview-copy"><?php esc_html_e('Confirm your WordPress password to link Google for secure SSO login.', 'aoauth-client-sso'); ?></span>
+                                <span class="aoauth-linking-preview-input"></span>
+                                <span class="aoauth-linking-preview-button"><?php esc_html_e('Confirm & Link Account', 'aoauth-client-sso'); ?></span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- User Management -->
                 <div class="aoauth-settings-section">
                     <h3 class="aoauth-section-title"><?php esc_html_e('User Management', 'aoauth-client-sso'); ?></h3>
-                    
+
                     <div class="aoauth-setting-row">
                         <div class="aoauth-setting-label">
                             <label for="auto_create_users"><?php esc_html_e('Auto-Create Users', 'aoauth-client-sso'); ?></label>
@@ -159,34 +197,6 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : '';
                             <div class="aoauth-setting-control">
                                 <input type="number" id="linking_lockout_minutes" name="linking_lockout_minutes" class="aoauth-form-control aoauth-number-input" value="<?php echo esc_attr($settings['linking_lockout_minutes'] ?? 15); ?>" min="1" max="1440">
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Account Linking Experience -->
-                <div class="aoauth-settings-section">
-                    <h3 class="aoauth-section-title"><?php esc_html_e('Account Linking Experience', 'aoauth-client-sso'); ?></h3>
-
-                    <div class="aoauth-setting-row">
-                        <div class="aoauth-setting-label">
-                            <label for="linking_page_use_theme"><?php esc_html_e('Match Selected Login Theme', 'aoauth-client-sso'); ?></label>
-                            <p class="aoauth-setting-help"><?php esc_html_e('Style account-linking confirmation and lockout pages to match the selected SSO login button theme.', 'aoauth-client-sso'); ?></p>
-                        </div>
-                        <div class="aoauth-setting-control">
-                            <label class="aoauth-toggle">
-                                <input type="checkbox" id="linking_page_use_theme" name="linking_page_use_theme" <?php checked(!empty($settings['linking_page_use_theme']), true); ?>>
-                                <span class="aoauth-toggle-slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="aoauth-setting-row">
-                        <div class="aoauth-setting-label">
-                            <label for="linking_page_title"><?php esc_html_e('Linking Page Title', 'aoauth-client-sso'); ?></label>
-                            <p class="aoauth-setting-help"><?php esc_html_e('Shown above the password confirmation form when a user links an SSO provider to an existing account.', 'aoauth-client-sso'); ?></p>
-                        </div>
-                        <div class="aoauth-setting-control">
-                            <input type="text" id="linking_page_title" name="linking_page_title" class="aoauth-form-control" value="<?php echo esc_attr($settings['linking_page_title'] ?? 'Link Your Account'); ?>">
                         </div>
                     </div>
                 </div>
@@ -326,7 +336,8 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : '';
                         </div>
                         <div class="aoauth-setting-control">
                             <label class="aoauth-toggle">
-                                <input type="checkbox" id="bot_overlay_enabled" name="bot_overlay_enabled" <?php checked(!empty($settings['bot_overlay_enabled']), true); ?>>
+                                <input type="hidden" name="bot_overlay_enabled" value="0">
+                                <input type="checkbox" id="bot_overlay_enabled" name="bot_overlay_enabled" value="1" <?php checked(!empty($settings['bot_overlay_enabled']), true); ?>>
                                 <span class="aoauth-toggle-slider"></span>
                             </label>
                         </div>

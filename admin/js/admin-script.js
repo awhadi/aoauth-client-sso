@@ -648,10 +648,25 @@
         // ============================================
         // PREVIEW BUTTON STYLES ON THEME SELECT
         // ============================================
+        function updateLinkingPreview() {
+            var selectedTheme = $('input[name="login_button_theme"]:checked').val() || 'modern';
+            var title = $('#linking_page_title').val() || 'Link Your Account';
+            var enabled = $('#linking_page_use_theme').is(':checked');
+
+            $('.aoauth-linking-preview-wrap')
+                .attr('data-preview-theme', selectedTheme)
+                .toggleClass('is-disabled', !enabled);
+            $('.aoauth-linking-preview-title').text(title);
+        }
+
         $('input[name="login_button_theme"]').on('change', function() {
             var selectedTheme = $(this).val();
             $('.aoauth-theme-card').removeClass('active');
             $('.aoauth-theme-card[data-theme="' + selectedTheme + '"]').addClass('active');
+            updateLinkingPreview();
         });
+
+        $('#linking_page_title, #linking_page_use_theme').on('input change', updateLinkingPreview);
+        updateLinkingPreview();
     });
 })(jQuery);

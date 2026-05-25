@@ -1,5 +1,20 @@
 aOAUTH Client SSO - Review and Hardening Notes
-Version: 1.6.5
+Version: 1.6.6
+
+Latest changes - Version 1.6.6 settings persistence and linking preview update:
+- Incremented plugin version from 1.6.5 to 1.6.6 in the plugin header and AOAUTH_VERSION.
+- Fixed the Full-Screen Verification Overlay toggle so disabling it saves correctly by posting an explicit disabled value.
+- Added the same explicit disabled value for the account-linking theme toggle.
+- Moved account-linking page styling controls under Login Button Theme/Layout where the selected theme is configured.
+- Added a compact account-linking page preview that updates when the selected login theme, linking title, or theme-match toggle changes.
+- Expanded account-linking page theme CSS so simple, modern, icon-only, rounded, gradient, and outline themes alter page background, card radius, provider icon shape, and button style.
+- Changed the bot verification overlay animation so the small circle starts near the clicked login button and expands until it covers the full screen.
+
+Verification performed for Version 1.6.6:
+- Ran PHP syntax checks for the plugin bootstrap, admin controller, core, user manager, and settings view.
+- Ran JavaScript syntax checks for admin/js/admin-script.js and public/js/public-script.js.
+- Confirmed the settings form includes explicit hidden values for the overlay and account-linking theme toggles.
+- Created the versioned release archive at /Users/amirkhosroawhadi/Plugins/aoauth-ssh-client-v1.6.6.zip.
 
 Latest changes - Version 1.6.5 theme preview and account-linking UX update:
 - Incremented plugin version from 1.6.4 to 1.6.5 in the plugin header and AOAUTH_VERSION.

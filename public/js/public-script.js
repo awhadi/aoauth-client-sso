@@ -22,7 +22,7 @@
             var protectionType = aoauth_public.bot_protection.type;
             
             showBeautifulLoader($btn);
-            showBotOverlay();
+            showBotOverlay($btn);
             
             if (protectionType === 'turnstile') {
                 if (typeof turnstile === 'undefined') {
@@ -180,12 +180,12 @@
             aoauth_public.bot_protection.overlay_enabled;
     }
 
-    function showBotOverlay() {
+    function showBotOverlay($btn) {
         if (!shouldShowBotOverlay()) {
             return;
         }
 
-        showVerificationOverlay(aoauth_public.bot_protection.overlay_message || 'Verifying secure sign-in...');
+        showVerificationOverlay(aoauth_public.bot_protection.overlay_message || 'Verifying secure sign-in...', $btn);
     }
 
     function showRedirectOverlay() {
@@ -196,7 +196,7 @@
         showVerificationOverlay(aoauth_public.redirect_overlay_message || 'Redirecting to secure sign-in...');
     }
 
-    function showVerificationOverlay(message) {
+    function showVerificationOverlay(message, $origin) {
         var overlayId = 'aoauth-verification-overlay';
         var $overlay = $('#' + overlayId);
 
@@ -216,6 +216,18 @@
         }
 
         $overlay.find('.aoauth-verification-message').text(message);
+        if ($origin && $origin.length) {
+            var offset = $origin.offset();
+            $overlay.css({
+                '--aoauth-overlay-x': (offset.left + ($origin.outerWidth() / 2)) + 'px',
+                '--aoauth-overlay-y': (offset.top + ($origin.outerHeight() / 2) - $(window).scrollTop()) + 'px'
+            });
+        } else {
+            $overlay.css({
+                '--aoauth-overlay-x': '50%',
+                '--aoauth-overlay-y': '50%'
+            });
+        }
         $overlay.addClass('is-visible');
         $('body').addClass('aoauth-verification-active');
     }

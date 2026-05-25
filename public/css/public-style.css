@@ -394,7 +394,8 @@
     display: none;
     align-items: center;
     justify-content: center;
-    background: rgba(15,23,42,0.72);
+    overflow: hidden;
+    background: transparent;
     backdrop-filter: blur(8px);
 }
 
@@ -402,7 +403,22 @@
     display: flex;
 }
 
+.aoauth-verification-overlay::before {
+    content: '';
+    position: absolute;
+    left: var(--aoauth-overlay-x, 50%);
+    top: var(--aoauth-overlay-y, 50%);
+    width: 112px;
+    height: 112px;
+    background: rgba(15,23,42,0.86);
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0.18);
+    animation: aoauthOverlayExpand 0.55s ease forwards;
+}
+
 .aoauth-verification-panel {
+    position: relative;
+    z-index: 1;
     width: min(320px, calc(100vw - 40px));
     display: flex;
     flex-direction: column;
@@ -479,6 +495,17 @@
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes aoauthOverlayExpand {
+    0% {
+        transform: translate(-50%, -50%) scale(0.18);
+        opacity: 0.92;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(34);
+        opacity: 1;
     }
 }
 
