@@ -1,5 +1,16 @@
 aOAUTH Client SSO - Review and Hardening Notes
-Version: 1.6.8
+Version: 1.6.9
+
+Latest changes - Version 1.6.9 backup-secret disclosure copy update:
+- Incremented plugin version from 1.6.8 to 1.6.9 in the plugin header and AOAUTH_VERSION.
+- Updated the Backup & Restore settings note to clearly explain that blank-password downloads exclude provider credentials and bot protection secret keys.
+- Updated the Download Settings password prompt to clearly state that secrets are only included when a backup password is entered.
+
+Verification performed for Version 1.6.9:
+- Ran PHP syntax checks for the plugin bootstrap and settings view.
+- Ran JavaScript syntax checks for admin/js/admin-script.js.
+- Confirmed the visible Backup & Restore note and Download Settings prompt both explain that blank-password exports exclude secrets.
+- Created the versioned release archive at /Users/amirkhosroawhadi/Plugins/aoauth-ssh-client-v1.6.9.zip with aoauth-client-sso/ as the internal folder.
 
 Latest changes - Version 1.6.8 encrypted bot secrets and Turnstile compatibility update:
 - Incremented plugin version from 1.6.7 to 1.6.8 in the plugin header and AOAUTH_VERSION.

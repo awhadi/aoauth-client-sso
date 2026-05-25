@@ -416,7 +416,7 @@
         // EXPORT CONFIG
         // ============================================
         $('#aoauth-export-config-btn').on('click', function() {
-            var password = window.prompt('Optional: enter a backup password to include encrypted Client IDs, Client Secrets, and bot protection secret keys. Leave blank to export settings without secrets.');
+            var password = window.prompt('Optional: enter a backup password to include encrypted Client IDs, Client Secrets, and bot protection secret keys. Leave blank to download settings only; no secrets will be included.');
             if (password === null) {
                 return;
             }

@@ -426,7 +426,7 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : '';
             <div class="aoauth-tools-card">
                 <h3><?php esc_html_e('Backup & Restore', 'aoauth-client-sso'); ?></h3>
                 <p><?php esc_html_e('Export all plugin settings and provider configurations, or import a previously saved JSON file.', 'aoauth-client-sso'); ?></p>
-                <p class="aoauth-note"><?php esc_html_e('Note: For security, Client ID and Secret are not exported. You will need to re-enter them after import.', 'aoauth-client-sso'); ?></p>
+                <p class="aoauth-note"><?php esc_html_e('Note: Leave the backup password blank to download settings without provider credentials or bot protection secret keys. Enter a backup password to include those secrets encrypted in the file; the same password is required during restore.', 'aoauth-client-sso'); ?></p>
                 <div class="aoauth-tools-buttons">
                     <button type="button" id="aoauth-export-config-btn" class="aoauth-admin-button aoauth-admin-button-primary"><?php esc_html_e('Download Settings', 'aoauth-client-sso'); ?></button>
                     <form id="aoauth-import-form" class="aoauth-inline-form">
