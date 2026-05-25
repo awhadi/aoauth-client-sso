@@ -1,5 +1,23 @@
 aOAUTH Client SSO - Review and Hardening Notes
-Version: 1.6.7
+Version: 1.6.8
+
+Latest changes - Version 1.6.8 encrypted bot secrets and Turnstile compatibility update:
+- Incremented plugin version from 1.6.7 to 1.6.8 in the plugin header and AOAUTH_VERSION.
+- Added password confirmation to Download Settings when a backup password is entered; mismatched confirmation cancels the download.
+- Extended password-protected settings export to include encrypted Turnstile and reCAPTCHA secret keys.
+- Kept bot protection secret keys excluded from settings export when no backup password is entered.
+- Updated settings import to decrypt bot protection secret keys before saving and to stop the entire import before any database update if the backup password is missing or wrong.
+- Updated settings import success messages so restored encrypted secrets no longer show the misleading re-enter credentials toast.
+- Preserved provider enabled states only when the imported provider has both a Client ID and Client Secret; providers without credentials are saved disabled so admins can enable them manually later.
+- Adjusted the Turnstile browser fix to keep the Firefox-safe renderable offscreen container while restoring Cloudflare's default invisible render flow for Chrome, Safari, and mobile browsers.
+
+Verification performed for Version 1.6.8:
+- Ran PHP syntax checks for the plugin bootstrap, admin controller, core, and security classes.
+- Ran JavaScript syntax checks for admin/js/admin-script.js and public/js/public-script.js.
+- Confirmed forced Turnstile execute-mode options were removed while the renderable offscreen widget container remains in place.
+- Confirmed password-encrypted exports now cover provider credentials and bot protection secret keys.
+- Confirmed settings import decrypts encrypted payloads before saving and only writes options after all encrypted values have passed password validation.
+- Created the versioned release archive at /Users/amirkhosroawhadi/Plugins/aoauth-ssh-client-v1.6.8.zip with aoauth-client-sso/ as the internal folder.
 
 Latest changes - Version 1.6.7 Firefox Turnstile, encrypted backup, and login-ban update:
 - Incremented plugin version from 1.6.6 to 1.6.7 in the plugin header and AOAUTH_VERSION.

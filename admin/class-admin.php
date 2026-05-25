@@ -712,8 +712,21 @@ class AOAUTH_Admin {
             'credentials' => $include_encrypted_credentials ? 'password_encrypted' : 'excluded'
         );
         
-        unset($config['settings']['turnstile_secret_key']);
-        unset($config['settings']['recaptcha_secret_key']);
+        if ($include_encrypted_credentials) {
+            $config['settings']['turnstile_secret_key'] = $this->encrypt_backup_value(
+                aoauth_core()->get_security()->decrypt_secret($config['settings']['turnstile_secret_key'] ?? ''),
+                $backup_password
+            );
+            $config['settings']['recaptcha_secret_key'] = $this->encrypt_backup_value(
+                aoauth_core()->get_security()->decrypt_secret($config['settings']['recaptcha_secret_key'] ?? ''),
+                $backup_password
+            );
+            $config['settings']['_bot_secret_note'] = 'Turnstile and reCAPTCHA secret keys are password-encrypted. Use the same backup password during import.';
+        } else {
+            unset($config['settings']['turnstile_secret_key']);
+            unset($config['settings']['recaptcha_secret_key']);
+            $config['settings']['_bot_secret_note'] = 'Turnstile and reCAPTCHA secret keys were removed for security. Please re-enter them after import, or export again with a backup password.';
+        }
         
         if (!empty($config['applications'])) {
             foreach ($config['applications'] as &$app) {
@@ -813,12 +826,32 @@ class AOAUTH_Admin {
             wp_send_json_error(array('message' => __('Invalid configuration file.', 'aoauth-client-sso')));
         }
         
-        $sanitized_settings = $this->sanitize_settings($config['settings']);
+        $settings = is_array($config['settings']) ? $config['settings'] : array();
+        $encrypted_credentials_restored = false;
+        $secrets_excluded = isset($config['credentials']) && $config['credentials'] === 'excluded';
+
+        foreach (array('turnstile_secret_key', 'recaptcha_secret_key') as $secret_key) {
+            if (isset($settings[$secret_key])) {
+                $decrypted_secret = $this->decrypt_backup_value($settings[$secret_key], $backup_password);
+                if (is_wp_error($decrypted_secret)) {
+                    wp_send_json_error(array('message' => $decrypted_secret->get_error_message()));
+                }
+                if (is_array($settings[$secret_key]) && !empty($settings[$secret_key]['aoauth_backup_encrypted'])) {
+                    $encrypted_credentials_restored = true;
+                }
+                $settings[$secret_key] = $decrypted_secret;
+            }
+        }
+        unset($settings['_bot_secret_note']);
+
+        $sanitized_settings = $this->sanitize_settings($settings);
         $sanitized_applications = array();
         
         if (!empty($config['applications']) && is_array($config['applications'])) {
             foreach ($config['applications'] as $app) {
+                $app_had_encrypted_credentials = false;
                 if (isset($app['client_id'])) {
+                    $app_had_encrypted_credentials = is_array($app['client_id']) && !empty($app['client_id']['aoauth_backup_encrypted']);
                     $client_id = $this->decrypt_backup_value($app['client_id'], $backup_password);
                     if (is_wp_error($client_id)) {
                         wp_send_json_error(array('message' => $client_id->get_error_message()));
@@ -827,6 +860,7 @@ class AOAUTH_Admin {
                 }
 
                 if (isset($app['client_secret'])) {
+                    $app_had_encrypted_credentials = $app_had_encrypted_credentials || (is_array($app['client_secret']) && !empty($app['client_secret']['aoauth_backup_encrypted']));
                     $client_secret = $this->decrypt_backup_value($app['client_secret'], $backup_password);
                     if (is_wp_error($client_secret)) {
                         wp_send_json_error(array('message' => $client_secret->get_error_message()));
@@ -835,7 +869,12 @@ class AOAUTH_Admin {
                 }
 
                 unset($app['_note']);
-                $app['enabled'] = 0;
+                if ($app_had_encrypted_credentials) {
+                    $encrypted_credentials_restored = true;
+                }
+
+                $has_required_credentials = !empty($app['client_id']) && !empty($app['client_secret']);
+                $app['enabled'] = !empty($app['enabled']) && $has_required_credentials ? 1 : 0;
                 $sanitized_app = $this->security->sanitize_provider_config($app);
                 if (!empty($sanitized_app['client_secret'])) {
                     $sanitized_app['client_secret'] = $this->security->encrypt($sanitized_app['client_secret']);
@@ -851,7 +890,14 @@ class AOAUTH_Admin {
         update_option('aoauth_applications', $sanitized_applications);
         
         $this->logger->log('config_imported', array('user' => get_current_user_id()), get_current_user_id(), null, 'info');
-        wp_send_json_success(array('message' => __('Configuration imported successfully. Please re-enter Client IDs and Secrets for your providers.', 'aoauth-client-sso')));
+        if ($encrypted_credentials_restored) {
+            $message = __('Configuration imported successfully. Encrypted provider and bot protection secrets were restored.', 'aoauth-client-sso');
+        } elseif ($secrets_excluded) {
+            $message = __('Configuration imported successfully. Secrets were excluded from this backup, so providers without Client IDs and Secrets remain disabled.', 'aoauth-client-sso');
+        } else {
+            $message = __('Configuration imported successfully. Providers without Client IDs and Secrets remain disabled.', 'aoauth-client-sso');
+        }
+        wp_send_json_success(array('message' => $message));
     }
     
     private function sanitize_settings($settings) {

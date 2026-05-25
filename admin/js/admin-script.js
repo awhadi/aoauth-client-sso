@@ -416,9 +416,21 @@
         // EXPORT CONFIG
         // ============================================
         $('#aoauth-export-config-btn').on('click', function() {
-            var password = window.prompt('Optional: enter a backup password to include encrypted Client IDs and Secrets. Leave blank to export settings without credentials.');
+            var password = window.prompt('Optional: enter a backup password to include encrypted Client IDs, Client Secrets, and bot protection secret keys. Leave blank to export settings without secrets.');
             if (password === null) {
                 return;
+            }
+
+            if (password !== '') {
+                var confirmation = window.prompt('Confirm the backup password. If this does not match, the settings download will be cancelled.');
+                if (confirmation === null) {
+                    return;
+                }
+
+                if (password !== confirmation) {
+                    aoauthShowToast('Backup passwords do not match. Settings were not downloaded.', 'error');
+                    return;
+                }
             }
 
             var $form = $('<form>', {
@@ -451,6 +463,7 @@
             formData.append('nonce', aoauth_admin.nonce);
             formData.append('config_file', file);
             formData.append('backup_password', window.prompt('If this backup was exported with a password, enter it now. Leave blank for non-encrypted backups.') || '');
+            $(this).val('');
             
             $.ajax({
                 url: aoauth_admin.ajaxurl,
