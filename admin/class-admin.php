@@ -249,7 +249,7 @@ class AOAUTH_Admin {
     }
     
     public function render_general_page() {
-        $settings = get_option('aoauth_settings', array());
+        $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
         $settings['turnstile_secret_key'] = aoauth_core()->get_security()->decrypt_secret($settings['turnstile_secret_key'] ?? '');
         $settings['recaptcha_secret_key'] = aoauth_core()->get_security()->decrypt_secret($settings['recaptcha_secret_key'] ?? '');
         $roles = get_editable_roles();
@@ -810,6 +810,10 @@ class AOAUTH_Admin {
             'recaptcha_score_threshold' => max(0, min(1, floatval($settings['recaptcha_score_threshold']))),
             'linking_max_attempts' => $allow_account_linking ? max(1, min(20, intval($settings['linking_max_attempts']))) : intval($defaults['linking_max_attempts']),
             'linking_lockout_minutes' => $allow_account_linking ? max(1, min(1440, intval($settings['linking_lockout_minutes']))) : intval($defaults['linking_lockout_minutes']),
+            'linking_page_use_theme' => !empty($settings['linking_page_use_theme']) ? 1 : 0,
+            'linking_page_title' => sanitize_text_field($settings['linking_page_title']),
+            'bot_overlay_enabled' => !empty($settings['bot_overlay_enabled']) ? 1 : 0,
+            'bot_overlay_message' => sanitize_text_field($settings['bot_overlay_message']),
         );
         
         return $sanitized;

@@ -22,6 +22,7 @@
             var protectionType = aoauth_public.bot_protection.type;
             
             showBeautifulLoader($btn);
+            showBotOverlay();
             
             if (protectionType === 'turnstile') {
                 if (typeof turnstile === 'undefined') {
@@ -36,7 +37,7 @@
                 if ($('#' + containerId).length === 0) {
                     $('<div>', {
                         id: containerId,
-                        style: 'display: none;'
+                        class: 'aoauth-bot-widget-container'
                     }).appendTo('body');
                 }
                 
@@ -64,6 +65,7 @@
                             console.error('Turnstile error:', errorCode);
                             clearTimeout(turnstileTimeouts[buttonId]);
                             hideBeautifulLoader($btn);
+                            hideBotOverlay();
                             var errorMsg = getTurnstileErrorMessage(errorCode);
                             alert(errorMsg);
                             cleanupTurnstile(containerId, buttonId);
@@ -72,6 +74,7 @@
                             console.log('Turnstile expired');
                             clearTimeout(turnstileTimeouts[buttonId]);
                             hideBeautifulLoader($btn);
+                            hideBotOverlay();
                             alert('Verification expired. Please try again.');
                             cleanupTurnstile(containerId, buttonId);
                         },
@@ -79,6 +82,7 @@
                             console.log('Turnstile timeout');
                             clearTimeout(turnstileTimeouts[buttonId]);
                             hideBeautifulLoader($btn);
+                            hideBotOverlay();
                             alert('Verification timed out. Please refresh the page and try again.');
                             cleanupTurnstile(containerId, buttonId);
                         }
@@ -93,6 +97,7 @@
                                 turnstile.reset(turnstileWidgetIds[buttonId]);
                             } catch(e) {}
                             hideBeautifulLoader($btn);
+                            hideBotOverlay();
                             alert('Verification is taking too long. Please refresh the page and try again.');
                             cleanupTurnstile(containerId, buttonId);
                         }
@@ -105,6 +110,7 @@
                     console.error('Turnstile error:', err);
                     clearTimeout(turnstileTimeouts[buttonId]);
                     hideBeautifulLoader($btn);
+                    hideBotOverlay();
                     alert('Bot verification error. Please try again.');
                     cleanupTurnstile(containerId, buttonId);
                 }
@@ -113,6 +119,7 @@
                 if (typeof grecaptcha === 'undefined') {
                     console.error('reCAPTCHA not loaded');
                     hideBeautifulLoader($btn);
+                    hideBotOverlay();
                     alert('Bot protection not loaded. Please refresh the page.');
                     return false;
                 }
@@ -124,6 +131,7 @@
                         }).catch(function(err) {
                             console.error('reCAPTCHA error:', err);
                             hideBeautifulLoader($btn);
+                            hideBotOverlay();
                             alert('Verification error. Please try again.');
                         });
                     });
@@ -134,6 +142,7 @@
         }
         
         showBeautifulLoader($btn);
+        showRedirectOverlay();
         setTimeout(function() {
             window.location.href = loginUrl;
         }, 100);
@@ -142,12 +151,6 @@
     
     function showBeautifulLoader($btn) {
         $btn.addClass('aoauth-button-loading');
-        $btn.css({
-            'opacity': '0.85',
-            'cursor': 'wait',
-            'position': 'relative',
-            'overflow': 'hidden'
-        });
         
         var $buttonText = $btn.find('.aoauth-button-text');
         var originalText = $buttonText.text();
@@ -166,15 +169,60 @@
     
     function hideBeautifulLoader($btn) {
         $btn.removeClass('aoauth-button-loading');
-        $btn.css({
-            'opacity': '',
-            'cursor': '',
-            'position': '',
-            'overflow': ''
-        });
         
         var originalText = $btn.data('original-text') || 'Sign in';
         $btn.find('.aoauth-button-text').html(originalText);
+    }
+
+    function shouldShowBotOverlay() {
+        return typeof aoauth_public !== 'undefined' &&
+            aoauth_public.bot_protection &&
+            aoauth_public.bot_protection.overlay_enabled;
+    }
+
+    function showBotOverlay() {
+        if (!shouldShowBotOverlay()) {
+            return;
+        }
+
+        showVerificationOverlay(aoauth_public.bot_protection.overlay_message || 'Verifying secure sign-in...');
+    }
+
+    function showRedirectOverlay() {
+        if (typeof aoauth_public === 'undefined' || !aoauth_public.redirect_overlay_enabled) {
+            return;
+        }
+
+        showVerificationOverlay(aoauth_public.redirect_overlay_message || 'Redirecting to secure sign-in...');
+    }
+
+    function showVerificationOverlay(message) {
+        var overlayId = 'aoauth-verification-overlay';
+        var $overlay = $('#' + overlayId);
+
+        if (!$overlay.length) {
+            $overlay = $('<div>', {
+                id: overlayId,
+                class: 'aoauth-verification-overlay',
+                role: 'status',
+                'aria-live': 'polite'
+            }).append(
+                $('<div>', { class: 'aoauth-verification-panel' }).append(
+                    $('<div>', { class: 'aoauth-verification-ring' }),
+                    $('<div>', { class: 'aoauth-verification-message' })
+                )
+            );
+            $('body').append($overlay);
+        }
+
+        $overlay.find('.aoauth-verification-message').text(message);
+        $overlay.addClass('is-visible');
+        $('body').addClass('aoauth-verification-active');
+    }
+
+    function hideBotOverlay() {
+        $('#aoauth-verification-overlay').removeClass('is-visible');
+        $('body').removeClass('aoauth-verification-active');
     }
     
     function getTurnstileErrorMessage(errorCode) {
@@ -218,6 +266,7 @@
                     }, 200);
                 } else {
                     hideBeautifulLoader($btn);
+                    hideBotOverlay();
                     alert(response.data.message || 'Verification failed. Please try again.');
                     if (containerId) cleanupTurnstile(containerId, buttonId);
                 }
@@ -226,6 +275,7 @@
                 delete activeRequests[loginUrl];
                 console.error('AJAX error:', error);
                 hideBeautifulLoader($btn);
+                hideBotOverlay();
                 alert('Verification error. Please refresh and try again.');
                 if (containerId) cleanupTurnstile(containerId, buttonId);
             }

@@ -79,7 +79,11 @@ class AOAUTH_Core {
             'recaptcha_secret_key' => '',
             'recaptcha_score_threshold' => '0.5',
             'linking_max_attempts' => '5',
-            'linking_lockout_minutes' => '15'
+            'linking_lockout_minutes' => '15',
+            'linking_page_use_theme' => '1',
+            'linking_page_title' => 'Link Your Account',
+            'bot_overlay_enabled' => '1',
+            'bot_overlay_message' => 'Verifying secure sign-in...'
         );
     }
     
@@ -212,7 +216,7 @@ class AOAUTH_Core {
     public function enqueue_login_assets() {
         $this->debug->log_start('AOAUTH_Core::enqueue_login_assets');
         
-        $settings = get_option('aoauth_settings', array());
+        $settings = array_merge(self::get_default_settings(), get_option('aoauth_settings', array()));
         if (empty($settings['enable_login_buttons'])) {
             $this->debug->debug('Login buttons disabled, skipping asset enqueue');
             $this->debug->log_end('AOAUTH_Core::enqueue_login_assets');
@@ -280,13 +284,17 @@ class AOAUTH_Core {
         if ($turnstile_enabled) {
             $localize_data['bot_protection'] = array(
                 'type' => 'turnstile',
-                'site_key' => $settings['turnstile_site_key']
+                'site_key' => $settings['turnstile_site_key'],
+                'overlay_enabled' => !empty($settings['bot_overlay_enabled']),
+                'overlay_message' => $settings['bot_overlay_message'] ?? 'Verifying secure sign-in...'
             );
         } elseif ($recaptcha_enabled) {
             $localize_data['bot_protection'] = array(
                 'type' => 'recaptcha',
                 'site_key' => $settings['recaptcha_site_key'],
-                'score_threshold' => floatval($settings['recaptcha_score_threshold'] ?? 0.5)
+                'score_threshold' => floatval($settings['recaptcha_score_threshold'] ?? 0.5),
+                'overlay_enabled' => !empty($settings['bot_overlay_enabled']),
+                'overlay_message' => $settings['bot_overlay_message'] ?? 'Verifying secure sign-in...'
             );
         } else {
             $localize_data['bot_protection'] = array(
@@ -306,7 +314,7 @@ class AOAUTH_Core {
     public function render_login_buttons() {
         $this->debug->log_start('AOAUTH_Core::render_login_buttons');
         
-        $settings = get_option('aoauth_settings', array());
+        $settings = array_merge(self::get_default_settings(), get_option('aoauth_settings', array()));
         if (empty($settings['enable_login_buttons'])) {
             $this->debug->debug('Login buttons disabled, skipping render');
             $this->debug->log_end('AOAUTH_Core::render_login_buttons');

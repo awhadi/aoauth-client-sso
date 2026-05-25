@@ -60,17 +60,15 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : '';
                                         <label class="aoauth-theme-card <?php echo $current_theme === $theme['id'] ? 'active' : ''; ?>" data-theme="<?php echo esc_attr($theme['id']); ?>" data-index="<?php echo $index; ?>">
                                             <input type="radio" name="login_button_theme" value="<?php echo esc_attr($theme['id']); ?>" <?php checked($current_theme, $theme['id']); ?> class="aoauth-hidden-field">
                                             <div class="theme-card-preview">
-                                                <div class="theme-preview-button aoauth-preview-<?php echo esc_attr($theme['id']); ?>">
-                                                    <span class="preview-icon">
+                                                <div class="theme-preview-button aoauth-button">
+                                                    <span class="aoauth-button-icon">
                                                         <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/google.png'); ?>" alt="G" onerror="this.src='<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png'); ?>'">
                                                     </span>
-                                                    <span class="preview-text">Sign in</span>
+                                                    <span class="aoauth-button-text">Sign in</span>
                                                 </div>
                                             </div>
                                             <span class="theme-card-name"><?php echo esc_html($theme['name']); ?></span>
-                                            <?php if ($current_theme === $theme['id']): ?>
-                                                <span class="theme-active-badge">✓</span>
-                                            <?php endif; ?>
+                                            <span class="theme-active-badge">✓</span>
                                         </label>
                                         <?php endforeach; ?>
                                     </div>
@@ -161,6 +159,34 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : '';
                             <div class="aoauth-setting-control">
                                 <input type="number" id="linking_lockout_minutes" name="linking_lockout_minutes" class="aoauth-form-control aoauth-number-input" value="<?php echo esc_attr($settings['linking_lockout_minutes'] ?? 15); ?>" min="1" max="1440">
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Linking Experience -->
+                <div class="aoauth-settings-section">
+                    <h3 class="aoauth-section-title"><?php esc_html_e('Account Linking Experience', 'aoauth-client-sso'); ?></h3>
+
+                    <div class="aoauth-setting-row">
+                        <div class="aoauth-setting-label">
+                            <label for="linking_page_use_theme"><?php esc_html_e('Match Selected Login Theme', 'aoauth-client-sso'); ?></label>
+                            <p class="aoauth-setting-help"><?php esc_html_e('Style account-linking confirmation and lockout pages to match the selected SSO login button theme.', 'aoauth-client-sso'); ?></p>
+                        </div>
+                        <div class="aoauth-setting-control">
+                            <label class="aoauth-toggle">
+                                <input type="checkbox" id="linking_page_use_theme" name="linking_page_use_theme" <?php checked(!empty($settings['linking_page_use_theme']), true); ?>>
+                                <span class="aoauth-toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="aoauth-setting-row">
+                        <div class="aoauth-setting-label">
+                            <label for="linking_page_title"><?php esc_html_e('Linking Page Title', 'aoauth-client-sso'); ?></label>
+                            <p class="aoauth-setting-help"><?php esc_html_e('Shown above the password confirmation form when a user links an SSO provider to an existing account.', 'aoauth-client-sso'); ?></p>
+                        </div>
+                        <div class="aoauth-setting-control">
+                            <input type="text" id="linking_page_title" name="linking_page_title" class="aoauth-form-control" value="<?php echo esc_attr($settings['linking_page_title'] ?? 'Link Your Account'); ?>">
                         </div>
                     </div>
                 </div>
@@ -290,6 +316,29 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : '';
                         </div>
                         <div class="aoauth-setting-control">
                             <input type="number" id="recaptcha_score_threshold" name="recaptcha_score_threshold" class="aoauth-form-control" step="0.1" min="0" max="1" value="<?php echo esc_attr($settings['recaptcha_score_threshold'] ?? 0.5); ?>">
+                        </div>
+                    </div>
+
+                    <div class="aoauth-setting-row">
+                        <div class="aoauth-setting-label">
+                            <label for="bot_overlay_enabled"><?php esc_html_e('Full-Screen Verification Overlay', 'aoauth-client-sso'); ?></label>
+                            <p class="aoauth-setting-help"><?php esc_html_e('When bot protection runs, cover the login screen with a branded verification state until the provider redirect starts.', 'aoauth-client-sso'); ?></p>
+                        </div>
+                        <div class="aoauth-setting-control">
+                            <label class="aoauth-toggle">
+                                <input type="checkbox" id="bot_overlay_enabled" name="bot_overlay_enabled" <?php checked(!empty($settings['bot_overlay_enabled']), true); ?>>
+                                <span class="aoauth-toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="aoauth-setting-row">
+                        <div class="aoauth-setting-label">
+                            <label for="bot_overlay_message"><?php esc_html_e('Overlay Message', 'aoauth-client-sso'); ?></label>
+                            <p class="aoauth-setting-help"><?php esc_html_e('Short message displayed while bot protection verifies the login request.', 'aoauth-client-sso'); ?></p>
+                        </div>
+                        <div class="aoauth-setting-control">
+                            <input type="text" id="bot_overlay_message" name="bot_overlay_message" class="aoauth-form-control" value="<?php echo esc_attr($settings['bot_overlay_message'] ?? 'Verifying secure sign-in...'); ?>">
                         </div>
                     </div>
                 </div>

@@ -535,39 +535,6 @@
         });
         
         // ============================================
-        // LIVE THEME PREVIEW ON HOVER
-        // ============================================
-        var previewStyleId = 'aoauth-live-theme-preview';
-        
-        $(document).on('mouseenter', '.aoauth-theme-card', function() {
-            var theme = $(this).data('theme');
-            if (!theme) return;
-            
-            if (typeof aoauth_admin !== 'undefined' && aoauth_admin.ajaxurl) {
-                var previewUrl = aoauth_admin.ajaxurl + '?action=aoauth_preview_theme&theme=' + theme + '&nonce=' + aoauth_admin.nonce;
-                
-                if ($('#' + previewStyleId).length) {
-                    $('#' + previewStyleId).remove();
-                }
-                
-                $('<link>', {
-                    id: previewStyleId,
-                    rel: 'stylesheet',
-                    type: 'text/css',
-                    href: previewUrl
-                }).appendTo('head');
-            }
-            
-            $(this).css({
-                'transform': 'translateY(-4px)',
-                'transition': 'transform 0.3s ease'
-            });
-        }).on('mouseleave', '.aoauth-theme-card', function() {
-            $('#' + previewStyleId).remove();
-            $(this).css('transform', '');
-        });
-        
-        // ============================================
         // PAGINATED LOGS
         // ============================================
         function loadLogsPage(page) {

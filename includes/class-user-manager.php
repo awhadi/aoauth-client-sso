@@ -123,57 +123,23 @@ class AOAUTH_User_Manager {
     
     private function render_lockdown_message($message, $provider_slug) {
         $provider_name = ucfirst($provider_slug);
+        $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
+        $theme = !empty($settings['linking_page_use_theme']) ? sanitize_html_class($settings['login_button_theme'] ?? 'modern') : 'modern';
         ?>
         <!DOCTYPE html>
-        <html <?php language_attributes(); ?>>
+        <html <?php language_attributes(); ?> class="aoauth-account-linking-html">
         <head>
             <meta charset="<?php bloginfo('charset'); ?>">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title><?php esc_html_e('Account Temporarily Locked', 'aoauth-client-sso'); ?></title>
-            <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                    min-height: 100vh;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 20px;
-                }
-                .aoauth-lockdown-container {
-                    background: #fff;
-                    border-radius: 16px;
-                    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-                    max-width: 480px;
-                    width: 100%;
-                    padding: 40px;
-                    text-align: center;
-                }
-                .lockdown-icon { width: 80px; height: 80px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
-                .lockdown-icon span { font-size: 48px; color: #dc2626; }
-                h2 { color: #111827; font-size: 24px; margin-bottom: 16px; }
-                p { color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 24px; }
-                .lockdown-message { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 8px; margin-bottom: 24px; text-align: left; }
-                .back-button {
-                    display: inline-block;
-                    background: #667eea;
-                    color: #fff;
-                    text-decoration: none;
-                    padding: 12px 28px;
-                    border-radius: 8px;
-                    font-weight: 500;
-                    transition: all 0.3s ease;
-                }
-                .back-button:hover { background: #5a6fd6; transform: translateY(-2px); }
-            </style>
+            <link rel="stylesheet" href="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'public/css/account-linking-style.css?ver=' . AOAUTH_VERSION); ?>">
         </head>
-        <body>
+        <body class="aoauth-account-linking-page aoauth-link-theme-<?php echo esc_attr($theme); ?>">
             <div class="aoauth-lockdown-container">
-                <div class="lockdown-icon"><span>🔒</span></div>
+                <div class="lockdown-icon"><span>!</span></div>
                 <h2><?php esc_html_e('Account Temporarily Locked', 'aoauth-client-sso'); ?></h2>
                 <div class="lockdown-message"><p><?php echo esc_html($message); ?></p></div>
-                <a href="<?php echo esc_url(wp_login_url()); ?>" class="back-button"><?php esc_html_e('Return to Login', 'aoauth-client-sso'); ?></a>
+                <a href="<?php echo esc_url(wp_login_url()); ?>" class="aoauth-linking-button"><?php esc_html_e('Return to Login', 'aoauth-client-sso'); ?></a>
             </div>
         </body>
         </html>
@@ -193,77 +159,28 @@ class AOAUTH_User_Manager {
             }
         }
         
-        wp_enqueue_style('aoauth-public', AOAUTH_PLUGIN_URL . 'public/css/public-style.css', array(), AOAUTH_VERSION);
-        
+        $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
+        $theme = !empty($settings['linking_page_use_theme']) ? sanitize_html_class($settings['login_button_theme'] ?? 'modern') : 'modern';
+        $page_title = !empty($settings['linking_page_title']) ? $settings['linking_page_title'] : __('Link Your Account', 'aoauth-client-sso');
         $provider_name = ucfirst($provider_slug);
         ?>
         <!DOCTYPE html>
-        <html <?php language_attributes(); ?>>
+        <html <?php language_attributes(); ?> class="aoauth-account-linking-html">
         <head>
             <meta charset="<?php bloginfo('charset'); ?>">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title><?php esc_html_e('Confirm Account Linking', 'aoauth-client-sso'); ?></title>
-            <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                    min-height: 100vh;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 20px;
-                }
-                .aoauth-link-container {
-                    background: #fff;
-                    border-radius: 16px;
-                    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-                    max-width: 480px;
-                    width: 100%;
-                    padding: 40px;
-                }
-                .provider-icon { text-align: center; margin-bottom: 24px; }
-                .provider-icon img { width: 64px; height: 64px; border-radius: 12px; }
-                h2 { color: #111827; font-size: 24px; margin-bottom: 12px; text-align: center; }
-                .description { color: #6b7280; font-size: 14px; text-align: center; margin-bottom: 32px; }
-                .email-badge { background: #f3f4f6; padding: 10px 16px; border-radius: 8px; margin-bottom: 24px; text-align: center; }
-                .error-message { background: #fee2e2; border-left: 4px solid #dc2626; padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; color: #991b1b; }
-                .aoauth-link-form { display: flex; flex-direction: column; gap: 20px; }
-                .aoauth-link-form input[type="password"] {
-                    width: 100%;
-                    padding: 12px 16px;
-                    border: 2px solid #e5e7eb;
-                    border-radius: 10px;
-                    font-size: 16px;
-                }
-                .aoauth-link-form input[type="password"]:focus {
-                    outline: none;
-                    border-color: #667eea;
-                }
-                .submit-button {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: #fff;
-                    border: none;
-                    border-radius: 10px;
-                    padding: 14px 24px;
-                    font-size: 16px;
-                    font-weight: 600;
-                    cursor: pointer;
-                }
-                .submit-button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(102,126,234,0.4); }
-                .cancel-link { text-align: center; margin-top: 20px; }
-                .cancel-link a { color: #9ca3af; text-decoration: none; font-size: 14px; }
-                .cancel-link a:hover { color: #667eea; }
-            </style>
+            <link rel="stylesheet" href="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'public/css/account-linking-style.css?ver=' . AOAUTH_VERSION); ?>">
         </head>
-        <body>
+        <body class="aoauth-account-linking-page aoauth-link-theme-<?php echo esc_attr($theme); ?>">
             <div class="aoauth-link-container">
                 <div class="provider-icon">
                     <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . $provider_slug . '.png'); ?>" 
                          alt="<?php echo esc_attr($provider_name); ?>"
                          onerror="this.src='<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png'); ?>'">
                 </div>
-                <h2><?php echo sprintf(esc_html__('Link Your %s Account', 'aoauth-client-sso'), esc_html($provider_name)); ?></h2>
+                <h2><?php echo esc_html($page_title); ?></h2>
+                <p class="description"><?php echo sprintf(esc_html__('Confirm your WordPress password to link %s for secure SSO login.', 'aoauth-client-sso'), esc_html($provider_name)); ?></p>
                 <div class="email-badge"><strong><?php esc_html_e('Email:', 'aoauth-client-sso'); ?></strong> <?php echo esc_html($email); ?></div>
                 <?php if (!empty($error)) : ?>
                     <div class="error-message"><?php echo esc_html($error); ?></div>
@@ -271,7 +188,7 @@ class AOAUTH_User_Manager {
                 <form method="post" class="aoauth-link-form">
                     <input type="password" name="aoauth_link_password" placeholder="<?php esc_attr_e('Your WordPress password', 'aoauth-client-sso'); ?>" required autofocus>
                     <?php wp_nonce_field('aoauth_link_confirm_' . $key, '_wpnonce'); ?>
-                    <button type="submit" class="submit-button"><?php esc_html_e('Confirm & Link Account', 'aoauth-client-sso'); ?></button>
+                    <button type="submit" class="aoauth-linking-button"><?php esc_html_e('Confirm & Link Account', 'aoauth-client-sso'); ?></button>
                     <div class="cancel-link"><a href="<?php echo esc_url(wp_login_url()); ?>"><?php esc_html_e('Cancel', 'aoauth-client-sso'); ?></a></div>
                 </form>
             </div>

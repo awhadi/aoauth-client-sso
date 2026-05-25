@@ -499,6 +499,12 @@
     position: relative;
 }
 
+.aoauth-theme-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
 .aoauth-theme-card:hover {
     border-color: #94a3b8;
     transform: translateY(-2px);
@@ -525,18 +531,79 @@
     align-items: center;
     justify-content: center;
     gap: 5px;
-    padding: 5px 8px;
+    padding: 7px 10px;
     font-size: 10px;
     width: 100%;
+    min-height: 32px;
+    text-decoration: none;
+    transition: all 0.2s ease;
 }
 
-.theme-preview-button .preview-icon img {
+.theme-preview-button .aoauth-button-icon img {
     width: 14px;
     height: 14px;
+    display: block;
 }
 
-.theme-preview-button .preview-text {
+.theme-preview-button .aoauth-button-text {
     font-size: 9px;
+}
+
+.aoauth-theme-card[data-theme="simple"] .theme-preview-button {
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    color: #374151;
+}
+
+.aoauth-theme-card[data-theme="modern"] .theme-preview-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(102,126,234,0.28);
+}
+
+.aoauth-theme-card[data-theme="modern"] .theme-preview-button .aoauth-button-icon img,
+.aoauth-theme-card[data-theme="gradient"] .theme-preview-button .aoauth-button-icon img {
+    filter: brightness(0) invert(1);
+}
+
+.aoauth-theme-card[data-theme="icon-only"] .theme-preview-button {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    min-height: 42px;
+    padding: 0;
+    margin: 0 auto;
+}
+
+.aoauth-theme-card[data-theme="icon-only"] .theme-preview-button .aoauth-button-text {
+    display: none;
+}
+
+.aoauth-theme-card[data-theme="rounded"] .theme-preview-button {
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 50px;
+    color: #374151;
+}
+
+.aoauth-theme-card[data-theme="gradient"] .theme-preview-button {
+    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(102,126,234,0.22);
+}
+
+.aoauth-theme-card[data-theme="outline"] .theme-preview-button {
+    background: transparent;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    color: #667eea;
 }
 
 .theme-card-name {
@@ -567,6 +634,14 @@
     justify-content: center;
     font-size: 11px;
     font-weight: bold;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.aoauth-theme-card.active .theme-active-badge {
+    opacity: 1;
+    transform: scale(1);
 }
 
 .theme-nav-btn {

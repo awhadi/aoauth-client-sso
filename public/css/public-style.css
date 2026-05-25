@@ -346,7 +346,14 @@
 /* Beautiful Loading Animation */
 .aoauth-button-loading {
     position: relative;
+    overflow: hidden;
+    opacity: 0.85;
+    cursor: wait;
     pointer-events: none;
+}
+
+.aoauth-bot-widget-container {
+    display: none;
 }
 
 .aoauth-loader {
@@ -374,6 +381,52 @@
     font-size: 14px;
     font-weight: 500;
     letter-spacing: 0.5px;
+}
+
+.aoauth-verification-active {
+    overflow: hidden;
+}
+
+.aoauth-verification-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15,23,42,0.72);
+    backdrop-filter: blur(8px);
+}
+
+.aoauth-verification-overlay.is-visible {
+    display: flex;
+}
+
+.aoauth-verification-panel {
+    width: min(320px, calc(100vw - 40px));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    color: #fff;
+    text-align: center;
+}
+
+.aoauth-verification-ring {
+    width: 112px;
+    height: 112px;
+    border: 8px solid rgba(255,255,255,0.24);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: rotateSpinner 0.95s linear infinite;
+    box-shadow: 0 0 40px rgba(102,126,234,0.45);
+}
+
+.aoauth-verification-message {
+    max-width: 28ch;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.4;
 }
 
 /* Theme-specific loader colors */

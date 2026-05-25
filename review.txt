@@ -1,5 +1,25 @@
 aOAUTH Client SSO - Review and Hardening Notes
-Version: 1.6.4
+Version: 1.6.5
+
+Latest changes - Version 1.6.5 theme preview and account-linking UX update:
+- Incremented plugin version from 1.6.4 to 1.6.5 in the plugin header and AOAUTH_VERSION.
+- Fixed the Settings login button theme carousel so hidden radio inputs no longer appear inside selected theme cards.
+- Removed fragile hover-injected AJAX preview CSS from the theme carousel.
+- Updated theme preview markup to use the same aoauth-button, aoauth-button-icon, and aoauth-button-text structure as the real login buttons.
+- Added scoped admin CSS previews for simple, modern, icon-only, rounded, gradient, and outline login button themes.
+- Added account-linking settings for matching the selected login theme and customizing the linking page title.
+- Rebuilt account-linking confirmation and lockout pages with external public/css/account-linking-style.css instead of inline CSS.
+- Added theme-aware styling for account-linking pages so linked-account flows match the selected plugin login style.
+- Added full-screen bot verification overlay settings for protected login flows.
+- Updated public login JavaScript to show a full-screen circular verification overlay during Turnstile or reCAPTCHA checks and keep it visible until redirect starts.
+- Replaced inline JavaScript style writes for hidden bot widgets and loading button state with reusable CSS classes.
+- Removed the previously committed in-repo plugin ZIP because future release ZIP files are stored under /Users/amirkhosroawhadi/Plugins.
+- Created the versioned release archive at /Users/amirkhosroawhadi/Plugins/aoauth-ssh-client-v1.6.5.zip.
+
+Verification performed for Version 1.6.5:
+- Ran PHP syntax checks for the plugin bootstrap, admin controller, core, user manager, and admin view files.
+- Ran JavaScript syntax checks for admin/js/admin-script.js, public/js/public-script.js, admin/js/settings-controls.js, and admin/js/wizard-script.js.
+- Searched for stale injected preview CSS hooks, visible preview radio/checkbox helpers, inline style tags in edited account-linking pages, and old 1.6.4 version constants.
 
 Latest changes - Version 1.6.4 styling stability update:
 - Incremented plugin version from 1.6.3 to 1.6.4.
@@ -16,7 +36,6 @@ Verification performed for Version 1.6.4:
 - Ran JavaScript syntax checks for admin/js/admin-script.js, admin/js/wizard-script.js, admin/js/settings-controls.js, and admin/js/toast-notifications.js.
 - Checked that the factory reset hidden state is now stronger than the shared modal display style.
 - Confirmed the current git repository has no prior commits yet; this release will be committed as the initial repository snapshot.
-- Created the versioned release archive at plugin/aoauth-ssh-client-v1.6.4.zip.
 
 Latest changes - Version 1.6.3 styling and UX maintenance update:
 - Incremented plugin version from 1.6.2 to 1.6.3.
