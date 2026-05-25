@@ -540,16 +540,49 @@ class AOAUTH_SSO_Handler {
     }
     
     private function get_redirect_by_user_role($user_id, $requested_redirect) {
-        if (!empty($requested_redirect) && $this->security->validate_redirect_url($requested_redirect)) {
+    $user = get_userdata($user_id);
+    $is_admin = $user && (user_can($user, 'administrator') || user_can($user, 'manage_options'));
+
+    // If a redirect was explicitly requested and it's valid
+    if (!empty($requested_redirect) && $this->security->validate_redirect_url($requested_redirect)) {
+        // BUT: if the requested redirect is the admin dashboard and the user is not an admin, ignore it
+        if (strpos($requested_redirect, admin_url()) === 0 && !$is_admin) {
+            // fall through to role-based logic
+        } else {
             return $requested_redirect;
         }
-        
-        $user = get_userdata($user_id);
-        
-        if ($user && (user_can($user, 'administrator') || user_can($user, 'manage_options'))) {
-            return admin_url();
+    }
+
+    $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
+    $role_redirects = isset($settings['role_redirects']) && is_array($settings['role_redirects'])
+        ? $settings['role_redirects']
+        : AOAUTH_Core::get_default_role_redirects();
+
+    if ($user) {
+        foreach ((array) $user->roles as $role_key) {
+            if (!empty($role_redirects[$role_key])) {
+                return $this->resolve_role_redirect_url($role_redirects[$role_key]);
+            }
         }
-        
+    }
+
+    return $is_admin ? admin_url() : home_url();
+}
+
+    private function resolve_role_redirect_url($redirect) {
+        $redirect = trim((string) $redirect);
+        if ($redirect === '') {
+            return home_url();
+        }
+
+        if (strpos($redirect, '/') === 0) {
+            return home_url($redirect);
+        }
+
+        if ($this->security->validate_redirect_url($redirect)) {
+            return $redirect;
+        }
+
         return home_url();
     }
     
@@ -1015,7 +1048,8 @@ class AOAUTH_SSO_Handler {
             error_log('aOAUTH Client SSO Error: ' . $message);
         }
         
-        $login_url = add_query_arg('oauth_error', urlencode($message), wp_login_url());
+        $public_message = __('Single sign-on could not be completed. Please try again or contact the site administrator.', 'aoauth-client-sso');
+        $login_url = add_query_arg('oauth_error', urlencode($public_message), wp_login_url());
         wp_safe_redirect($login_url);
         exit;
     }
@@ -1059,11 +1093,10 @@ class AOAUTH_SSO_Handler {
             $provider_data = $applications[$linked_provider];
         }
         
-        wp_enqueue_style('aoauth-public', AOAUTH_PLUGIN_URL . 'public/css/public-style.css', array(), AOAUTH_VERSION);
-        wp_enqueue_script('aoauth-admin', AOAUTH_PLUGIN_URL . 'admin/js/admin-script.js', array('jquery'), AOAUTH_VERSION, true);
-        wp_localize_script('aoauth-admin', 'aoauth_admin', array(
+        wp_enqueue_style('aoauth-account-unlink', AOAUTH_PLUGIN_URL . 'public/css/login-single-sign-on.css', array(), AOAUTH_VERSION);
+        wp_enqueue_script('aoauth-account-unlink', AOAUTH_PLUGIN_URL . 'public/js/account-unlink.js', array('jquery'), AOAUTH_VERSION, true);
+        wp_localize_script('aoauth-account-unlink', 'aoauth_account_unlink', array(
             'ajaxurl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('aoauth_admin_nonce'),
             'translations' => array(
                 'confirm_unlink' => __('Are you sure you want to disconnect your SSO account?', 'aoauth-client-sso'),
                 'unlink_success' => __('SSO account unlinked successfully', 'aoauth-client-sso'),

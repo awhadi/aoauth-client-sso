@@ -16,11 +16,7 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : '';
         </div>
     </div>
     
-    <div class="aoauth-admin-tabs">
-        <a href="<?php echo admin_url('admin.php?page=aoauth-providers'); ?>" class="aoauth-tab <?php echo $current_page === 'aoauth-providers' ? 'active' : ''; ?>"><?php esc_html_e('Providers', 'aoauth-client-sso'); ?></a>
-        <a href="<?php echo admin_url('admin.php?page=aoauth-settings'); ?>" class="aoauth-tab <?php echo $current_page === 'aoauth-settings' ? 'active' : ''; ?>"><?php esc_html_e('Settings', 'aoauth-client-sso'); ?></a>
-        <a href="<?php echo admin_url('admin.php?page=aoauth-logs'); ?>" class="aoauth-tab <?php echo $current_page === 'aoauth-logs' ? 'active' : ''; ?>"><?php esc_html_e('Logs', 'aoauth-client-sso'); ?></a>
-    </div>
+    <?php include AOAUTH_PLUGIN_DIR . 'admin/views/shared-admin-tabs.php'; ?>
     
     <div class="aoauth-admin-content">
         <?php if (!empty($settings['enable_logs'])): ?>
@@ -41,6 +37,20 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : '';
                 </button>
             </div>
         </div>
+
+        <form class="aoauth-log-filters" id="aoauth-log-filters">
+            <input type="text" name="event_type" class="aoauth-form-control" placeholder="<?php esc_attr_e('Event type', 'aoauth-client-sso'); ?>" value="<?php echo esc_attr($filters['event_type'] ?? ''); ?>">
+            <input type="text" name="provider" class="aoauth-form-control" placeholder="<?php esc_attr_e('Provider', 'aoauth-client-sso'); ?>" value="<?php echo esc_attr($filters['provider'] ?? ''); ?>">
+            <select name="status" class="aoauth-form-control">
+                <option value=""><?php esc_html_e('Any status', 'aoauth-client-sso'); ?></option>
+                <?php foreach (array('info', 'success', 'warning', 'error') as $status): ?>
+                    <option value="<?php echo esc_attr($status); ?>" <?php selected($filters['status'] ?? '', $status); ?>><?php echo esc_html(ucfirst($status)); ?></option>
+                <?php endforeach; ?>
+            </select>
+            <input type="date" name="date_from" class="aoauth-form-control" value="<?php echo esc_attr($filters['date_from'] ?? ''); ?>">
+            <input type="date" name="date_to" class="aoauth-form-control" value="<?php echo esc_attr($filters['date_to'] ?? ''); ?>">
+            <button type="submit" class="aoauth-admin-button aoauth-admin-button-secondary"><?php esc_html_e('Filter', 'aoauth-client-sso'); ?></button>
+        </form>
         
         <div class="aoauth-logs-table-wrap">
             <table class="aoauth-logs-table">

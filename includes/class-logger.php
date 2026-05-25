@@ -102,11 +102,21 @@ class AOAUTH_Logger {
         }
         
         $where_clause = implode(' AND ', $where);
+        $allowed_orderby = array(
+            'id' => 'l.id',
+            'event_type' => 'l.event_type',
+            'provider' => 'l.provider',
+            'status' => 'l.status',
+            'user_id' => 'l.user_id',
+            'ip_address' => 'l.ip_address',
+            'created_at' => 'l.created_at',
+        );
         $allowed_order = array('ASC', 'DESC');
         $order = strtoupper($args['order']);
         if (!in_array($order, $allowed_order)) $order = 'DESC';
-        $orderby_clause = sanitize_sql_orderby($args['orderby'] . ' ' . $order);
-        if (false === $orderby_clause) $orderby_clause = 'l.created_at DESC';
+        $orderby_key = sanitize_key($args['orderby']);
+        $orderby_column = isset($allowed_orderby[$orderby_key]) ? $allowed_orderby[$orderby_key] : 'l.created_at';
+        $orderby_clause = $orderby_column . ' ' . $order;
         
         $query = $wpdb->prepare(
             "SELECT l.*, u.user_login as username FROM {$this->table_name} l 
@@ -123,7 +133,9 @@ class AOAUTH_Logger {
         global $wpdb;
         $where = array('1=1');
         if (!empty($args['event_type'])) $where[] = $wpdb->prepare('event_type = %s', $args['event_type']);
+        if (!empty($args['provider'])) $where[] = $wpdb->prepare('provider = %s', $args['provider']);
         if (!empty($args['status'])) $where[] = $wpdb->prepare('status = %s', $args['status']);
+        if (!empty($args['user_id'])) $where[] = $wpdb->prepare('user_id = %d', $args['user_id']);
         if (!empty($args['date_from'])) $where[] = $wpdb->prepare('created_at >= %s', $args['date_from']);
         if (!empty($args['date_to'])) $where[] = $wpdb->prepare('created_at <= %s', $args['date_to']);
         $where_clause = implode(' AND ', $where);

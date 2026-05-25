@@ -49,6 +49,15 @@ class AOAUTH_User_Manager {
         $existing_user = get_user_by('email', $user_info['email']);
         
         if ($existing_user) {
+            $ban_until = aoauth_core()->get_security()->get_user_login_ban($existing_user->ID);
+            if ($ban_until) {
+                $remaining = max(1, ceil(($ban_until - time()) / 60));
+                return new WP_Error(
+                    'aoauth_login_banned',
+                    sprintf(__('Too many failed account-linking attempts. Login is temporarily blocked for %d minutes.', 'aoauth-client-sso'), $remaining)
+                );
+            }
+
             $linked_provider = get_user_meta($existing_user->ID, '_aoauth_provider', true);
             
             if ($linked_provider === $provider_slug) {
@@ -138,10 +147,7 @@ class AOAUTH_User_Manager {
             wp_set_auth_cookie($result, true);
             wp_set_current_user($result);
             
-            $redirect_to = home_url();
-            if (user_can($result, 'manage_options')) {
-                $redirect_to = admin_url();
-            }
+            $redirect_to = $this->get_role_redirect_url($result);
             wp_safe_redirect($redirect_to);
             exit;
         }
@@ -161,7 +167,7 @@ class AOAUTH_User_Manager {
             <meta charset="<?php bloginfo('charset'); ?>">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title><?php esc_html_e('Account Temporarily Locked', 'aoauth-client-sso'); ?></title>
-            <link rel="stylesheet" href="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'public/css/account-linking-style.css?ver=' . AOAUTH_VERSION); ?>">
+            <link rel="stylesheet" href="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'public/css/account-linking-page.css?ver=' . AOAUTH_VERSION); ?>">
         </head>
         <body class="aoauth-account-linking-page aoauth-link-theme-<?php echo esc_attr($theme); ?>">
             <div class="aoauth-lockdown-container">
@@ -199,7 +205,7 @@ class AOAUTH_User_Manager {
             <meta charset="<?php bloginfo('charset'); ?>">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title><?php esc_html_e('Confirm Account Linking', 'aoauth-client-sso'); ?></title>
-            <link rel="stylesheet" href="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'public/css/account-linking-style.css?ver=' . AOAUTH_VERSION); ?>">
+            <link rel="stylesheet" href="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'public/css/account-linking-page.css?ver=' . AOAUTH_VERSION); ?>">
         </head>
         <body class="aoauth-account-linking-page aoauth-link-theme-<?php echo esc_attr($theme); ?>">
             <div class="aoauth-link-container">
@@ -225,6 +231,33 @@ class AOAUTH_User_Manager {
         </html>
         <?php
         exit;
+    }
+
+    private function get_role_redirect_url($user_id) {
+        $user = get_userdata($user_id);
+        $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
+        $role_redirects = isset($settings['role_redirects']) && is_array($settings['role_redirects'])
+            ? $settings['role_redirects']
+            : AOAUTH_Core::get_default_role_redirects();
+
+        if ($user) {
+            foreach ((array) $user->roles as $role_key) {
+                if (empty($role_redirects[$role_key])) {
+                    continue;
+                }
+
+                $redirect = trim((string) $role_redirects[$role_key]);
+                if (strpos($redirect, '/') === 0) {
+                    return home_url($redirect);
+                }
+
+                if (aoauth_core()->get_security()->validate_redirect_url($redirect)) {
+                    return $redirect;
+                }
+            }
+        }
+
+        return user_can($user_id, 'manage_options') ? admin_url() : home_url();
     }
     
     public function confirm_account_linking($linking_key, $password) {

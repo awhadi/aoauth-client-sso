@@ -296,7 +296,18 @@
             $('body').append($overlay);
         }
 
+        var overlayConfig = aoauth_public.bot_protection || {};
+        var overlayVariant = overlayConfig.overlay_variant || 'spotlight';
+        var overlayColor = overlayConfig.overlay_color || '#0f172a';
+        var messageStyle = overlayConfig.overlay_message_style || 'standard';
+
         $overlay.find('.aoauth-verification-message').text(message);
+        $overlay
+            .removeClass('aoauth-overlay-spotlight aoauth-overlay-panel aoauth-overlay-minimal aoauth-message-standard aoauth-message-quiet aoauth-message-strong')
+            .addClass('aoauth-overlay-' + overlayVariant)
+            .addClass('aoauth-message-' + messageStyle)
+            .css('--aoauth-overlay-color', overlayColor);
+
         if ($origin && $origin.length) {
             var offset = $origin.offset();
             $overlay.css({

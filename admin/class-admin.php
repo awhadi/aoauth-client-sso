@@ -62,7 +62,7 @@ class AOAUTH_Admin {
             'manage_options',
             'aoauth-providers',
             array($this, 'render_connect_page'),
-            AOAUTH_PLUGIN_URL . 'admin/images/logo.png',
+            AOAUTH_PLUGIN_URL . 'admin/images/menu-icon.svg',
             30
         );
         
@@ -80,6 +80,42 @@ class AOAUTH_Admin {
         // Submenu: Settings
         add_submenu_page(
             'aoauth-providers',
+            __('Sign-In Experience', 'aoauth-client-sso'),
+            __('Sign-In Experience', 'aoauth-client-sso'),
+            'manage_options',
+            'aoauth-sign-in-experience',
+            array($this, 'render_general_page')
+        );
+
+        add_submenu_page(
+            'aoauth-providers',
+            __('User Management', 'aoauth-client-sso'),
+            __('User Management', 'aoauth-client-sso'),
+            'manage_options',
+            'aoauth-user-management',
+            array($this, 'render_user_management_page')
+        );
+
+        add_submenu_page(
+            'aoauth-providers',
+            __('Security', 'aoauth-client-sso'),
+            __('Security', 'aoauth-client-sso'),
+            'manage_options',
+            'aoauth-security',
+            array($this, 'render_security_page')
+        );
+
+        add_submenu_page(
+            'aoauth-providers',
+            __('Tools', 'aoauth-client-sso'),
+            __('Tools', 'aoauth-client-sso'),
+            'manage_options',
+            'aoauth-tools',
+            array($this, 'render_tools_page')
+        );
+
+        add_submenu_page(
+            null,
             __('Settings', 'aoauth-client-sso'),
             __('Settings', 'aoauth-client-sso'),
             'manage_options',
@@ -133,14 +169,14 @@ class AOAUTH_Admin {
 
         wp_enqueue_style(
             'aoauth-toast-notifications',
-            AOAUTH_PLUGIN_URL . 'admin/css/toast-notifications.css',
+            AOAUTH_PLUGIN_URL . 'admin/css/toast-notices.css',
             array(),
             AOAUTH_VERSION
         );
 
         wp_enqueue_script(
-            'aoauth-toast-notifications',
-            AOAUTH_PLUGIN_URL . 'admin/js/toast-notifications.js',
+            'aoauth-toast-notices',
+            AOAUTH_PLUGIN_URL . 'admin/js/toast-notices.js',
             array('jquery'),
             AOAUTH_VERSION,
             true
@@ -148,17 +184,17 @@ class AOAUTH_Admin {
         
         wp_enqueue_script(
             'aoauth-admin',
-            AOAUTH_PLUGIN_URL . 'admin/js/admin-script.js',
-            array('jquery', 'jquery-ui-sortable', 'aoauth-toast-notifications'),
+            AOAUTH_PLUGIN_URL . 'admin/js/admin-dashboard.js',
+            array('jquery', 'jquery-ui-sortable', 'aoauth-toast-notices'),
             AOAUTH_VERSION,
             true
         );
 
         $current_page = isset($_GET['page']) ? sanitize_key($_GET['page']) : '';
-        if ($current_page === 'aoauth-settings') {
+        if (in_array($current_page, array('aoauth-settings', 'aoauth-sign-in-experience', 'aoauth-user-management', 'aoauth-security', 'aoauth-tools'), true)) {
             wp_enqueue_script(
                 'aoauth-settings-controls',
-                AOAUTH_PLUGIN_URL . 'admin/js/settings-controls.js',
+                AOAUTH_PLUGIN_URL . 'admin/js/settings-form-controls.js',
                 array('jquery', 'aoauth-admin'),
                 AOAUTH_VERSION,
                 true
@@ -208,7 +244,7 @@ class AOAUTH_Admin {
             wp_enqueue_script(
                 'aoauth-wizard',
                 AOAUTH_PLUGIN_URL . 'admin/js/wizard-script.js',
-                array('jquery', 'aoauth-toast-notifications'),
+                array('jquery', 'aoauth-toast-notices'),
                 AOAUTH_VERSION,
                 true
             );
@@ -252,6 +288,7 @@ class AOAUTH_Admin {
     }
     
     public function render_general_page() {
+        $settings_view = 'sign-in-experience';
         $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
         $settings['turnstile_secret_key'] = aoauth_core()->get_security()->decrypt_secret($settings['turnstile_secret_key'] ?? '');
         $settings['recaptcha_secret_key'] = aoauth_core()->get_security()->decrypt_secret($settings['recaptcha_secret_key'] ?? '');
@@ -260,10 +297,45 @@ class AOAUTH_Admin {
         
         include AOAUTH_PLUGIN_DIR . 'admin/views/settings.php';
     }
+
+    public function render_user_management_page() {
+        $settings_view = 'user-management';
+        $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
+        $roles = get_editable_roles();
+        $available_themes = aoauth_core()->get_available_themes();
+
+        include AOAUTH_PLUGIN_DIR . 'admin/views/settings.php';
+    }
+
+    public function render_security_page() {
+        $settings_view = 'security';
+        $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
+        $settings['turnstile_secret_key'] = aoauth_core()->get_security()->decrypt_secret($settings['turnstile_secret_key'] ?? '');
+        $settings['recaptcha_secret_key'] = aoauth_core()->get_security()->decrypt_secret($settings['recaptcha_secret_key'] ?? '');
+        $roles = get_editable_roles();
+        $available_themes = aoauth_core()->get_available_themes();
+
+        include AOAUTH_PLUGIN_DIR . 'admin/views/settings.php';
+    }
+
+    public function render_tools_page() {
+        $settings_view = 'tools';
+        $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
+        $roles = get_editable_roles();
+        $available_themes = aoauth_core()->get_available_themes();
+        $sso_users = get_users(array(
+            'meta_key' => '_aoauth_provider',
+            'number' => 25,
+            'fields' => array('ID', 'user_login', 'user_email', 'display_name')
+        ));
+
+        include AOAUTH_PLUGIN_DIR . 'admin/views/settings.php';
+    }
     
     public function render_logs_page() {
-        $logs = $this->logger->get_logs(array('limit' => 50, 'offset' => 0));
-        $total_logs = $this->logger->get_log_count();
+        $filters = $this->sanitize_log_filters($_GET);
+        $logs = $this->logger->get_logs(array_merge($filters, array('limit' => 50, 'offset' => 0)));
+        $total_logs = $this->logger->get_log_count($filters);
         $settings = get_option('aoauth_settings', array());
         
         include AOAUTH_PLUGIN_DIR . 'admin/views/logs.php';
@@ -651,9 +723,10 @@ class AOAUTH_Admin {
         $page = max(1, intval($_POST['page'] ?? 1));
         $limit = max(1, min(100, intval($_POST['limit'] ?? 50)));
         $offset = ($page - 1) * $limit;
+        $filters = $this->sanitize_log_filters($_POST);
         
-        $logs = $this->logger->get_logs(array('limit' => $limit, 'offset' => $offset));
-        $total = $this->logger->get_log_count();
+        $logs = $this->logger->get_logs(array_merge($filters, array('limit' => $limit, 'offset' => $offset)));
+        $total = $this->logger->get_log_count($filters);
         
         wp_send_json_success(array(
             'logs' => $logs,
@@ -661,6 +734,37 @@ class AOAUTH_Admin {
             'pages' => ceil($total / $limit),
             'current_page' => $page
         ));
+    }
+
+    private function sanitize_log_filters($source) {
+        $source = is_array($source) ? wp_unslash($source) : array();
+        $filters = array(
+            'event_type' => isset($source['event_type']) ? sanitize_key($source['event_type']) : '',
+            'provider' => isset($source['provider']) ? sanitize_key($source['provider']) : '',
+            'status' => isset($source['status']) ? sanitize_key($source['status']) : '',
+            'date_from' => isset($source['date_from']) ? sanitize_text_field($source['date_from']) : '',
+            'date_to' => isset($source['date_to']) ? sanitize_text_field($source['date_to']) : '',
+            'orderby' => isset($source['orderby']) ? sanitize_key($source['orderby']) : 'created_at',
+            'order' => isset($source['order']) ? strtoupper(sanitize_key($source['order'])) : 'DESC',
+        );
+
+        if (!empty($source['user_id'])) {
+            $filters['user_id'] = absint($source['user_id']);
+        }
+
+        if (!in_array($filters['status'], array('', 'info', 'success', 'warning', 'error'), true)) {
+            $filters['status'] = '';
+        }
+
+        if (!preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $filters['date_from'])) {
+            $filters['date_from'] = '';
+        }
+
+        if (!preg_match('/^\\d{4}-\\d{2}-\\d{2}$/', $filters['date_to'])) {
+            $filters['date_to'] = '';
+        }
+
+        return $filters;
     }
     
     public function ajax_clear_logs() {
@@ -948,11 +1052,16 @@ class AOAUTH_Admin {
     private function sanitize_settings($settings) {
         $raw_settings = is_array($settings) ? $settings : array();
         $defaults = AOAUTH_Core::get_default_settings();
-        $settings = array_merge($defaults, $raw_settings);
+        $existing = array_merge($defaults, get_option('aoauth_settings', array()));
+        $settings = array_merge($existing, $raw_settings);
         $security = aoauth_core()->get_security();
         
-        $is_enabled = function($key) use ($raw_settings) {
-            return !empty($raw_settings[$key]) ? 1 : 0;
+        $is_enabled = function($key) use ($raw_settings, $existing) {
+            if (array_key_exists($key, $raw_settings)) {
+                return !empty($raw_settings[$key]) ? 1 : 0;
+            }
+
+            return !empty($existing[$key]) ? 1 : 0;
         };
         
         $enable_turnstile = $is_enabled('enable_turnstile');
@@ -968,8 +1077,39 @@ class AOAUTH_Admin {
         
         $allow_account_linking = $is_enabled('allow_account_linking');
         
+        $bot_protection_provider = sanitize_key($settings['bot_protection_provider'] ?? 'turnstile');
+        if (!in_array($bot_protection_provider, array('turnstile', 'recaptcha'), true)) {
+            $bot_protection_provider = 'turnstile';
+        }
+
+        $role_redirects = array();
+        $posted_redirects = isset($settings['role_redirects']) && is_array($settings['role_redirects']) ? $settings['role_redirects'] : array();
+        foreach (get_editable_roles() as $role_key => $role_data) {
+            $fallback_redirect = AOAUTH_Core::get_default_role_redirects()[$role_key] ?? '/';
+            $redirect_value = isset($posted_redirects[$role_key]) ? trim((string) $posted_redirects[$role_key]) : $fallback_redirect;
+            $role_redirects[$role_key] = $this->sanitize_role_redirect_path($redirect_value, $fallback_redirect);
+        }
+
+        $overlay_variant = sanitize_key($settings['bot_overlay_variant'] ?? 'spotlight');
+        if (!in_array($overlay_variant, array('spotlight', 'panel', 'minimal'), true)) {
+            $overlay_variant = 'spotlight';
+        }
+
+        $overlay_message_style = sanitize_key($settings['bot_overlay_message_style'] ?? 'standard');
+        if (!in_array($overlay_message_style, array('standard', 'quiet', 'strong'), true)) {
+            $overlay_message_style = 'standard';
+        }
+
+        $turnstile_secret_key = array_key_exists('turnstile_secret_key', $raw_settings)
+            ? $security->encrypt_secret(sanitize_text_field($settings['turnstile_secret_key']))
+            : ($existing['turnstile_secret_key'] ?? '');
+        $recaptcha_secret_key = array_key_exists('recaptcha_secret_key', $raw_settings)
+            ? $security->encrypt_secret(sanitize_text_field($settings['recaptcha_secret_key']))
+            : ($existing['recaptcha_secret_key'] ?? '');
+
         $sanitized = array(
             'enable_login_buttons' => $is_enabled('enable_login_buttons'),
+            'enable_brand_badge' => $is_enabled('enable_brand_badge'),
             'login_button_theme' => sanitize_text_field($settings['login_button_theme']),
             'login_button_layout' => sanitize_text_field($settings['login_button_layout']),
             'auto_create_users' => $is_enabled('auto_create_users'),
@@ -981,12 +1121,14 @@ class AOAUTH_Admin {
             'rate_limit_window' => max(60, min(DAY_IN_SECONDS, intval($settings['rate_limit_window']))),
             'enable_logs' => $is_enabled('enable_logs'),
             'logs_retention_period' => sanitize_text_field($settings['logs_retention_period']),
-            'enable_turnstile' => $enable_turnstile,
+            'enable_bot_protection' => $is_enabled('enable_bot_protection'),
+            'bot_protection_provider' => $bot_protection_provider,
+            'enable_turnstile' => $is_enabled('enable_bot_protection') && $bot_protection_provider === 'turnstile' ? 1 : 0,
             'turnstile_site_key' => sanitize_text_field($settings['turnstile_site_key']),
-            'turnstile_secret_key' => $security->encrypt_secret(sanitize_text_field($settings['turnstile_secret_key'])),
-            'enable_recaptcha' => $enable_recaptcha,
+            'turnstile_secret_key' => $turnstile_secret_key,
+            'enable_recaptcha' => $is_enabled('enable_bot_protection') && $bot_protection_provider === 'recaptcha' ? 1 : 0,
             'recaptcha_site_key' => sanitize_text_field($settings['recaptcha_site_key']),
-            'recaptcha_secret_key' => $security->encrypt_secret(sanitize_text_field($settings['recaptcha_secret_key'])),
+            'recaptcha_secret_key' => $recaptcha_secret_key,
             'recaptcha_score_threshold' => max(0, min(1, floatval($settings['recaptcha_score_threshold']))),
             'linking_max_attempts' => $allow_account_linking ? max(1, min(20, intval($settings['linking_max_attempts']))) : intval($defaults['linking_max_attempts']),
             'linking_lockout_minutes' => $allow_account_linking ? max(1, min(1440, intval($settings['linking_lockout_minutes']))) : intval($defaults['linking_lockout_minutes']),
@@ -995,9 +1137,30 @@ class AOAUTH_Admin {
             'linking_page_title' => sanitize_text_field($settings['linking_page_title']),
             'bot_overlay_enabled' => $is_enabled('bot_overlay_enabled'),
             'bot_overlay_message' => sanitize_text_field($settings['bot_overlay_message']),
+            'bot_overlay_variant' => $overlay_variant,
+            'bot_overlay_color' => sanitize_hex_color($settings['bot_overlay_color']) ?: '#0f172a',
+            'bot_overlay_message_style' => $overlay_message_style,
+            'role_redirects' => $role_redirects,
         );
         
         return $sanitized;
+    }
+
+    private function sanitize_role_redirect_path($redirect_value, $fallback) {
+        if ($redirect_value === '') {
+            return $fallback;
+        }
+
+        if (strpos($redirect_value, '/') === 0) {
+            return '/' . ltrim(sanitize_text_field($redirect_value), '/');
+        }
+
+        $url = esc_url_raw($redirect_value);
+        if (!empty($url) && aoauth_core()->get_security()->validate_redirect_url($url)) {
+            return $url;
+        }
+
+        return $fallback;
     }
     
     public function ajax_test_connection() {
@@ -1401,8 +1564,7 @@ public function ajax_unlink_account() {
     $user_id = intval($_POST['user_id'] ?? 0);
     $provider = sanitize_text_field($_POST['provider'] ?? '');
     
-    // Check both possible nonces: user-specific and global admin
-    if (!wp_verify_nonce($nonce, 'aoauth_unlink_' . $user_id) && !wp_verify_nonce($nonce, 'aoauth_admin_nonce')) {
+    if (!wp_verify_nonce($nonce, 'aoauth_unlink_' . $user_id)) {
         wp_send_json_error(array('message' => __('Security check failed. Please refresh the page and try again.', 'aoauth-client-sso')));
     }
     
@@ -1678,7 +1840,7 @@ public function ajax_unlink_account() {
     
     public function add_plugin_action_links($links) {
         $wizard_link = '<a href="' . admin_url('admin.php?page=aoauth-wizard') . '">' . __('Add Provider', 'aoauth-client-sso') . '</a>';
-        $settings_link = '<a href="' . admin_url('admin.php?page=aoauth-settings') . '">' . __('Settings', 'aoauth-client-sso') . '</a>';
+        $settings_link = '<a href="' . admin_url('admin.php?page=aoauth-sign-in-experience') . '">' . __('Settings', 'aoauth-client-sso') . '</a>';
         
         array_unshift($links, $settings_link);
         array_unshift($links, $wizard_link);

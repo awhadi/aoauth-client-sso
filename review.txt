@@ -1,205 +1,57 @@
-aOAUTH Client SSO - Review and Hardening Notes
-Version: 1.7.0
+Version: 2.0.0
+Date: 2026-05-25
+Author: Awhadi / Codex
 
-Latest changes - Version 1.7.0 debug and SSO flow logging update:
-- Incremented plugin version from 1.6.9 to 1.7.0 in the plugin header and AOAUTH_VERSION.
-- Removed browser console logging from the admin wizard and public login script so provider secrets are no longer exposed in DevTools during normal use.
-- Added a gated browser-to-server debug event endpoint that only writes to AOAUTH_Debug when AOAUTH_DEBUG is enabled.
-- Updated wizard diagnostics to send collected config, save, and test events to the developer debug log instead of the browser console.
-- Updated public SSO diagnostics to send Turnstile, reCAPTCHA, and redirect preparation events to the developer debug log instead of the browser console.
-- Added flow IDs to SSO login tracking so one attempt can be followed through bot verification, login initiation, callback processing, authentication result, and WordPress redirect path.
-- Passed flow IDs through the login request for both bot-protected and non-bot SSO flows.
-- Added admin-facing audit events for login initiation failures, bot verification success/failure/consumption, callback failures, and SSO authentication failures.
-- Added sensitive-data masking at the audit logger boundary so plugin activity logs do not store raw secrets, tokens, passwords, authorization values, or full Client IDs.
-- Tightened developer debug sanitization for sensitive state/nonce values and OAuth URLs while still allowing deeper sensitive output only when AOAUTH_DEBUG_SHOW_SENSITIVE is explicitly enabled.
+Summary:
+Major security, performance, and admin UX refactor for WordPress review readiness. Settings are now split into purpose-specific tabs: Sign-In Experience, User Management, Security, Tools, and Logs. Frontend loading remains minimal: SSO login assets load on the WordPress login page, the brand badge loads only for eligible SSO users, and the account unlink shortcode now uses a small public script instead of the admin dashboard script.
 
-Verification performed for Version 1.7.0:
-- Ran PHP syntax checks for the plugin bootstrap, admin controller, core, debug, logger, and SSO handler classes.
-- Ran JavaScript syntax checks for admin/js/wizard-script.js and public/js/public-script.js.
-- Confirmed there are no remaining console.* calls in admin/js or public/js.
-- Confirmed flow_id, bot_verification, and client debug event hooks are present in the updated logging paths.
-- Created the versioned release archive at /Users/amirkhosroawhadi/Plugins/aoauth-ssh-client-v1.7.0.zip with aoauth-client-sso/ as the internal folder.
-
-Latest changes - Version 1.6.9 backup-secret disclosure copy update:
-- Incremented plugin version from 1.6.8 to 1.6.9 in the plugin header and AOAUTH_VERSION.
-- Updated the Backup & Restore settings note to clearly explain that blank-password downloads exclude provider credentials and bot protection secret keys.
-- Updated the Download Settings password prompt to clearly state that secrets are only included when a backup password is entered.
-
-Verification performed for Version 1.6.9:
-- Ran PHP syntax checks for the plugin bootstrap and settings view.
-- Ran JavaScript syntax checks for admin/js/admin-script.js.
-- Confirmed the visible Backup & Restore note and Download Settings prompt both explain that blank-password exports exclude secrets.
-- Created the versioned release archive at /Users/amirkhosroawhadi/Plugins/aoauth-ssh-client-v1.6.9.zip with aoauth-client-sso/ as the internal folder.
-
-Latest changes - Version 1.6.8 encrypted bot secrets and Turnstile compatibility update:
-- Incremented plugin version from 1.6.7 to 1.6.8 in the plugin header and AOAUTH_VERSION.
-- Added password confirmation to Download Settings when a backup password is entered; mismatched confirmation cancels the download.
-- Extended password-protected settings export to include encrypted Turnstile and reCAPTCHA secret keys.
-- Kept bot protection secret keys excluded from settings export when no backup password is entered.
-- Updated settings import to decrypt bot protection secret keys before saving and to stop the entire import before any database update if the backup password is missing or wrong.
-- Updated settings import success messages so restored encrypted secrets no longer show the misleading re-enter credentials toast.
-- Preserved provider enabled states only when the imported provider has both a Client ID and Client Secret; providers without credentials are saved disabled so admins can enable them manually later.
-- Adjusted the Turnstile browser fix to keep the Firefox-safe renderable offscreen container while restoring Cloudflare's default invisible render flow for Chrome, Safari, and mobile browsers.
-
-Verification performed for Version 1.6.8:
-- Ran PHP syntax checks for the plugin bootstrap, admin controller, core, and security classes.
-- Ran JavaScript syntax checks for admin/js/admin-script.js and public/js/public-script.js.
-- Confirmed forced Turnstile execute-mode options were removed while the renderable offscreen widget container remains in place.
-- Confirmed password-encrypted exports now cover provider credentials and bot protection secret keys.
-- Confirmed settings import decrypts encrypted payloads before saving and only writes options after all encrypted values have passed password validation.
-- Created the versioned release archive at /Users/amirkhosroawhadi/Plugins/aoauth-ssh-client-v1.6.8.zip with aoauth-client-sso/ as the internal folder.
-
-Latest changes - Version 1.6.7 Firefox Turnstile, encrypted backup, and login-ban update:
-- Incremented plugin version from 1.6.6 to 1.6.7 in the plugin header and AOAUTH_VERSION.
-- Fixed Firefox Turnstile timeouts by rendering the widget in an offscreen but renderable container instead of a display:none container.
-- Added Turnstile invisible execution options and delayed execute() with requestAnimationFrame so Firefox can finish iframe/widget setup before execution.
-- Added optional password-protected settings export: leaving the password blank keeps credentials excluded, while entering a password includes Client IDs and Secrets encrypted with AES-256-GCM and PBKDF2-SHA256.
-- Added password-aware settings import that decrypts encrypted Client IDs and Secrets and stores provider secrets back using the plugin's internal secret encryption.
-- Added a configurable Full Login Ban Duration for users who exceed account-linking password attempts.
-- Added an authenticate filter that blocks all WordPress login methods for a temporarily banned user until the configured ban time expires.
-- Removed the account-linking theme disable behavior from the UI; account-linking pages now always follow the selected login theme.
-- Fixed checkbox sanitization so disabled checkboxes are read from raw submitted form data instead of merged defaults.
-
-Backup encryption options reviewed:
-- No credential export: safest operational default, but admins must re-enter Client IDs and Secrets after import.
-- Site-key encryption: convenient on the same WordPress site, but backups are not portable and can be decrypted by anyone with site database/key access.
-- Password-protected export: portable and safer for downloaded files when the password is kept separately. This is the implemented option.
-- Whole-file password encryption: strongest for complete backups, but requires a different import UX and more failure handling. It remains a good future enhancement.
-
-Verification performed for Version 1.6.7:
-- Ran PHP syntax checks for the plugin bootstrap, admin controller, core, security, user manager, and settings view.
-- Ran JavaScript syntax checks for admin/js/admin-script.js and public/js/public-script.js.
-- Confirmed the Turnstile container is no longer display:none and encrypted backup fields are password gated.
-- Created the versioned release archive at /Users/amirkhosroawhadi/Plugins/aoauth-ssh-client-v1.6.7.zip with aoauth-client-sso/ as the internal folder.
-
-Latest changes - Version 1.6.6 settings persistence and linking preview update:
-- Incremented plugin version from 1.6.5 to 1.6.6 in the plugin header and AOAUTH_VERSION.
-- Fixed the Full-Screen Verification Overlay toggle so disabling it saves correctly by posting an explicit disabled value.
-- Added the same explicit disabled value for the account-linking theme toggle.
-- Moved account-linking page styling controls under Login Button Theme/Layout where the selected theme is configured.
-- Added a compact account-linking page preview that updates when the selected login theme, linking title, or theme-match toggle changes.
-- Expanded account-linking page theme CSS so simple, modern, icon-only, rounded, gradient, and outline themes alter page background, card radius, provider icon shape, and button style.
-- Changed the bot verification overlay animation so the small circle starts near the clicked login button and expands until it covers the full screen.
-
-Verification performed for Version 1.6.6:
-- Ran PHP syntax checks for the plugin bootstrap, admin controller, core, user manager, and settings view.
-- Ran JavaScript syntax checks for admin/js/admin-script.js and public/js/public-script.js.
-- Confirmed the settings form includes explicit hidden values for the overlay and account-linking theme toggles.
-- Created the versioned release archive at /Users/amirkhosroawhadi/Plugins/aoauth-ssh-client-v1.6.6.zip.
-
-Latest changes - Version 1.6.5 theme preview and account-linking UX update:
-- Incremented plugin version from 1.6.4 to 1.6.5 in the plugin header and AOAUTH_VERSION.
-- Fixed the Settings login button theme carousel so hidden radio inputs no longer appear inside selected theme cards.
-- Removed fragile hover-injected AJAX preview CSS from the theme carousel.
-- Updated theme preview markup to use the same aoauth-button, aoauth-button-icon, and aoauth-button-text structure as the real login buttons.
-- Added scoped admin CSS previews for simple, modern, icon-only, rounded, gradient, and outline login button themes.
-- Added account-linking settings for matching the selected login theme and customizing the linking page title.
-- Rebuilt account-linking confirmation and lockout pages with external public/css/account-linking-style.css instead of inline CSS.
-- Added theme-aware styling for account-linking pages so linked-account flows match the selected plugin login style.
-- Added full-screen bot verification overlay settings for protected login flows.
-- Updated public login JavaScript to show a full-screen circular verification overlay during Turnstile or reCAPTCHA checks and keep it visible until redirect starts.
-- Replaced inline JavaScript style writes for hidden bot widgets and loading button state with reusable CSS classes.
-- Removed the previously committed in-repo plugin ZIP because future release ZIP files are stored under /Users/amirkhosroawhadi/Plugins.
-- Created the versioned release archive at /Users/amirkhosroawhadi/Plugins/aoauth-ssh-client-v1.6.5.zip.
-
-Verification performed for Version 1.6.5:
-- Ran PHP syntax checks for the plugin bootstrap, admin controller, core, user manager, and admin view files.
-- Ran JavaScript syntax checks for admin/js/admin-script.js, public/js/public-script.js, admin/js/settings-controls.js, and admin/js/wizard-script.js.
-- Searched for stale injected preview CSS hooks, visible preview radio/checkbox helpers, inline style tags in edited account-linking pages, and old 1.6.4 version constants.
-
-Latest changes - Version 1.6.4 styling stability update:
-- Incremented plugin version from 1.6.3 to 1.6.4.
-- Fixed the Settings page factory reset modal so it remains hidden until the Factory Reset button is clicked.
-- Added a modal-specific hidden CSS rule so shared modal display styles cannot override hidden state.
-- Reduced shared admin button height and padding for a more compact WordPress admin UX.
-- Reduced remaining button-specific padding on provider, wizard, settings, and test buttons to match the plugin interface.
-- Moved the WordPress admin menu icon sizing into admin/css/admin-menu-icon.css.
-- Enqueued the admin menu icon stylesheet across WordPress admin pages so the plugin sidebar icon stays correctly sized after navigating away from the plugin dashboard.
-- Preserved existing button IDs and action-specific classes so JavaScript handlers continue to work as before.
-
-Verification performed for Version 1.6.4:
-- Ran PHP syntax checks for the changed plugin bootstrap, admin controller, SSO handler, and admin view files.
-- Ran JavaScript syntax checks for admin/js/admin-script.js, admin/js/wizard-script.js, admin/js/settings-controls.js, and admin/js/toast-notifications.js.
-- Checked that the factory reset hidden state is now stronger than the shared modal display style.
-- Confirmed the current git repository has no prior commits yet; this release will be committed as the initial repository snapshot.
-
-Latest changes - Version 1.6.3 styling and UX maintenance update:
-- Incremented plugin version from 1.6.2 to 1.6.3.
-- Added shared admin button classes for primary, secondary, danger, icon, and danger-ghost button states.
-- Updated Providers, Wizard, Settings, Logs, unlink, backup/import, factory reset, and confirmation modal buttons to use the shared button classes while preserving existing IDs and action classes for JavaScript behavior.
-- Kept the version badge and Feature Details buttons separate as requested.
-- Renamed the backup/export controls to "Download Settings" and "Restore Settings".
-- Preserved the factory reset 10-second disabled confirmation countdown and moved its modal buttons to the shared button classes.
-- Replaced the generic provider toggle toast with provider-specific enabled/disabled messages such as "Google enabled" or "Keycloak disabled".
-- Externalized Settings page toggle behavior into admin/js/settings-controls.js.
-- Removed inline styles and inline scripts from the edited admin views, replacing them with reusable CSS classes and external JavaScript.
-- Externalized frontend unlink shortcode styles into public/css/public-style.css.
-
-Verification performed for Version 1.6.3:
-- Ran PHP syntax checks for the changed plugin bootstrap, admin controller, SSO handler, and admin view files.
-- Ran JavaScript syntax checks for admin/js/admin-script.js, admin/js/wizard-script.js, admin/js/settings-controls.js, and admin/js/toast-notifications.js.
-- Searched for the old backup labels, generic provider-status toast, edited-view inline scripts/styles, and old WordPress button classes in the updated areas.
-
-Latest changes - Version 1.6.2 maintenance update:
-- Merged duplicate admin toast notification functions into one shared aoauthShowToast() helper.
-- Externalized shared toast behavior into admin/js/toast-notifications.js.
-- Externalized shared glass-style toast presentation into admin/css/toast-notifications.css.
-- Removed duplicated toast CSS from admin/css/admin-style.css and admin/css/wizard-style.css.
-- Updated admin and wizard notifications to use the same glass-style toast for success, error, warning, and info messages.
-- Replaced the wizard connection test's misleading client_credentials token request with safer OAuth/OIDC endpoint probes.
-- Added authorization endpoint, token endpoint, optional UserInfo endpoint, and optional JWKS endpoint checks.
-- Added clearer connection-test messaging that explains client secret validation requires a real OAuth callback.
-- Incremented plugin version from 1.6.1 to 1.6.2.
-
-Latest changes - Version 1.6.1 maintenance update:
-- Centralized default plugin settings in AOAUTH_Core::get_default_settings().
-- Reused the centralized defaults for activation and factory reset.
-- Merged admin settings sanitization for save and import flows into one method.
-- Removed the redundant private ID token parse-and-normalize helper after the validated token path replaced it.
-- Merged duplicate nested-array lookup helpers into AOAUTH_Security::get_nested_value().
-
-Review scope:
-- Security review of OAuth/OIDC login, callback handling, admin AJAX, bot protection, secret storage, import/export, redirects, and account linking.
-- Performance review of request-time loading, logging, pagination, and remote provider calls.
-- Usability review of admin setup, provider testing, login buttons, and account-linking flows.
-
-Security issues addressed:
-- Replaced OAuth state creation with a high-entropy per-login random token.
-- Added an OIDC nonce to each login request and verify it on ID token return.
-- Added ID token validation for expiration, not-before time, nonce, audience/client ID, issuer, verified email, and RS256 JWKS signatures.
-- Added JWKS retrieval and transient caching for provider signing keys.
-- Preserved OIDC discovery metadata, including issuer and jwks_uri, in provider configuration.
-- Added default OIDC metadata for Google and Apple when older saved configurations do not contain issuer or jwks_uri.
-- Changed bot protection from client-side-only gating to server-enforced one-time verification tokens.
-- Encrypted Turnstile and reCAPTCHA secret keys before storage.
-- Decrypted protected captcha secret keys only when needed for display or verification.
-- Removed captcha secrets from exported configuration backups.
-- Sanitized imported settings and provider configuration before saving.
-- Tightened redirect URL validation with WordPress-safe redirect validation and http/https scheme checks.
-- Validated default role settings before saving.
-- Clamped rate-limit and account-linking security settings to safe ranges.
-
-Performance issues addressed:
-- Cached JWKS signing keys for one hour to avoid repeated remote key fetches on every login.
-- Clamped AJAX log pagination limits to avoid excessive admin-ajax load.
-
-Usability notes:
-- Existing setup, login, account-linking, provider management, bot protection, import/export, and logging functionality was preserved.
-- Provider test behavior is still based on the existing plugin flow so current UX is not removed.
-- Existing saved providers without discovery metadata continue to work, but full ID token signature validation requires jwks_uri. Google and Apple are covered with built-in defaults; custom OIDC providers should use discovery or include jwks_uri.
-
-Verification performed:
-- Ran PHP syntax checks across all PHP files.
-- Ran JavaScript syntax checks for changed admin scripts.
-- No Git repository was present in this folder, so no git diff or commit was produced.
-
-Changed files:
+Files changed:
 - aoauth-client-sso.php
+- CHANGELOG.md
 - admin/class-admin.php
 - admin/css/admin-style.css
-- admin/css/toast-notifications.css
-- admin/css/wizard-style.css
-- admin/js/admin-script.js
-- admin/js/toast-notifications.js
-- admin/js/wizard-script.js
-- review.txt
+- admin/css/toast-notices.css
+- admin/images/menu-icon.svg
+- admin/js/admin-dashboard.js
+- admin/js/settings-form-controls.js
+- admin/js/toast-notices.js
+- admin/views/logs.php
+- admin/views/providers.php
+- admin/views/settings.php
+- admin/views/shared-admin-tabs.php
+- admin/views/sign-in-experience-settings.php
+- admin/views/user-management-settings.php
+- admin/views/security-settings.php
+- admin/views/tools-settings.php
+- includes/class-core.php
+- includes/class-logger.php
+- includes/class-sso-handler.php
+- includes/class-user-manager.php
+- public/css/account-linking-page.css
+- public/css/login-single-sign-on.css
+- public/css/sso-brand-badge.css
+- public/js/account-unlink.js
+- public/js/login-single-sign-on.js
+- public/js/sso-brand-badge.js
+
+Security notes:
+- OAuth callback failures now redirect with a generic public message while detailed errors remain in debug/log channels.
+- Log ordering is restricted to a whitelist of known database columns.
+- Single-account unlink AJAX now requires the user-specific nonce and no longer accepts the global admin nonce.
+- Full login bans are enforced for SSO login attempts and WordPress password authentication during the ban period.
+- Role redirect settings are sanitized to relative paths or safe validated URLs.
+
+UX notes:
+- "Login Button Theme" is renamed to "Single Sign-On Theme" because it now controls login, account-linking, and verification overlay presentation.
+- User management now includes role redirect inputs for all editable roles.
+- Security settings explain the practical impact of High vs Medium security levels.
+- Tools now contains debug guidance, log controls, SSO user visibility, backup/restore, and factory reset.
+- Logs now include filtering controls.
+
+Rollback plan:
+Restore the previous tag, deactivate and reactivate the plugin if needed, then verify provider configuration and login flow. If database settings need rollback, import a configuration backup from Tools > Backup & Restore before re-enabling production SSO.
+
+Verification:
+- PHP syntax check passed for all plugin PHP files.
+- JavaScript syntax check passed for admin and public JavaScript files.
+- Renamed asset references were checked with ripgrep.

@@ -184,6 +184,22 @@
     cursor: not-allowed;
 }
 
+.aoauth-frontend-unlink-message {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    background: #ecfdf5;
+    border: 1px solid #bbf7d0;
+    border-radius: 6px;
+    color: #166534;
+    font-size: 14px;
+}
+
+.aoauth-frontend-unlink-message.is-error {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
+}
+
 @media (max-width: 600px) {
     .aoauth-frontend-connected {
         flex-direction: column;
@@ -395,6 +411,7 @@
 }
 
 .aoauth-verification-overlay {
+    --aoauth-overlay-color: #0f172a;
     position: fixed;
     inset: 0;
     z-index: 999999;
@@ -417,10 +434,35 @@
     top: var(--aoauth-overlay-y, 50%);
     width: 112px;
     height: 112px;
-    background: rgba(15,23,42,0.86);
+    background: var(--aoauth-overlay-color);
     border-radius: 50%;
     transform: translate(-50%, -50%) scale(0.18);
     animation: aoauthOverlayExpand 0.55s ease forwards;
+}
+
+.aoauth-overlay-panel::before {
+    left: 50%;
+    top: 50%;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    transform: translate(-50%, -50%) scale(1);
+    animation: none;
+}
+
+.aoauth-overlay-minimal {
+    backdrop-filter: blur(3px);
+}
+
+.aoauth-overlay-minimal::before {
+    left: 50%;
+    top: 50%;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.72;
+    animation: none;
 }
 
 .aoauth-verification-panel {
@@ -450,6 +492,17 @@
     font-size: 18px;
     font-weight: 600;
     line-height: 1.4;
+}
+
+.aoauth-message-quiet .aoauth-verification-message {
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.aoauth-message-strong .aoauth-verification-message {
+    max-width: 24ch;
+    font-size: 22px;
+    font-weight: 700;
 }
 
 /* Theme-specific loader colors */

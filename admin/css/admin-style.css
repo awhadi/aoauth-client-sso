@@ -382,6 +382,36 @@
     border-bottom: none;
 }
 
+.aoauth-role-redirect-grid {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.aoauth-role-redirect-row {
+    display: grid;
+    grid-template-columns: minmax(140px, 220px) minmax(220px, 1fr);
+    gap: 12px;
+    align-items: center;
+}
+
+.aoauth-role-redirect-row span {
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.aoauth-log-filters {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(120px, 1fr)) auto;
+    gap: 10px;
+    align-items: center;
+    margin: 16px 0;
+}
+
+.aoauth-compact-table-wrap {
+    overflow-x: auto;
+}
+
 .aoauth-section-title {
     font-size: 18px;
     font-weight: 600;
@@ -1227,6 +1257,11 @@
 
 /* Responsive */
 @media (max-width: 900px) {
+    .aoauth-role-redirect-row,
+    .aoauth-log-filters {
+        grid-template-columns: 1fr;
+    }
+
     .aoauth-admin-content.two-column-layout {
         flex-direction: column;
     }

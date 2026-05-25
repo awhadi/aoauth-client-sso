@@ -273,7 +273,7 @@
         // ============================================
         // SAVE SETTINGS FORM
         // ============================================
-        $('#aoauth-settings-form').on('submit', function(e) {
+        $('.aoauth-settings-form').on('submit', function(e) {
             e.preventDefault();
             
             var formData = $(this).serialize();
@@ -567,13 +567,24 @@
         // ============================================
         // PAGINATED LOGS
         // ============================================
+        function getLogFilters() {
+            var filters = $('#aoauth-log-filters').serializeArray();
+            var data = {};
+            $.each(filters, function(index, item) {
+                data[item.name] = item.value;
+            });
+            return data;
+        }
+
         function loadLogsPage(page) {
-            $.post(aoauth_admin.ajaxurl, {
+            var data = $.extend(getLogFilters(), {
                 action: 'aoauth_get_logs',
                 page: page,
                 limit: 50,
                 nonce: aoauth_admin.nonce
-            }, function(response) {
+            });
+
+            $.post(aoauth_admin.ajaxurl, data, function(response) {
                 if (response.success) {
                     var tbody = $('#aoauth-logs-tbody');
                     tbody.empty();
@@ -636,6 +647,11 @@
         if ($('#aoauth-logs-pagination').length) {
             loadLogsPage(1);
         }
+
+        $('#aoauth-log-filters').on('submit', function(e) {
+            e.preventDefault();
+            loadLogsPage(1);
+        });
         
         // ============================================
         // GLOBAL AJAX ERROR HANDLER

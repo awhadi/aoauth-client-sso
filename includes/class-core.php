@@ -41,10 +41,49 @@ class AOAUTH_Core {
         add_action('login_enqueue_scripts', array($this, 'enqueue_login_assets'));
         add_action('login_form', array($this, 'render_login_buttons'));
         
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_brand_badge'));
+        add_action('wp_footer', array($this, 'render_brand_badge'));
+
         $this->debug->info('Plugin initialized');
         $this->debug->log_end('AOAUTH_Core::init');
     }
     
+    public function render_brand_badge() {
+    $settings = get_option('aoauth_settings', array());
+    if (empty($settings['enable_brand_badge'])) return;
+    if (!is_user_logged_in()) return;
+    $provider = get_user_meta(get_current_user_id(), '_aoauth_provider', true);
+    if (empty($provider)) return;
+
+    ?>
+    <div class="aoauth-brand-badge" aria-label="<?php esc_attr_e('Powered by aOAUTH SSO Client', 'aoauth-client-sso'); ?>">
+        <div class="aoauth-brand-badge-inner">
+            <div class="aoauth-brand-logo">
+                <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/logo.png'); ?>" alt="aOAUTH">
+            </div>
+            <span class="aoauth-brand-text"><?php esc_html_e('Powered by aOAUTH SSO Client', 'aoauth-client-sso'); ?></span>
+        </div>
+    </div>
+    <?php
+}
+
+    public function enqueue_brand_badge() {
+        $settings = get_option('aoauth_settings', array());
+
+        if (empty($settings['enable_brand_badge'])) return;
+        if (!is_user_logged_in()) return;
+
+            $provider = get_user_meta(get_current_user_id(), '_aoauth_provider', true);
+        if (empty($provider)) return;
+
+            wp_enqueue_style('aoauth-sso-brand-badge', AOAUTH_PLUGIN_URL . 'public/css/sso-brand-badge.css', array(), AOAUTH_VERSION);
+            wp_enqueue_script('aoauth-sso-brand-badge', AOAUTH_PLUGIN_URL . 'public/js/sso-brand-badge.js', array('jquery'), AOAUTH_VERSION, true);
+            wp_localize_script('aoauth-sso-brand-badge', 'aoauth_brand', array(
+            'message' => __('Powered by aOAUTH SSO Client', 'aoauth-client-sso'),
+            'logo_url' => AOAUTH_PLUGIN_URL . 'admin/images/logo.png',
+            'close_aria' => __('Close badge', 'aoauth-client-sso'),
+        ));
+    }
     public function activate() {
         $this->debug->log_start('AOAUTH_Core::activate');
         
@@ -60,6 +99,7 @@ class AOAUTH_Core {
     public static function get_default_settings() {
         return array(
             'enable_login_buttons' => '1',
+            'enable_brand_badge' => '1',
             'auto_create_users' => '1',
             'default_role' => 'subscriber',
             'allow_account_linking' => '0',
@@ -84,8 +124,37 @@ class AOAUTH_Core {
             'linking_page_use_theme' => '1',
             'linking_page_title' => 'Link Your Account',
             'bot_overlay_enabled' => '1',
-            'bot_overlay_message' => 'Verifying secure sign-in...'
+            'bot_overlay_message' => 'Verifying secure sign-in...',
+            'bot_overlay_variant' => 'spotlight',
+            'bot_overlay_color' => '#0f172a',
+            'bot_overlay_message_style' => 'standard',
+            'enable_bot_protection' => '0',
+            'bot_protection_provider' => 'turnstile',
+            'role_redirects' => self::get_default_role_redirects()
         );
+    }
+
+    public static function get_default_role_redirects() {
+        $redirects = array(
+            'administrator' => '/wp-admin',
+            'editor' => '/',
+            'author' => '/',
+            'contributor' => '/',
+            'subscriber' => '/',
+        );
+
+        if (function_exists('wp_roles')) {
+            $roles = wp_roles();
+            if ($roles && !empty($roles->roles)) {
+                foreach (array_keys($roles->roles) as $role_key) {
+                    if (!isset($redirects[$role_key])) {
+                        $redirects[$role_key] = '/';
+                    }
+                }
+            }
+        }
+
+        return $redirects;
     }
     
     public function deactivate() {
@@ -226,7 +295,7 @@ class AOAUTH_Core {
         
         wp_enqueue_style(
             'aoauth-public',
-            AOAUTH_PLUGIN_URL . 'public/css/public-style.css',
+            AOAUTH_PLUGIN_URL . 'public/css/login-single-sign-on.css',
             array(),
             AOAUTH_VERSION
         );
@@ -244,8 +313,10 @@ class AOAUTH_Core {
             $this->debug->debug('Theme CSS enqueued', array('theme' => $theme));
         }
         
-        $turnstile_enabled = !empty($settings['enable_turnstile']) && !empty($settings['turnstile_site_key']);
-        $recaptcha_enabled = !empty($settings['enable_recaptcha']) && !empty($settings['recaptcha_site_key']);
+        $bot_protection_enabled = !empty($settings['enable_bot_protection']) || !empty($settings['enable_turnstile']) || !empty($settings['enable_recaptcha']);
+        $bot_protection_provider = !empty($settings['bot_protection_provider']) ? sanitize_key($settings['bot_protection_provider']) : 'turnstile';
+        $turnstile_enabled = $bot_protection_enabled && $bot_protection_provider === 'turnstile' && !empty($settings['turnstile_site_key']);
+        $recaptcha_enabled = $bot_protection_enabled && $bot_protection_provider === 'recaptcha' && !empty($settings['recaptcha_site_key']);
         
         if ($turnstile_enabled) {
             wp_enqueue_script(
@@ -269,7 +340,7 @@ class AOAUTH_Core {
         
         wp_enqueue_script(
             'aoauth-public',
-            AOAUTH_PLUGIN_URL . 'public/js/public-script.js',
+            AOAUTH_PLUGIN_URL . 'public/js/login-single-sign-on.js',
             array('jquery'),
             AOAUTH_VERSION,
             true
@@ -288,7 +359,10 @@ class AOAUTH_Core {
                 'type' => 'turnstile',
                 'site_key' => $settings['turnstile_site_key'],
                 'overlay_enabled' => !empty($settings['bot_overlay_enabled']),
-                'overlay_message' => $settings['bot_overlay_message'] ?? 'Verifying secure sign-in...'
+                'overlay_message' => $settings['bot_overlay_message'] ?? 'Verifying secure sign-in...',
+                'overlay_variant' => $settings['bot_overlay_variant'] ?? 'spotlight',
+                'overlay_color' => $settings['bot_overlay_color'] ?? '#0f172a',
+                'overlay_message_style' => $settings['bot_overlay_message_style'] ?? 'standard'
             );
         } elseif ($recaptcha_enabled) {
             $localize_data['bot_protection'] = array(
@@ -296,7 +370,10 @@ class AOAUTH_Core {
                 'site_key' => $settings['recaptcha_site_key'],
                 'score_threshold' => floatval($settings['recaptcha_score_threshold'] ?? 0.5),
                 'overlay_enabled' => !empty($settings['bot_overlay_enabled']),
-                'overlay_message' => $settings['bot_overlay_message'] ?? 'Verifying secure sign-in...'
+                'overlay_message' => $settings['bot_overlay_message'] ?? 'Verifying secure sign-in...',
+                'overlay_variant' => $settings['bot_overlay_variant'] ?? 'spotlight',
+                'overlay_color' => $settings['bot_overlay_color'] ?? '#0f172a',
+                'overlay_message_style' => $settings['bot_overlay_message_style'] ?? 'standard'
             );
         } else {
             $localize_data['bot_protection'] = array(
