@@ -1,0 +1,100 @@
+aOAUTH Client SSO - Review and Hardening Notes
+Version: 1.6.4
+
+Latest changes - Version 1.6.4 styling stability update:
+- Incremented plugin version from 1.6.3 to 1.6.4.
+- Fixed the Settings page factory reset modal so it remains hidden until the Factory Reset button is clicked.
+- Added a modal-specific hidden CSS rule so shared modal display styles cannot override hidden state.
+- Reduced shared admin button height and padding for a more compact WordPress admin UX.
+- Reduced remaining button-specific padding on provider, wizard, settings, and test buttons to match the plugin interface.
+- Moved the WordPress admin menu icon sizing into admin/css/admin-menu-icon.css.
+- Enqueued the admin menu icon stylesheet across WordPress admin pages so the plugin sidebar icon stays correctly sized after navigating away from the plugin dashboard.
+- Preserved existing button IDs and action-specific classes so JavaScript handlers continue to work as before.
+
+Verification performed for Version 1.6.4:
+- Ran PHP syntax checks for the changed plugin bootstrap, admin controller, SSO handler, and admin view files.
+- Ran JavaScript syntax checks for admin/js/admin-script.js, admin/js/wizard-script.js, admin/js/settings-controls.js, and admin/js/toast-notifications.js.
+- Checked that the factory reset hidden state is now stronger than the shared modal display style.
+- Confirmed the current git repository has no prior commits yet; this release will be committed as the initial repository snapshot.
+- Created the versioned release archive at plugin/aoauth-ssh-client-v1.6.4.zip.
+
+Latest changes - Version 1.6.3 styling and UX maintenance update:
+- Incremented plugin version from 1.6.2 to 1.6.3.
+- Added shared admin button classes for primary, secondary, danger, icon, and danger-ghost button states.
+- Updated Providers, Wizard, Settings, Logs, unlink, backup/import, factory reset, and confirmation modal buttons to use the shared button classes while preserving existing IDs and action classes for JavaScript behavior.
+- Kept the version badge and Feature Details buttons separate as requested.
+- Renamed the backup/export controls to "Download Settings" and "Restore Settings".
+- Preserved the factory reset 10-second disabled confirmation countdown and moved its modal buttons to the shared button classes.
+- Replaced the generic provider toggle toast with provider-specific enabled/disabled messages such as "Google enabled" or "Keycloak disabled".
+- Externalized Settings page toggle behavior into admin/js/settings-controls.js.
+- Removed inline styles and inline scripts from the edited admin views, replacing them with reusable CSS classes and external JavaScript.
+- Externalized frontend unlink shortcode styles into public/css/public-style.css.
+
+Verification performed for Version 1.6.3:
+- Ran PHP syntax checks for the changed plugin bootstrap, admin controller, SSO handler, and admin view files.
+- Ran JavaScript syntax checks for admin/js/admin-script.js, admin/js/wizard-script.js, admin/js/settings-controls.js, and admin/js/toast-notifications.js.
+- Searched for the old backup labels, generic provider-status toast, edited-view inline scripts/styles, and old WordPress button classes in the updated areas.
+
+Latest changes - Version 1.6.2 maintenance update:
+- Merged duplicate admin toast notification functions into one shared aoauthShowToast() helper.
+- Externalized shared toast behavior into admin/js/toast-notifications.js.
+- Externalized shared glass-style toast presentation into admin/css/toast-notifications.css.
+- Removed duplicated toast CSS from admin/css/admin-style.css and admin/css/wizard-style.css.
+- Updated admin and wizard notifications to use the same glass-style toast for success, error, warning, and info messages.
+- Replaced the wizard connection test's misleading client_credentials token request with safer OAuth/OIDC endpoint probes.
+- Added authorization endpoint, token endpoint, optional UserInfo endpoint, and optional JWKS endpoint checks.
+- Added clearer connection-test messaging that explains client secret validation requires a real OAuth callback.
+- Incremented plugin version from 1.6.1 to 1.6.2.
+
+Latest changes - Version 1.6.1 maintenance update:
+- Centralized default plugin settings in AOAUTH_Core::get_default_settings().
+- Reused the centralized defaults for activation and factory reset.
+- Merged admin settings sanitization for save and import flows into one method.
+- Removed the redundant private ID token parse-and-normalize helper after the validated token path replaced it.
+- Merged duplicate nested-array lookup helpers into AOAUTH_Security::get_nested_value().
+
+Review scope:
+- Security review of OAuth/OIDC login, callback handling, admin AJAX, bot protection, secret storage, import/export, redirects, and account linking.
+- Performance review of request-time loading, logging, pagination, and remote provider calls.
+- Usability review of admin setup, provider testing, login buttons, and account-linking flows.
+
+Security issues addressed:
+- Replaced OAuth state creation with a high-entropy per-login random token.
+- Added an OIDC nonce to each login request and verify it on ID token return.
+- Added ID token validation for expiration, not-before time, nonce, audience/client ID, issuer, verified email, and RS256 JWKS signatures.
+- Added JWKS retrieval and transient caching for provider signing keys.
+- Preserved OIDC discovery metadata, including issuer and jwks_uri, in provider configuration.
+- Added default OIDC metadata for Google and Apple when older saved configurations do not contain issuer or jwks_uri.
+- Changed bot protection from client-side-only gating to server-enforced one-time verification tokens.
+- Encrypted Turnstile and reCAPTCHA secret keys before storage.
+- Decrypted protected captcha secret keys only when needed for display or verification.
+- Removed captcha secrets from exported configuration backups.
+- Sanitized imported settings and provider configuration before saving.
+- Tightened redirect URL validation with WordPress-safe redirect validation and http/https scheme checks.
+- Validated default role settings before saving.
+- Clamped rate-limit and account-linking security settings to safe ranges.
+
+Performance issues addressed:
+- Cached JWKS signing keys for one hour to avoid repeated remote key fetches on every login.
+- Clamped AJAX log pagination limits to avoid excessive admin-ajax load.
+
+Usability notes:
+- Existing setup, login, account-linking, provider management, bot protection, import/export, and logging functionality was preserved.
+- Provider test behavior is still based on the existing plugin flow so current UX is not removed.
+- Existing saved providers without discovery metadata continue to work, but full ID token signature validation requires jwks_uri. Google and Apple are covered with built-in defaults; custom OIDC providers should use discovery or include jwks_uri.
+
+Verification performed:
+- Ran PHP syntax checks across all PHP files.
+- Ran JavaScript syntax checks for changed admin scripts.
+- No Git repository was present in this folder, so no git diff or commit was produced.
+
+Changed files:
+- aoauth-client-sso.php
+- admin/class-admin.php
+- admin/css/admin-style.css
+- admin/css/toast-notifications.css
+- admin/css/wizard-style.css
+- admin/js/admin-script.js
+- admin/js/toast-notifications.js
+- admin/js/wizard-script.js
+- review.txt

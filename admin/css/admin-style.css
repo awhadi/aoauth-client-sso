@@ -1,0 +1,1236 @@
+/* Animated Gradient Header */
+.aoauth-admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 40px;
+    background: linear-gradient(135deg, #667eea 0%, #654089 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+    background-size: 300% 300%;
+    color: #fff;
+    animation: gradientShift 8s ease infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+
+/* Add subtle moving particles effect */
+.aoauth-admin-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: shimmer 3s infinite;
+}
+.aoauth-admin-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #fff, transparent, #fff);
+    animation: borderPulse 2s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+@keyframes borderPulse {
+    0% {
+        opacity: 0.3;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.3;
+    }
+}
+
+/* Header Logo - No animation, just hover effect */
+.aoauth-header-logo {
+    width: 54px;
+    height: 54px;
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+
+/* Header Title - Restored glow animation */
+.aoauth-header-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+    color: #fff;
+    position: relative;
+    display: inline-block;
+    animation: titleGlow 2s ease-in-out infinite;
+}
+
+@keyframes titleGlow {
+    0% {
+        text-shadow: 0 0 0px rgba(255,255,255,0);
+    }
+    50% {
+        text-shadow: 0 0 10px rgba(255,255,255,0.5);
+    }
+    100% {
+        text-shadow: 0 0 0px rgba(255,255,255,0);
+    }
+}
+
+/* Header Tagline - No fadeInUp animation, just static */
+.aoauth-header-tagline {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.9;
+    color: rgba(255,255,255,0.9);
+}
+
+/* Version Badge - Restored pulse animation */
+.aoauth-version {
+    background: rgba(255,255,255,0.25);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-family: monospace;
+    backdrop-filter: blur(5px);
+    transition: all 0.2s ease;
+    animation: pulse 2s ease infinite;
+}
+
+.aoauth-version:hover {
+    background: rgba(255,255,255,0.4);
+    transform: scale(1.02);
+    animation: none;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255,255,255,0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(255,255,255,0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255,255,255,0);
+    }
+}
+
+.aoauth-admin-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 6px 14px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.aoauth-admin-button:focus-visible {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+.aoauth-admin-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    transform: none;
+}
+
+.aoauth-admin-button-primary {
+    background: #667eea;
+    border-color: #667eea;
+    color: #fff;
+}
+
+.aoauth-admin-button-primary:hover:not(:disabled),
+.aoauth-admin-button-primary:focus:not(:disabled) {
+    background: #5a6fd6;
+    border-color: #5a6fd6;
+    color: #fff;
+}
+
+.aoauth-admin-button-secondary {
+    background: #fff;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.aoauth-admin-button-secondary:hover:not(:disabled),
+.aoauth-admin-button-secondary:focus:not(:disabled) {
+    background: #f0f0ff;
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.aoauth-admin-button-danger {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: #fff;
+}
+
+.aoauth-admin-button-danger:hover:not(:disabled),
+.aoauth-admin-button-danger:focus:not(:disabled) {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #fff;
+}
+
+.aoauth-admin-button-danger-ghost {
+    background: transparent;
+    border-color: transparent;
+    color: #ef4444;
+}
+
+.aoauth-admin-button-danger-ghost:hover:not(:disabled),
+.aoauth-admin-button-danger-ghost:focus:not(:disabled) {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.aoauth-admin-button-icon {
+    width: 32px;
+    padding: 6px;
+}
+
+.aoauth-admin-button .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.aoauth-hidden-field,
+.aoauth-is-hidden {
+    display: none;
+}
+
+.aoauth-inline-form {
+    display: inline-block;
+}
+
+.aoauth-inline-spinner {
+    float: none;
+    margin: 0 5px 0 0;
+}
+
+.aoauth-setting-help-spaced {
+    margin-bottom: 20px;
+}
+
+.aoauth-setting-divider-row {
+    border-bottom: none;
+    margin-top: 10px;
+}
+
+/* Feature Button - Shimmer only on hover */
+.aoauth-feature-btn {
+    padding: 10px 20px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    color: #fff;
+    backdrop-filter: blur(5px);
+    position: relative;
+    overflow: hidden;
+}
+
+.aoauth-feature-btn:hover::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmerOnce 0.6s ease forwards;
+}
+
+@keyframes shimmerOnce {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+.aoauth-feature-btn:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* Brand Section - No slide animation */
+.aoauth-header-brand {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Header Actions - No slide animation */
+.aoauth-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Main Container */
+.aoauth-admin-wrap {
+    max-width: 100%;
+    margin: 10px 20px 10px 0;
+    background: rgb(255, 255, 255);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+
+
+/* Admin Tabs - Smooth transition for tab switching */
+.aoauth-admin-tabs {
+    display: flex;
+    border-bottom: 2px solid #e5e7eb;
+    padding: 0 32px;
+    background: #f9fafb;
+}
+
+.aoauth-tab {
+    padding: 16px 24px;
+    color: #6b7280;
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s ease;
+}
+
+.aoauth-tab:hover {
+    color: #374151;
+}
+
+.aoauth-tab:first-child {
+    padding-left: 0;
+}
+.aoauth-tab.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+/* Admin Content - No animation */
+.aoauth-admin-content {
+    padding: 32px;
+}
+
+/* Two Column Layout */
+.aoauth-admin-content.two-column-layout {
+    display: flex;
+    gap: 30px;
+    padding: 32px;
+}
+
+.aoauth-settings-column {
+    flex: 2;
+    min-width: 0;
+    overflow: visible;
+}
+
+.aoauth-tools-column {
+    flex: 1;
+    min-width: 280px;
+}
+
+/* Settings Sections */
+.aoauth-settings-section {
+    margin-bottom: 40px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.aoauth-settings-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.aoauth-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0 0 24px 0;
+    color: #111827;
+}
+
+/* Setting Rows */
+.aoauth-setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 16px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.aoauth-setting-row:last-child {
+    border-bottom: none;
+}
+
+.aoauth-setting-row-full {
+    margin-bottom: 24px;
+    padding: 16px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.aoauth-setting-label {
+    flex: 1;
+    padding-right: 20px;
+}
+
+.aoauth-setting-label-full {
+    margin-bottom: 16px;
+}
+
+.aoauth-setting-label label,
+.aoauth-setting-label-full label {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 14px;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.aoauth-setting-help {
+    color: #6b7280;
+    font-size: 12px;
+    margin: 4px 0 0 0;
+}
+
+.aoauth-setting-control {
+    flex: 1;
+}
+
+.aoauth-setting-control-full {
+    width: 100%;
+}
+
+/* Theme Selector Grid Layout */
+.aoauth-theme-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+    margin-top: 10px;
+}
+
+/* Theme Carousel */
+.aoauth-theme-carousel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    width: 100%;
+}
+
+.theme-carousel-container {
+    flex: 1;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    max-width: calc(100% - 80px);
+}
+
+.theme-carousel-container::-webkit-scrollbar {
+    height: 4px;
+}
+
+.theme-carousel-container::-webkit-scrollbar-track {
+    background: #e2e8f0;
+    border-radius: 4px;
+}
+
+.theme-carousel-container::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 4px;
+}
+
+.theme-carousel-wrapper {
+    display: flex;
+    gap: 12px;
+    padding: 4px 2px;
+}
+
+.aoauth-theme-card {
+    flex-shrink: 0;
+    width: 90px;
+    cursor: pointer;
+    text-align: center;
+    padding: 10px 6px;
+    border-radius: 10px;
+    background: #fff;
+    border: 2px solid #e2e8f0;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.aoauth-theme-card:hover {
+    border-color: #94a3b8;
+    transform: translateY(-2px);
+}
+
+.aoauth-theme-card.active {
+    border-color: #667eea;
+    background: #f0f4ff;
+}
+
+.theme-card-preview {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 10px 6px;
+    margin-bottom: 8px;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-preview-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px 8px;
+    font-size: 10px;
+    width: 100%;
+}
+
+.theme-preview-button .preview-icon img {
+    width: 14px;
+    height: 14px;
+}
+
+.theme-preview-button .preview-text {
+    font-size: 9px;
+}
+
+.theme-card-name {
+    font-size: 11px;
+    font-weight: 500;
+    color: #334155;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.aoauth-theme-card.active .theme-card-name {
+    color: #667eea;
+}
+
+.theme-active-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #10b981;
+    color: white;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.theme-nav-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+    color: #475569;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.theme-nav-btn:hover:not(:disabled) {
+    background: #f1f5f9;
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.theme-nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Toggle Switch */
+.aoauth-toggle {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+}
+
+.aoauth-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.aoauth-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #d1d5db;
+    border-radius: 26px;
+    transition: 0.2s;
+}
+
+.aoauth-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+
+.aoauth-toggle input:checked + .aoauth-toggle-slider {
+    background-color: #667eea;
+}
+
+.aoauth-toggle input:checked + .aoauth-toggle-slider:before {
+    transform: translateX(22px);
+}
+
+/* Form Controls */
+.aoauth-form-control {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.aoauth-form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+}
+
+.aoauth-number-input {
+    width: 100px;
+}
+
+/* Form Actions */
+.aoauth-form-actions {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.aoauth-save-settings-btn {
+    padding-inline: 20px;
+}
+
+/* Configure Header */
+.aoauth-configure-header {
+    margin-bottom: 24px;
+}
+
+.aoauth-add-app-btn {
+    padding: 8px 18px;
+}
+
+/* Applications List */
+.aoauth-applications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.aoauth-app-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    transition: all 0.2s;
+}
+
+.aoauth-app-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.aoauth-app-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.aoauth-app-icon img {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+}
+
+.aoauth-app-name {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.aoauth-app-protocol {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+}
+
+.aoauth-app-status.draft {
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.aoauth-app-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.aoauth-continue-setup-btn {
+    font-size: 13px;
+}
+
+.aoauth-edit-app-btn {
+    font-size: 13px;
+}
+
+.aoauth-delete-app-btn {
+    min-height: 32px;
+}
+
+/* Empty State */
+.aoauth-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.aoauth-empty-icon .dashicons {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #d1d5db;
+}
+
+.aoauth-empty-state h3 {
+    margin: 16px 0 8px;
+    color: #374151;
+}
+
+.aoauth-empty-state p {
+    color: #6b7280;
+    margin-bottom: 24px;
+}
+
+/* Stats Grid */
+.aoauth-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.aoauth-stat-card {
+    padding: 24px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.aoauth-stat-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 8px;
+}
+
+.aoauth-stat-label {
+    font-size: 14px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* Logs */
+.aoauth-logs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.aoauth-logs-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #111827;
+}
+
+.aoauth-logs-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.aoauth-logs-actions .aoauth-admin-button {
+    font-size: 13px;
+}
+
+.aoauth-logs-table-wrap {
+    overflow-x: auto;
+}
+
+.aoauth-logs-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.aoauth-logs-table th {
+    text-align: left;
+    padding: 12px 16px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+    color: #374151;
+    font-size: 13px;
+}
+
+.aoauth-logs-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+    color: #374151;
+}
+
+/* Status Badges */
+.aoauth-status-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.aoauth-status-success {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.aoauth-status-error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.aoauth-status-info {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+/* Tools Cards */
+.aoauth-tools-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.aoauth-tools-card h3 {
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.aoauth-tools-card p {
+    margin: 0 0 16px 0;
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.5;
+}
+
+.aoauth-tools-card .aoauth-note {
+    font-size: 12px;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+}
+
+.aoauth-tools-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.aoauth-tools-card.danger-zone {
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.aoauth-tools-card.danger-zone h3 {
+    color: #991b1b;
+}
+
+/* Backup Box */
+.aoauth-backup-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.aoauth-backup-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.aoauth-note {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 8px;
+}
+
+/* Modal */
+.aoauth-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aoauth-modal.aoauth-is-hidden {
+    display: none;
+}
+
+.aoauth-modal-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.aoauth-modal-buttons {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+#aoauth-countdown {
+    font-weight: bold;
+    font-size: 20px;
+    color: #ef4444;
+}
+
+.aoauth-pagination-links button, .aoauth-pagination-links span {
+    display: inline-block;
+    margin: 0 4px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    cursor: pointer;
+}
+
+.aoauth-page-current {
+    background: #667eea;
+    color: #fff;
+    border-color: #667eea;
+}
+
+.aoauth-notice {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+/* Theme Selector Grid Layout */
+.aoauth-theme-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+    margin-top: 10px;
+}
+
+/* Two Column Layout */
+.aoauth-admin-content.two-column-layout {
+    display: flex;
+    gap: 30px;
+    padding: 32px;
+}
+
+.aoauth-settings-column {
+    flex: 2;
+    min-width: 0;
+}
+
+.aoauth-tools-column {
+    flex: 1;
+    min-width: 280px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .aoauth-admin-content.two-column-layout {
+        flex-direction: column;
+    }
+    
+    .aoauth-tools-column {
+        order: -1;
+    }
+    
+    .aoauth-setting-row {
+        flex-direction: column;
+    }
+    
+    .aoauth-setting-label {
+        margin-bottom: 10px;
+        padding-right: 0;
+    }
+}
+
+/* ============================================
+   ACCOUNT UNLINKING STYLES
+   ============================================ */
+
+/* Profile Page Unlink Section */
+.aoauth-profile-unlink-section {
+    margin-top: 20px;
+    padding: 20px 0;
+    border-top: 1px solid #e5e7eb;
+}
+
+.aoauth-connected-info {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 12px;
+    border-left: 4px solid #10b981;
+}
+
+.aoauth-connected-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.aoauth-provider-icon-small {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+}
+
+.aoauth-connected-status {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.aoauth-unlink-warning {
+    background: #fef3c7;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+.aoauth-unlink-warning p {
+    margin: 0;
+    color: #92400e;
+    font-size: 13px;
+}
+
+.aoauth-unlink-profile-btn {
+    margin-top: 10px;
+}
+
+.aoauth-no-connection {
+    background: #f9fafb;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    color: #6b7280;
+}
+
+.aoauth-no-connection .dashicons {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: #9ca3af;
+    margin-bottom: 10px;
+}
+
+/* Users Table SSO Column */
+.aoauth-provider-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.aoauth-provider-cell-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+}
+
+.aoauth-no-provider,
+.aoauth-no-action {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* Users Table Unlink Button */
+.aoauth-unlink-user-btn {
+    min-height: 28px;
+    padding: 4px 8px;
+    font-size: 13px;
+}
+
+.aoauth-unlink-user-btn:disabled {
+    color: #9ca3af;
+}
+
+/* Unlink Modal */
+#aoauth-unlink-modal .aoauth-modal-content {
+    max-width: 450px;
+}
+
+#aoauth-unlink-modal .aoauth-modal-close {
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #9ca3af;
+    transition: color 0.2s;
+}
+
+#aoauth-unlink-modal .aoauth-modal-close:hover {
+    color: #374151;
+}
+
+#aoauth-unlink-modal .aoauth-unlink-warning-modal {
+    background: #fef3c7;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+#aoauth-unlink-modal .aoauth-unlink-warning-modal p {
+    margin: 0;
+    color: #92400e;
+    font-size: 14px;
+}
+
+#aoauth-unlink-modal .aoauth-modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+
+#aoauth-unlink-modal #aoauth-cancel-unlink {
+    background: #fff;
+    border: 1px solid #d1d5db;
+    color: #374151;
+}
+
+/* Responsive adjustments */
+@media (max-width: 782px) {
+    .aoauth-connected-badge {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .aoauth-unlink-user-btn .dashicons {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+    
+    .column-aoauth_actions {
+        width: 100px;
+    }
+}

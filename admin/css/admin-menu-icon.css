@@ -1,0 +1,6 @@
+#toplevel_page_aoauth-providers .wp-menu-image img {
+    width: 20px;
+    height: 20px;
+    padding: 7px 0;
+    object-fit: contain;
+}

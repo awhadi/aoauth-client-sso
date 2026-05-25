@@ -1,0 +1,445 @@
+.aoauth-login-buttons {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.aoauth-login-divider {
+    margin: 20px 0;
+    position: relative;
+    text-align: center;
+}
+
+.aoauth-login-divider span {
+    background: #f0f0f1;
+    padding: 0 15px;
+    color: #6b7280;
+    font-size: 13px;
+    position: relative;
+    z-index: 1;
+}
+
+.aoauth-login-divider:before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #dcdcde;
+}
+
+.aoauth-providers-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.aoauth-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px 20px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.aoauth-button-icon img {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
+
+.aoauth-button-text {
+    font-size: 14px;
+}
+
+.aoauth-is-hidden {
+    display: none;
+}
+
+.aoauth-admin-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 6px 14px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.aoauth-admin-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.aoauth-admin-button-secondary {
+    background: #fff;
+    border-color: #d1d5db;
+    color: #374151;
+}
+
+.aoauth-admin-button-secondary:hover:not(:disabled) {
+    background: #f0f0ff;
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.aoauth-admin-button-danger {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #fff;
+}
+
+.aoauth-admin-button-danger:hover:not(:disabled) {
+    background: #b91c1c;
+    border-color: #b91c1c;
+    color: #fff;
+}
+
+.aoauth-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aoauth-modal.aoauth-is-hidden {
+    display: none;
+}
+
+.aoauth-modal-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.aoauth-modal-buttons {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.aoauth-frontend-unlink {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+.aoauth-frontend-connected {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.aoauth-frontend-provider-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin: 0 5px;
+}
+
+.aoauth-frontend-unlink-btn {
+    background: #dc2626;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.aoauth-frontend-unlink-btn:hover {
+    background: #b91c1c;
+}
+
+.aoauth-frontend-unlink-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+    .aoauth-frontend-connected {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* Simple Theme */
+.aoauth-theme-simple .aoauth-button {
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    color: #374151;
+}
+.aoauth-theme-simple .aoauth-button:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+/* Modern Theme */
+.aoauth-theme-modern .aoauth-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(102,126,234,0.3);
+}
+.aoauth-theme-modern .aoauth-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+    background: linear-gradient(135deg, #5a6fd6 0%, #6a3d8f 100%);
+}
+.aoauth-theme-modern .aoauth-button-icon img {
+    filter: brightness(0) invert(1);
+}
+
+/* Icon Only Theme */
+.aoauth-theme-icon-only .aoauth-providers-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+.aoauth-theme-icon-only .aoauth-button {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    padding: 0;
+}
+.aoauth-theme-icon-only .aoauth-button-text {
+    display: none;
+}
+.aoauth-theme-icon-only .aoauth-button:hover {
+    transform: scale(1.1);
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102,126,234,0.2);
+}
+.aoauth-theme-icon-only .aoauth-button-icon img {
+    width: 24px;
+    height: 24px;
+}
+
+/* Rounded Theme */
+.aoauth-theme-rounded .aoauth-button {
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 50px;
+    color: #374151;
+    padding: 12px 24px;
+}
+.aoauth-theme-rounded .aoauth-button:hover {
+    background: #f9fafb;
+    border-color: #667eea;
+    padding-left: 28px;
+    padding-right: 28px;
+}
+
+/* Gradient Theme */
+.aoauth-theme-gradient .aoauth-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+}
+.aoauth-theme-gradient .aoauth-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+.aoauth-theme-gradient .aoauth-button:hover::before {
+    left: 100%;
+}
+.aoauth-theme-gradient .aoauth-button:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(102,126,234,0.4);
+}
+.aoauth-theme-gradient .aoauth-button-icon img {
+    filter: brightness(0) invert(1);
+}
+
+/* Outline Theme */
+.aoauth-theme-outline .aoauth-button {
+    background: transparent;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    color: #667eea;
+}
+.aoauth-theme-outline .aoauth-button:hover {
+    background: #667eea;
+    color: #fff;
+    transform: translateY(-2px);
+}
+.aoauth-theme-outline .aoauth-button:hover .aoauth-button-icon img {
+    filter: brightness(0) invert(1);
+}
+
+/* Provider Badge for Users Page */
+.aoauth-provider-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #dbeafe;
+    color: #1e40af;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.aoauth-provider-badge.native {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+/* Layout styles for login buttons */
+.aoauth-layout-vertical .aoauth-providers-grid {
+    flex-direction: column;
+    gap: 12px;
+}
+
+.aoauth-layout-horizontal .aoauth-providers-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+.aoauth-layout-grid .aoauth-providers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+/* Beautiful Loading Animation */
+.aoauth-button-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.aoauth-loader {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    animation: fadeInUp 0.3s ease;
+}
+
+.aoauth-loader-svg {
+    animation: rotateSpinner 1.2s linear infinite;
+}
+
+.aoauth-loader-circle {
+    stroke: rgba(255, 255, 255, 0.2);
+}
+
+.aoauth-loader-path {
+    stroke: #fff;
+    stroke-linecap: round;
+    animation: dashSpinner 1.5s ease-in-out infinite;
+}
+
+.aoauth-loader-text {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+/* Theme-specific loader colors */
+.aoauth-theme-simple .aoauth-loader-path {
+    stroke: #667eea;
+}
+
+.aoauth-theme-outline .aoauth-loader-path {
+    stroke: #667eea;
+}
+
+.aoauth-theme-outline .aoauth-loader-text {
+    color: #667eea;
+}
+
+.aoauth-theme-rounded .aoauth-loader-path {
+    stroke: #667eea;
+}
+
+/* Animations */
+@keyframes rotateSpinner {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes dashSpinner {
+    0% {
+        stroke-dasharray: 1, 150;
+        stroke-dashoffset: 0;
+    }
+    50% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -35;
+    }
+    100% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -124;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Firefox-specific fixes */
+@-moz-document url-prefix() {
+    .aoauth-button {
+        transition: all 0.3s ease !important;
+    }
+    
+    .aoauth-loader-svg {
+        animation-duration: 1s;
+    }
+    
+    .aoauth-button-loading {
+        filter: brightness(0.95);
+    }
+}

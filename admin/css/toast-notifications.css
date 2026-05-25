@@ -1,0 +1,111 @@
+.aoauth-toast-container {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 999999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: min(360px, calc(100vw - 32px));
+}
+
+.aoauth-toast {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 48px;
+    padding: 14px 18px;
+    color: #111827;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.82);
+    border-left: 4px solid rgba(59, 130, 246, 0.78);
+    border-radius: 8px;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.16);
+    -webkit-backdrop-filter: blur(16px) saturate(165%);
+    backdrop-filter: blur(16px) saturate(165%);
+    cursor: pointer;
+    animation: aoauth-toast-slide-in 0.3s ease-out;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.aoauth-toast:hover,
+.aoauth-toast:focus-visible {
+    transform: translateX(-4px);
+    box-shadow: 0 22px 50px rgba(15, 23, 42, 0.2);
+    outline: none;
+}
+
+.aoauth-toast-success {
+    border-left-color: rgba(16, 185, 129, 0.82);
+}
+
+.aoauth-toast-error {
+    border-left-color: rgba(239, 68, 68, 0.82);
+}
+
+.aoauth-toast-warning {
+    border-left-color: rgba(245, 158, 11, 0.86);
+}
+
+.aoauth-toast-info {
+    border-left-color: rgba(59, 130, 246, 0.82);
+}
+
+.aoauth-toast-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 24px;
+    width: 24px;
+    height: 24px;
+    color: #111827;
+    background: rgba(255, 255, 255, 0.64);
+    border: 1px solid rgba(17, 24, 39, 0.08);
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.aoauth-toast-message {
+    flex: 1;
+    min-width: 0;
+    color: #111827;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.aoauth-toast-exiting {
+    animation: aoauth-toast-fade-out 0.3s ease-out forwards;
+}
+
+@keyframes aoauth-toast-slide-in {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes aoauth-toast-fade-out {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .aoauth-toast-container {
+        right: 16px;
+        bottom: 16px;
+    }
+}

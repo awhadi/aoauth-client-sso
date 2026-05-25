@@ -1,0 +1,1466 @@
+<?php
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+class AOAUTH_Admin {
+    private $security;
+    private $logger;
+    
+    public function __construct() {
+        $this->security = new AOAUTH_Security();
+        $this->logger = new AOAUTH_Logger();
+    }
+    
+    public function init() {
+        add_action('admin_menu', array($this, 'add_admin_menu'));
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
+        add_action('wp_ajax_aoauth_save_application', array($this, 'ajax_save_application'));
+        add_action('wp_ajax_aoauth_delete_application', array($this, 'ajax_delete_application'));
+        add_action('wp_ajax_aoauth_save_settings', array($this, 'ajax_save_settings'));
+        add_action('wp_ajax_aoauth_discover_endpoints', array($this, 'ajax_discover_endpoints'));
+        add_action('wp_ajax_aoauth_toggle_provider', array($this, 'ajax_toggle_provider'));
+        add_action('wp_ajax_aoauth_get_logs', array($this, 'ajax_get_logs'));
+        add_action('wp_ajax_aoauth_clear_logs', array($this, 'ajax_clear_logs'));
+        add_action('wp_ajax_aoauth_export_logs', array($this, 'ajax_export_logs'));
+        add_action('wp_ajax_aoauth_export_config', array($this, 'ajax_export_config'));
+        add_action('wp_ajax_aoauth_import_config', array($this, 'ajax_import_config'));
+        add_action('wp_ajax_aoauth_test_connection', array($this, 'ajax_test_connection'));
+        add_action('wp_ajax_aoauth_preview_theme', array($this, 'ajax_preview_theme'));
+        add_action('wp_ajax_aoauth_factory_reset', array($this, 'ajax_factory_reset'));
+        
+        // Account unlinking AJAX handlers
+        add_action('wp_ajax_aoauth_unlink_account', array($this, 'ajax_unlink_account'));
+        add_action('wp_ajax_aoauth_bulk_unlink_accounts', array($this, 'ajax_bulk_unlink_accounts'));
+        
+        // Profile page and users table hooks
+        add_action('show_user_profile', array($this, 'render_profile_unlink_section'));
+        add_action('edit_user_profile', array($this, 'render_profile_unlink_section'));
+        add_filter('manage_users_columns', array($this, 'add_unlink_column'));
+        add_filter('manage_users_custom_column', array($this, 'render_unlink_column'), 10, 3);
+        add_filter('bulk_actions-users', array($this, 'add_bulk_unlink_action'));
+        add_filter('handle_bulk_actions-users', array($this, 'handle_bulk_unlink_action'), 10, 3);
+        
+        // Bot protection AJAX handlers
+        add_action('wp_ajax_nopriv_aoauth_verify_turnstile', array($this, 'ajax_verify_turnstile'));
+        add_action('wp_ajax_aoauth_verify_turnstile', array($this, 'ajax_verify_turnstile'));
+        add_action('wp_ajax_nopriv_aoauth_verify_recaptcha', array($this, 'ajax_verify_recaptcha'));
+        add_action('wp_ajax_aoauth_verify_recaptcha', array($this, 'ajax_verify_recaptcha'));
+        
+        add_filter('plugin_action_links_' . AOAUTH_PLUGIN_BASENAME, array($this, 'add_plugin_action_links'));
+    }
+    
+    public function add_admin_menu() {
+        global $submenu;
+        
+        // Main menu with plugin name
+        add_menu_page(
+            __('aOAUTH Client SSO', 'aoauth-client-sso'),
+            __('aOAUTH SSO', 'aoauth-client-sso'),
+            'manage_options',
+            'aoauth-providers',
+            array($this, 'render_connect_page'),
+            AOAUTH_PLUGIN_URL . 'admin/images/logo.png',
+            30
+        );
+        
+        remove_submenu_page('aoauth-providers', 'aoauth-providers');
+        
+        add_submenu_page(
+            'aoauth-providers',
+            __('Providers', 'aoauth-client-sso'),
+            __('Providers', 'aoauth-client-sso'),
+            'manage_options',
+            'aoauth-providers',
+            array($this, 'render_connect_page')
+        );
+        
+        // Submenu: Settings
+        add_submenu_page(
+            'aoauth-providers',
+            __('Settings', 'aoauth-client-sso'),
+            __('Settings', 'aoauth-client-sso'),
+            'manage_options',
+            'aoauth-settings',
+            array($this, 'render_general_page')
+        );
+        
+        // Submenu: Logs
+        add_submenu_page(
+            'aoauth-providers',
+            __('Logs', 'aoauth-client-sso'),
+            __('Logs', 'aoauth-client-sso'),
+            'manage_options',
+            'aoauth-logs',
+            array($this, 'render_logs_page')
+        );
+        
+        // Hidden page: Setup Wizard
+        add_submenu_page(
+            null,
+            __('Setup Wizard', 'aoauth-client-sso'),
+            __('Setup Wizard', 'aoauth-client-sso'),
+            'manage_options',
+            'aoauth-wizard',
+            array($this, 'render_wizard_page')
+        );
+    }
+    
+    public function enqueue_admin_assets($hook) {
+        wp_enqueue_style(
+            'aoauth-admin-menu-icon',
+            AOAUTH_PLUGIN_URL . 'admin/css/admin-menu-icon.css',
+            array(),
+            AOAUTH_VERSION
+        );
+
+        // Allow on all aoauth pages, profile, user-edit, AND the main users page
+        if (strpos($hook, 'aoauth') === false && 
+            $hook !== 'profile.php' && 
+            $hook !== 'user-edit.php' &&
+            $hook !== 'users.php') {
+            return;
+        }
+        
+        wp_enqueue_style(
+            'aoauth-admin',
+            AOAUTH_PLUGIN_URL . 'admin/css/admin-style.css',
+            array(),
+            AOAUTH_VERSION
+        );
+
+        wp_enqueue_style(
+            'aoauth-toast-notifications',
+            AOAUTH_PLUGIN_URL . 'admin/css/toast-notifications.css',
+            array(),
+            AOAUTH_VERSION
+        );
+
+        wp_enqueue_script(
+            'aoauth-toast-notifications',
+            AOAUTH_PLUGIN_URL . 'admin/js/toast-notifications.js',
+            array('jquery'),
+            AOAUTH_VERSION,
+            true
+        );
+        
+        wp_enqueue_script(
+            'aoauth-admin',
+            AOAUTH_PLUGIN_URL . 'admin/js/admin-script.js',
+            array('jquery', 'jquery-ui-sortable', 'aoauth-toast-notifications'),
+            AOAUTH_VERSION,
+            true
+        );
+
+        $current_page = isset($_GET['page']) ? sanitize_key($_GET['page']) : '';
+        if ($current_page === 'aoauth-settings') {
+            wp_enqueue_script(
+                'aoauth-settings-controls',
+                AOAUTH_PLUGIN_URL . 'admin/js/settings-controls.js',
+                array('jquery', 'aoauth-admin'),
+                AOAUTH_VERSION,
+                true
+            );
+        }
+        
+        $available_themes = aoauth_core()->get_available_themes();
+        
+        wp_localize_script('aoauth-admin', 'aoauth_admin', array(
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('aoauth_admin_nonce'),
+            'plugin_url' => AOAUTH_PLUGIN_URL,
+            'available_themes' => $available_themes,
+            'providers' => aoauth_core()->get_providers_manager()->get_providers_list(),
+            'translations' => array(
+                'confirm_delete' => __('Are you sure you want to delete this application?', 'aoauth-client-sso'),
+                'save_success' => __('Settings saved successfully', 'aoauth-client-sso'),
+                'save_error' => __('Error saving settings', 'aoauth-client-sso'),
+                'test_success' => __('Configuration validated! Provider enabled.', 'aoauth-client-sso'),
+                'test_error' => __('Configuration validation failed', 'aoauth-client-sso'),
+                'discover_success' => __('Endpoints discovered successfully', 'aoauth-client-sso'),
+                'discover_error' => __('Failed to discover endpoints', 'aoauth-client-sso'),
+                'copied' => __('Copied to clipboard', 'aoauth-client-sso'),
+                'confirm_disable_logs' => __('Disabling logs will stop recording events. Are you sure?', 'aoauth-client-sso'),
+                'confirm_clear_logs' => __('Are you sure you want to clear all logs? This action cannot be undone.', 'aoauth-client-sso'),
+                'import_success' => __('Configuration imported successfully', 'aoauth-client-sso'),
+                'import_error' => __('Failed to import configuration', 'aoauth-client-sso'),
+                // New translations for unlinking
+                'confirm_unlink' => __('Are you sure you want to unlink this SSO account?', 'aoauth-client-sso'),
+                'confirm_bulk_unlink' => __('Are you sure you want to unlink SSO accounts for selected users?', 'aoauth-client-sso'),
+                'unlink_success' => __('SSO account unlinked successfully', 'aoauth-client-sso'),
+                'unlink_error' => __('Error unlinking SSO account', 'aoauth-client-sso'),
+                'unlink_warning' => __('After unlinking, this user will no longer be able to log in using this SSO provider.', 'aoauth-client-sso'),
+                'no_provider' => __('No SSO provider linked', 'aoauth-client-sso'),
+                'unlink' => __('Unlink', 'aoauth-client-sso'),
+            )
+        ));
+        
+        if ($hook === 'admin_page_aoauth-wizard' || $hook === 'aoauth-sso_page_aoauth-wizard') {
+            wp_enqueue_style(
+                'aoauth-wizard',
+                AOAUTH_PLUGIN_URL . 'admin/css/wizard-style.css',
+                array(),
+                AOAUTH_VERSION
+            );
+            
+            wp_enqueue_script(
+                'aoauth-wizard',
+                AOAUTH_PLUGIN_URL . 'admin/js/wizard-script.js',
+                array('jquery', 'aoauth-toast-notifications'),
+                AOAUTH_VERSION,
+                true
+            );
+            
+            $edit_app_id = isset($_GET['edit']) ? sanitize_text_field($_GET['edit']) : '';
+            $applications = get_option('aoauth_applications', array());
+            $edit_app_data = null;
+            
+            if (!empty($edit_app_id) && isset($applications[$edit_app_id])) {
+                $edit_app_data = $applications[$edit_app_id];
+                if (!empty($edit_app_data['client_secret'])) {
+                    $edit_app_data['client_secret'] = aoauth_core()->get_security()->decrypt($edit_app_data['client_secret']);
+                }
+            }
+            
+            wp_localize_script('aoauth-wizard', 'aoauth_admin', array(
+                'ajaxurl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('aoauth_admin_nonce'),
+                'providers' => aoauth_core()->get_providers_manager()->get_providers_list(),
+                'edit_mode' => !empty($edit_app_id),
+                'edit_app_id' => $edit_app_id,
+                'edit_app_data' => $edit_app_data,
+                'translations' => array(
+                    'confirm_delete' => __('Are you sure you want to delete this application?', 'aoauth-client-sso'),
+                    'save_success' => __('Provider saved successfully', 'aoauth-client-sso'),
+                    'save_error' => __('Error saving provider', 'aoauth-client-sso'),
+                    'discover_success' => __('Endpoints discovered successfully', 'aoauth-client-sso'),
+                    'discover_error' => __('Failed to discover endpoints', 'aoauth-client-sso'),
+                    'copied' => __('Copied to clipboard', 'aoauth-client-sso')
+                )
+            ));
+        }
+    }
+    
+    public function render_connect_page() {
+        $applications = get_option('aoauth_applications', array());
+        $providers = aoauth_core()->get_providers_manager()->get_providers_list();
+        
+        include AOAUTH_PLUGIN_DIR . 'admin/views/providers.php';
+    }
+    
+    public function render_general_page() {
+        $settings = get_option('aoauth_settings', array());
+        $settings['turnstile_secret_key'] = aoauth_core()->get_security()->decrypt_secret($settings['turnstile_secret_key'] ?? '');
+        $settings['recaptcha_secret_key'] = aoauth_core()->get_security()->decrypt_secret($settings['recaptcha_secret_key'] ?? '');
+        $roles = get_editable_roles();
+        $available_themes = aoauth_core()->get_available_themes();
+        
+        include AOAUTH_PLUGIN_DIR . 'admin/views/settings.php';
+    }
+    
+    public function render_logs_page() {
+        $logs = $this->logger->get_logs(array('limit' => 50, 'offset' => 0));
+        $total_logs = $this->logger->get_log_count();
+        $settings = get_option('aoauth_settings', array());
+        
+        include AOAUTH_PLUGIN_DIR . 'admin/views/logs.php';
+    }
+    
+    public function render_wizard_page() {
+        $applications = get_option('aoauth_applications', array());
+        $providers = aoauth_core()->get_providers_manager()->get_providers_list();
+        
+        include AOAUTH_PLUGIN_DIR . 'admin/views/wizard.php';
+    }
+    
+    /**
+     * Render profile unlinking section on user profile page
+     */
+    public function render_profile_unlink_section($user) {
+        if (!current_user_can('edit_user', $user->ID)) {
+            return;
+        }
+        
+        $linked_provider = get_user_meta($user->ID, '_aoauth_provider', true);
+        $applications = get_option('aoauth_applications', array());
+        $provider_data = null;
+        
+        if ($linked_provider && isset($applications[$linked_provider])) {
+            $provider_data = $applications[$linked_provider];
+        }
+        ?>
+        <div class="aoauth-profile-unlink-section">
+            <h2><?php esc_html_e('SSO Account Connection', 'aoauth-client-sso'); ?></h2>
+            <table class="form-table">
+                <tr>
+                    <th scope="row">
+                        <label><?php esc_html_e('Single Sign-On Status', 'aoauth-client-sso'); ?></label>
+                    </th>
+                    <td>
+                        <?php if ($linked_provider && $provider_data): ?>
+                            <div class="aoauth-connected-info">
+                                <div class="aoauth-connected-badge">
+                                    <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . $linked_provider . '.png'); ?>" 
+                                         alt="<?php echo esc_attr($provider_data['provider_name']); ?>"
+                                         class="aoauth-provider-icon-small"
+                                         onerror="this.src='<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png'); ?>'">
+                                    <strong><?php echo esc_html($provider_data['app_name']); ?></strong>
+                                    <span class="aoauth-connected-status"><?php esc_html_e('Connected', 'aoauth-client-sso'); ?></span>
+                                </div>
+                                <p class="description">
+                                    <?php esc_html_e('Your WordPress account is linked with this SSO provider. You can sign in using this provider.', 'aoauth-client-sso'); ?>
+                                </p>
+                                <div class="aoauth-unlink-warning">
+                                    <p class="description">
+                                        <?php esc_html_e('Warning: If you unlink this account, you will no longer be able to sign in using this SSO provider. Make sure you have another way to access your account.', 'aoauth-client-sso'); ?>
+                                    </p>
+                                </div>
+                                <button type="button" 
+                                        class="aoauth-admin-button aoauth-admin-button-danger aoauth-unlink-profile-btn"
+                                        data-user-id="<?php echo esc_attr($user->ID); ?>"
+                                        data-provider="<?php echo esc_attr($linked_provider); ?>"
+                                        data-nonce="<?php echo esc_attr(wp_create_nonce('aoauth_unlink_' . $user->ID)); ?>">
+                                    <span class="dashicons dashicons-unlink"></span>
+                                    <?php esc_html_e('Unlink SSO Account', 'aoauth-client-sso'); ?>
+                                </button>
+                            </div>
+                        <?php else: ?>
+                            <div class="aoauth-no-connection">
+                                <p>
+                                    <span class="dashicons dashicons-admin-network"></span>
+                                    <?php esc_html_e('No SSO provider linked to this account.', 'aoauth-client-sso'); ?>
+                                </p>
+                                <p class="description">
+                                    <?php esc_html_e('To link an SSO provider, sign in using the provider on the login page.', 'aoauth-client-sso'); ?>
+                                </p>
+                            </div>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <?php
+    }
+    
+    /**
+     * Add unlink columns to users table
+     */
+    public function add_unlink_column($columns) {
+        $columns['aoauth_sso'] = __('SSO Provider', 'aoauth-client-sso');
+        $columns['aoauth_actions'] = __('SSO Actions', 'aoauth-client-sso');
+        return $columns;
+    }
+    
+    /**
+     * Render unlink column content
+     */
+    public function render_unlink_column($value, $column_name, $user_id) {
+        if ($column_name === 'aoauth_sso') {
+            $provider = get_user_meta($user_id, '_aoauth_provider', true);
+            $applications = get_option('aoauth_applications', array());
+            
+            if ($provider && isset($applications[$provider])) {
+                $app_name = $applications[$provider]['app_name'];
+                $provider_name = $applications[$provider]['provider_name'];
+                return '<span class="aoauth-provider-cell">
+                            <img src="' . esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . $provider_name . '.png') . '" 
+                                 class="aoauth-provider-cell-icon"
+                                 onerror="this.style.display=\'none\'">
+                            ' . esc_html($app_name) . '
+                        </span>';
+            }
+            return '<span class="aoauth-no-provider">—</span>';
+        }
+        
+        if ($column_name === 'aoauth_actions') {
+            $provider = get_user_meta($user_id, '_aoauth_provider', true);
+            $current_user = wp_get_current_user();
+            
+            if ($provider) {
+                $disabled = '';
+                $title = '';
+                
+                // Prevent admin from unlinking themselves if they're the only admin
+                if ($user_id === $current_user->ID && count(get_users(array('role' => 'administrator'))) === 1) {
+                    $disabled = 'disabled';
+                    $title = __('Cannot unlink the only administrator account', 'aoauth-client-sso');
+                }
+                
+                return '<button type="button" 
+                                class="aoauth-admin-button aoauth-admin-button-danger-ghost aoauth-unlink-user-btn" 
+                                data-user-id="' . esc_attr($user_id) . '"
+                                data-provider="' . esc_attr($provider) . '"
+                                data-nonce="' . esc_attr(wp_create_nonce('aoauth_unlink_' . $user_id)) . '"
+                                ' . $disabled . '
+                                title="' . esc_attr($title) . '">
+                            <span class="dashicons dashicons-unlink"></span> 
+                            ' . __('Unlink', 'aoauth-client-sso') . '
+                        </button>';
+            }
+            return '<span class="aoauth-no-action">—</span>';
+        }
+        
+        return $value;
+    }
+    
+    /**
+     * Add bulk unlink action to users table
+     */
+    public function add_bulk_unlink_action($bulk_actions) {
+        $bulk_actions['aoauth_bulk_unlink'] = __('Unlink SSO Accounts', 'aoauth-client-sso');
+        return $bulk_actions;
+    }
+    
+    /**
+     * Handle bulk unlink action
+     */
+    public function handle_bulk_unlink_action($redirect_to, $doaction, $user_ids) {
+        if ($doaction !== 'aoauth_bulk_unlink') {
+            return $redirect_to;
+        }
+        
+        if (!current_user_can('delete_users')) {
+            wp_die(__('You do not have permission to perform this action.', 'aoauth-client-sso'));
+        }
+        
+        $unlinked_count = 0;
+        $failed_count = 0;
+        $current_user_id = get_current_user_id();
+        $admin_count = count(get_users(array('role' => 'administrator')));
+        
+        foreach ($user_ids as $user_id) {
+            $user_id = intval($user_id);
+            $provider = get_user_meta($user_id, '_aoauth_provider', true);
+            
+            if (empty($provider)) {
+                $failed_count++;
+                continue;
+            }
+            
+            // Prevent unlinking the only admin
+            if ($user_id === $current_user_id && $admin_count === 1) {
+                $failed_count++;
+                continue;
+            }
+            
+            $result = delete_user_meta($user_id, '_aoauth_provider');
+            delete_user_meta($user_id, '_aoauth_linked_' . $provider);
+            delete_user_meta($user_id, '_aoauth_created');
+            delete_user_meta($user_id, '_aoauth_last_login');
+            
+            if ($result) {
+                $unlinked_count++;
+                $this->logger->log('account_unlinked_bulk', array(
+                    'user_id' => $user_id,
+                    'provider' => $provider,
+                    'action_by' => $current_user_id
+                ), $user_id, $provider, 'info');
+            } else {
+                $failed_count++;
+            }
+        }
+        
+        $redirect_to = add_query_arg(
+            array(
+                'aoauth_bulk_unlinked' => $unlinked_count,
+                'aoauth_bulk_failed' => $failed_count
+            ),
+            $redirect_to
+        );
+        
+        return $redirect_to;
+    }
+    
+    public function ajax_save_application() {
+    $this->debug = aoauth_core()->get_debug();
+    $this->debug->log_start('ajax_save_application');
+    
+    check_ajax_referer('aoauth_admin_nonce', 'nonce');
+    
+    if (!current_user_can('manage_options')) {
+        $this->debug->error('Permission denied for save_application');
+        wp_die(-1);
+    }
+    
+    $app_data = isset($_POST['app_data']) ? $_POST['app_data'] : array();
+    $this->debug->debug('Received app_data', array('data_keys' => array_keys($app_data)));
+    
+    if (!is_array($app_data)) {
+        $this->debug->error('Invalid application data - not an array');
+        wp_send_json_error(array('message' => __('Invalid application data', 'aoauth-client-sso')));
+    }
+    
+    $app_data = $this->security->sanitize_provider_config($app_data);
+    $this->debug->debug('After sanitization', array('provider_name' => $app_data['provider_name'] ?? 'not_set'));
+    
+    if (!empty($app_data['client_secret'])) {
+        $app_data['client_secret'] = $this->security->encrypt($app_data['client_secret']);
+        $this->debug->debug('Client secret encrypted');
+    }
+    
+    $app_id = sanitize_key($app_data['provider_name']);
+    if (empty($app_id)) {
+        $this->debug->error('Provider name missing after sanitization');
+        wp_send_json_error(array('message' => __('Provider name is required', 'aoauth-client-sso')));
+    }
+    
+    $applications = get_option('aoauth_applications', array());
+    if (!is_array($applications)) {
+        $applications = array();
+    }
+    
+    $applications[$app_id] = $app_data;
+    
+    update_option('aoauth_applications', $applications);
+    $this->debug->info('Application saved', array('app_id' => $app_id, 'app_name' => $app_data['app_name']));
+    
+    $this->logger->log('application_saved', array(
+        'provider' => $app_id,
+        'app_name' => $app_data['app_name']
+    ), get_current_user_id(), $app_id, 'success');
+    
+    $this->debug->log_end('ajax_save_application', array('success' => true));
+    
+    wp_send_json_success(array('message' => __('Provider saved successfully', 'aoauth-client-sso')));
+}
+    
+    public function ajax_delete_application() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+        
+        $app_id = sanitize_text_field($_POST['app_id'] ?? '');
+        
+        if (empty($app_id)) {
+            wp_send_json_error(array('message' => __('Invalid provider ID', 'aoauth-client-sso')));
+        }
+        
+        $applications = get_option('aoauth_applications', array());
+        
+        if (isset($applications[$app_id])) {
+            unset($applications[$app_id]);
+            update_option('aoauth_applications', $applications);
+            
+            $this->logger->log('application_deleted', array('provider' => $app_id), get_current_user_id(), $app_id, 'info');
+            
+            wp_send_json_success(array('message' => __('Provider disconnected successfully', 'aoauth-client-sso')));
+        }
+        
+        wp_send_json_error(array('message' => __('Provider not found', 'aoauth-client-sso')));
+    }
+    
+    public function ajax_save_settings() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+        
+        $settings = $this->sanitize_settings($_POST);
+        
+        update_option('aoauth_settings', $settings);
+        
+        aoauth_core()->schedule_retention_cron();
+        
+        $this->logger->log('settings_updated', $settings, get_current_user_id(), null, 'info');
+        
+        wp_send_json_success(array('message' => __('Settings saved successfully', 'aoauth-client-sso')));
+    }
+    
+    public function ajax_discover_endpoints() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+        
+        $url = esc_url_raw($_POST['discovery_url'] ?? '');
+        
+        if (empty($url)) {
+            wp_send_json_error(array('message' => __('Discovery URL is required', 'aoauth-client-sso')));
+        }
+        
+        try {
+            $oauth_client = new AOAUTH_OAuth_Client(array('provider_name' => 'discovery'));
+            $endpoints = $oauth_client->discover_endpoints($url);
+            
+            wp_send_json_success(array(
+                'endpoints' => $endpoints,
+                'message' => __('Endpoints discovered successfully', 'aoauth-client-sso')
+            ));
+        } catch (Exception $e) {
+            wp_send_json_error(array('message' => $e->getMessage()));
+        }
+    }
+    
+    public function ajax_toggle_provider() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+        
+        $app_id = sanitize_text_field($_POST['app_id'] ?? '');
+        $enabled = !empty($_POST['enabled']) ? 1 : 0;
+        
+        $applications = get_option('aoauth_applications', array());
+        
+        if (isset($applications[$app_id])) {
+            $applications[$app_id]['enabled'] = $enabled;
+            update_option('aoauth_applications', $applications);
+            
+            $this->logger->log(
+                $enabled ? 'provider_enabled' : 'provider_disabled',
+                array('provider' => $app_id),
+                get_current_user_id(),
+                $app_id,
+                'info'
+            );
+            
+            $provider_label = !empty($applications[$app_id]['provider_name'])
+                ? $applications[$app_id]['provider_name']
+                : $app_id;
+            $provider_label = ucwords(str_replace(array('-', '_'), ' ', $provider_label));
+            $status_label = $enabled ? __('enabled', 'aoauth-client-sso') : __('disabled', 'aoauth-client-sso');
+
+            wp_send_json_success(array(
+                'message' => sprintf(
+                    /* translators: 1: Provider name, 2: enabled/disabled status. */
+                    __('%1$s %2$s', 'aoauth-client-sso'),
+                    $provider_label,
+                    $status_label
+                )
+            ));
+        }
+        
+        wp_send_json_error(array('message' => __('Provider not found', 'aoauth-client-sso')));
+    }
+    
+    public function ajax_get_logs() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+        
+        $page = max(1, intval($_POST['page'] ?? 1));
+        $limit = max(1, min(100, intval($_POST['limit'] ?? 50)));
+        $offset = ($page - 1) * $limit;
+        
+        $logs = $this->logger->get_logs(array('limit' => $limit, 'offset' => $offset));
+        $total = $this->logger->get_log_count();
+        
+        wp_send_json_success(array(
+            'logs' => $logs,
+            'total' => $total,
+            'pages' => ceil($total / $limit),
+            'current_page' => $page
+        ));
+    }
+    
+    public function ajax_clear_logs() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+        
+        $this->logger->clear_logs();
+        
+        wp_send_json_success(array('message' => __('Logs cleared successfully', 'aoauth-client-sso')));
+    }
+    
+    public function ajax_export_logs() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+        
+        $csv_data = $this->logger->export_logs();
+        
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="aoauth-logs-' . date('Y-m-d-H-i-s') . '.csv"');
+        
+        $output = fopen('php://output', 'w');
+        foreach ($csv_data as $row) {
+            fputcsv($output, $row);
+        }
+        fclose($output);
+        
+        exit;
+    }
+    
+    
+    public function ajax_export_config() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+        
+        $config = array(
+            'settings' => get_option('aoauth_settings', array()),
+            'applications' => get_option('aoauth_applications', array()),
+            'version' => AOAUTH_VERSION,
+            'export_date' => current_time('mysql')
+        );
+        
+        unset($config['settings']['turnstile_secret_key']);
+        unset($config['settings']['recaptcha_secret_key']);
+        
+        // Remove sensitive data from export
+        if (!empty($config['applications'])) {
+            foreach ($config['applications'] as &$app) {
+                unset($app['client_id']);
+                unset($app['client_secret']);
+                $app['_note'] = 'Client ID and Secret were removed for security. Please re-enter them after import.';
+            }
+        }
+        
+        $json = json_encode($config, JSON_PRETTY_PRINT);
+        header('Content-Type: application/json');
+        header('Content-Disposition: attachment; filename="aoauth-config-' . date('Y-m-d') . '.json"');
+        echo $json;
+        exit;
+    }
+    
+    public function ajax_import_config() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+        
+        if (empty($_FILES['config_file']) || $_FILES['config_file']['error'] !== UPLOAD_ERR_OK) {
+            wp_send_json_error(array('message' => __('No file uploaded or upload error.', 'aoauth-client-sso')));
+        }
+        
+        $file_content = file_get_contents($_FILES['config_file']['tmp_name']);
+        $config = json_decode($file_content, true);
+        
+        if (!$config || !isset($config['settings']) || !isset($config['applications'])) {
+            wp_send_json_error(array('message' => __('Invalid configuration file.', 'aoauth-client-sso')));
+        }
+        
+        $sanitized_settings = $this->sanitize_settings($config['settings']);
+        $sanitized_applications = array();
+        
+        if (!empty($config['applications']) && is_array($config['applications'])) {
+            foreach ($config['applications'] as $app) {
+                unset($app['client_id']);
+                unset($app['client_secret']);
+                unset($app['_note']);
+                $app['enabled'] = 0;
+                $sanitized_app = $this->security->sanitize_provider_config($app);
+                $app_id = sanitize_key($sanitized_app['provider_name']);
+                if (!empty($app_id)) {
+                    $sanitized_applications[$app_id] = $sanitized_app;
+                }
+            }
+        }
+        
+        update_option('aoauth_settings', $sanitized_settings);
+        update_option('aoauth_applications', $sanitized_applications);
+        
+        $this->logger->log('config_imported', array('user' => get_current_user_id()), get_current_user_id(), null, 'info');
+        wp_send_json_success(array('message' => __('Configuration imported successfully. Please re-enter Client IDs and Secrets for your providers.', 'aoauth-client-sso')));
+    }
+    
+    private function sanitize_settings($settings) {
+        $settings = is_array($settings) ? $settings : array();
+        $defaults = AOAUTH_Core::get_default_settings();
+        $settings = array_merge($defaults, $settings);
+        $security = aoauth_core()->get_security();
+        
+        $enable_turnstile = !empty($settings['enable_turnstile']) ? 1 : 0;
+        $enable_recaptcha = !empty($settings['enable_recaptcha']) ? 1 : 0;
+        if ($enable_turnstile && $enable_recaptcha) {
+            $enable_recaptcha = 0;
+        }
+        
+        $role = sanitize_text_field($settings['default_role']);
+        if (!wp_roles()->is_role($role)) {
+            $role = $defaults['default_role'];
+        }
+        
+        $allow_account_linking = !empty($settings['allow_account_linking']) ? 1 : 0;
+        
+        $sanitized = array(
+            'enable_login_buttons' => !empty($settings['enable_login_buttons']) ? 1 : 0,
+            'login_button_theme' => sanitize_text_field($settings['login_button_theme']),
+            'login_button_layout' => sanitize_text_field($settings['login_button_layout']),
+            'auto_create_users' => !empty($settings['auto_create_users']) ? 1 : 0,
+            'default_role' => $role,
+            'allow_account_linking' => $allow_account_linking,
+            'delete_data_on_uninstall' => !empty($settings['delete_data_on_uninstall']) ? 1 : 0,
+            'security_level' => sanitize_text_field($settings['security_level']),
+            'rate_limit_attempts' => max(1, min(100, intval($settings['rate_limit_attempts']))),
+            'rate_limit_window' => max(60, min(DAY_IN_SECONDS, intval($settings['rate_limit_window']))),
+            'enable_logs' => !empty($settings['enable_logs']) ? 1 : 0,
+            'logs_retention_period' => sanitize_text_field($settings['logs_retention_period']),
+            'enable_turnstile' => $enable_turnstile,
+            'turnstile_site_key' => sanitize_text_field($settings['turnstile_site_key']),
+            'turnstile_secret_key' => $security->encrypt_secret(sanitize_text_field($settings['turnstile_secret_key'])),
+            'enable_recaptcha' => $enable_recaptcha,
+            'recaptcha_site_key' => sanitize_text_field($settings['recaptcha_site_key']),
+            'recaptcha_secret_key' => $security->encrypt_secret(sanitize_text_field($settings['recaptcha_secret_key'])),
+            'recaptcha_score_threshold' => max(0, min(1, floatval($settings['recaptcha_score_threshold']))),
+            'linking_max_attempts' => $allow_account_linking ? max(1, min(20, intval($settings['linking_max_attempts']))) : intval($defaults['linking_max_attempts']),
+            'linking_lockout_minutes' => $allow_account_linking ? max(1, min(1440, intval($settings['linking_lockout_minutes']))) : intval($defaults['linking_lockout_minutes']),
+        );
+        
+        return $sanitized;
+    }
+    
+    public function ajax_test_connection() {
+        $debug = aoauth_core()->get_debug();
+        $debug->log_start('ajax_test_connection');
+
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            $debug->error('Permission denied');
+            wp_send_json_error(array('message' => __('Permission denied', 'aoauth-client-sso')));
+        }
+
+        $app_data = isset($_POST['app_data']) ? $_POST['app_data'] : array();
+        if (!is_array($app_data)) {
+            $debug->error('Invalid application data - not an array');
+            wp_send_json_error(array('message' => __('Invalid application data', 'aoauth-client-sso')));
+        }
+
+        $config = $this->security->sanitize_provider_config($app_data);
+        $errors = $this->validate_test_connection_config($config);
+        $warnings = array();
+        $test_results = array();
+
+        $debug->info('Testing provider configuration', array(
+            'provider_type' => strtolower($config['provider_name']),
+            'app_name' => $config['app_name'],
+            'client_id_preview' => substr($config['client_id'], 0, 8) . '****',
+            'authorization_endpoint' => $config['authorization_endpoint'],
+            'token_endpoint' => $config['token_endpoint'],
+            'userinfo_endpoint' => $config['userinfo_endpoint'] ?: '(not set)',
+            'scopes' => implode(' ', $config['scopes'])
+        ));
+
+        if (!empty($errors)) {
+            $debug->log_end('ajax_test_connection', array('success' => false, 'errors' => $errors));
+            wp_send_json_error(array('message' => implode(' ', $errors)));
+        }
+
+        $auth_result = $this->probe_authorization_endpoint($config);
+        if (!empty($auth_result['error'])) {
+            $errors[] = $auth_result['error'];
+        } elseif (!empty($auth_result['warning'])) {
+            $warnings[] = $auth_result['warning'];
+        }
+        $test_results['authorization_endpoint'] = $auth_result;
+
+        $token_result = $this->probe_token_endpoint($config);
+        if (!empty($token_result['error'])) {
+            $errors[] = $token_result['error'];
+        } elseif (!empty($token_result['warning'])) {
+            $warnings[] = $token_result['warning'];
+        }
+        $test_results['token_endpoint'] = $token_result;
+
+        if (!empty($config['userinfo_endpoint'])) {
+            $userinfo_result = $this->probe_protected_get_endpoint($config['userinfo_endpoint'], 'UserInfo endpoint');
+            if (!empty($userinfo_result['error'])) {
+                $errors[] = $userinfo_result['error'];
+            } elseif (!empty($userinfo_result['warning'])) {
+                $warnings[] = $userinfo_result['warning'];
+            }
+            $test_results['userinfo_endpoint'] = $userinfo_result;
+        }
+
+        if (!empty($config['jwks_uri'])) {
+            $jwks_result = $this->probe_jwks_endpoint($config['jwks_uri']);
+            if (!empty($jwks_result['error'])) {
+                $errors[] = $jwks_result['error'];
+            } elseif (!empty($jwks_result['warning'])) {
+                $warnings[] = $jwks_result['warning'];
+            }
+            $test_results['jwks_uri'] = $jwks_result;
+        }
+
+        $client_secret_note = __('Client secret validation requires a real OAuth callback and cannot be proven by a safe endpoint probe.', 'aoauth-client-sso');
+
+        if (!empty($errors)) {
+            $message = implode(' ', $errors) . ' ' . $client_secret_note;
+
+            $this->logger->log('test_connection_failed', array(
+                'provider' => $config['provider_name'],
+                'errors' => $errors,
+                'warnings' => $warnings,
+                'test_results' => $test_results
+            ), get_current_user_id(), $config['provider_name'], 'error');
+
+            $debug->log_end('ajax_test_connection', array('success' => false, 'errors' => $errors));
+            wp_send_json_error(array(
+                'message' => $message,
+                'warnings' => $warnings,
+                'test_results' => $test_results
+            ));
+        }
+
+        $message = __('Connection checks passed. Required endpoints responded and the authorization request shape is valid.', 'aoauth-client-sso') . ' ' . $client_secret_note;
+        if (!empty($warnings)) {
+            $message .= ' ' . sprintf(__('Warnings: %s', 'aoauth-client-sso'), implode(' ', $warnings));
+        }
+
+        $this->logger->log('test_connection_success', array(
+            'provider' => $config['provider_name'],
+            'warnings' => $warnings,
+            'test_results' => $test_results
+        ), get_current_user_id(), $config['provider_name'], 'success');
+
+        $debug->log_end('ajax_test_connection', array('success' => true, 'warnings' => $warnings));
+        wp_send_json_success(array(
+            'message' => $message,
+            'warnings' => $warnings,
+            'test_results' => $test_results
+        ));
+    }
+
+    private function validate_test_connection_config($config) {
+        $errors = array();
+
+        if (empty($config['client_id'])) {
+            $errors[] = __('Client ID is required.', 'aoauth-client-sso');
+        }
+
+        if (empty($config['client_secret'])) {
+            $errors[] = __('Client Secret is required.', 'aoauth-client-sso');
+        }
+
+        if (empty($config['authorization_endpoint'])) {
+            $errors[] = __('Authorization Endpoint is required.', 'aoauth-client-sso');
+        } elseif (!$this->is_valid_http_url($config['authorization_endpoint'])) {
+            $errors[] = __('Authorization Endpoint must be a valid HTTP or HTTPS URL.', 'aoauth-client-sso');
+        }
+
+        if (empty($config['token_endpoint'])) {
+            $errors[] = __('Token Endpoint is required.', 'aoauth-client-sso');
+        } elseif (!$this->is_valid_http_url($config['token_endpoint'])) {
+            $errors[] = __('Token Endpoint must be a valid HTTP or HTTPS URL.', 'aoauth-client-sso');
+        }
+
+        if (empty($config['redirect_uri'])) {
+            $errors[] = __('Redirect URI is required.', 'aoauth-client-sso');
+        } elseif (!$this->is_valid_http_url($config['redirect_uri'])) {
+            $errors[] = __('Redirect URI must be a valid HTTP or HTTPS URL.', 'aoauth-client-sso');
+        }
+
+        foreach (array('userinfo_endpoint', 'jwks_uri') as $optional_url_key) {
+            if (!empty($config[$optional_url_key]) && !$this->is_valid_http_url($config[$optional_url_key])) {
+                $errors[] = sprintf(__('%s must be a valid HTTP or HTTPS URL.', 'aoauth-client-sso'), $optional_url_key);
+            }
+        }
+
+        return $errors;
+    }
+
+    private function is_valid_http_url($url) {
+        $parsed = wp_parse_url($url);
+        if (!$parsed || empty($parsed['scheme']) || empty($parsed['host'])) {
+            return false;
+        }
+
+        return in_array(strtolower($parsed['scheme']), array('http', 'https'), true);
+    }
+
+    private function probe_authorization_endpoint($config) {
+        $auth_url = add_query_arg(array(
+            'response_type' => 'code',
+            'client_id' => $config['client_id'],
+            'redirect_uri' => $config['redirect_uri'],
+            'scope' => implode(' ', $config['scopes']),
+            'state' => 'aoauth-test-state',
+            'nonce' => 'aoauth-test-nonce'
+        ), $config['authorization_endpoint']);
+
+        $response = wp_remote_get($auth_url, array(
+            'timeout' => 15,
+            'sslverify' => true,
+            'redirection' => 0,
+            'headers' => array('Accept' => 'text/html,application/xhtml+xml,application/json')
+        ));
+
+        if (is_wp_error($response)) {
+            return array('error' => sprintf(__('Authorization endpoint is unreachable: %s.', 'aoauth-client-sso'), $response->get_error_message()));
+        }
+
+        $status_code = wp_remote_retrieve_response_code($response);
+        $location = wp_remote_retrieve_header($response, 'location');
+        $oauth_error = $this->extract_oauth_error_from_url($location);
+
+        if ($status_code === 404) {
+            return array('status_code' => $status_code, 'error' => __('Authorization endpoint returned 404. Verify the URL.', 'aoauth-client-sso'));
+        }
+
+        if ($status_code >= 500) {
+            return array('status_code' => $status_code, 'error' => sprintf(__('Authorization endpoint returned HTTP %d.', 'aoauth-client-sso'), $status_code));
+        }
+
+        if ($oauth_error) {
+            return array(
+                'status_code' => $status_code,
+                'error' => sprintf(__('Authorization endpoint rejected the request: %s.', 'aoauth-client-sso'), $oauth_error)
+            );
+        }
+
+        return array(
+            'status_code' => $status_code,
+            'reachable' => true
+        );
+    }
+
+    private function probe_token_endpoint($config) {
+        $response = wp_remote_post($config['token_endpoint'], array(
+            'timeout' => 15,
+            'sslverify' => true,
+            'headers' => array(
+                'Accept' => 'application/json',
+                'Content-Type' => 'application/x-www-form-urlencoded'
+            ),
+            'body' => array(
+                'grant_type' => 'authorization_code',
+                'code' => 'aoauth-endpoint-probe',
+                'client_id' => $config['client_id'],
+                'redirect_uri' => $config['redirect_uri']
+            )
+        ));
+
+        if (is_wp_error($response)) {
+            return array('error' => sprintf(__('Token endpoint is unreachable: %s.', 'aoauth-client-sso'), $response->get_error_message()));
+        }
+
+        $status_code = wp_remote_retrieve_response_code($response);
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+
+        if ($status_code === 404) {
+            return array('status_code' => $status_code, 'error' => __('Token endpoint returned 404. Verify the URL.', 'aoauth-client-sso'));
+        }
+
+        if ($status_code === 405) {
+            return array('status_code' => $status_code, 'error' => __('Token endpoint rejected POST requests. OAuth token endpoints must accept POST.', 'aoauth-client-sso'));
+        }
+
+        if ($status_code >= 500) {
+            return array('status_code' => $status_code, 'error' => sprintf(__('Token endpoint returned HTTP %d.', 'aoauth-client-sso'), $status_code));
+        }
+
+        if (is_array($data) && !empty($data['error']) && in_array($data['error'], array('invalid_client', 'unauthorized_client'), true)) {
+            return array(
+                'status_code' => $status_code,
+                'warning' => sprintf(__('Token endpoint responded, but the client was not accepted during the probe: %s.', 'aoauth-client-sso'), $data['error'])
+            );
+        }
+
+        return array(
+            'status_code' => $status_code,
+            'reachable' => true
+        );
+    }
+
+    private function probe_protected_get_endpoint($url, $label) {
+        $response = wp_remote_get($url, array(
+            'timeout' => 15,
+            'sslverify' => true,
+            'redirection' => 0,
+            'headers' => array('Accept' => 'application/json')
+        ));
+
+        if (is_wp_error($response)) {
+            return array('warning' => sprintf(__('%1$s could not be reached: %2$s.', 'aoauth-client-sso'), $label, $response->get_error_message()));
+        }
+
+        $status_code = wp_remote_retrieve_response_code($response);
+
+        if ($status_code === 404) {
+            return array('status_code' => $status_code, 'error' => sprintf(__('%s returned 404. Verify the URL.', 'aoauth-client-sso'), $label));
+        }
+
+        if ($status_code >= 500) {
+            return array('status_code' => $status_code, 'warning' => sprintf(__('%1$s returned HTTP %2$d.', 'aoauth-client-sso'), $label, $status_code));
+        }
+
+        return array(
+            'status_code' => $status_code,
+            'reachable' => true
+        );
+    }
+
+    private function probe_jwks_endpoint($url) {
+        $result = $this->probe_protected_get_endpoint($url, 'JWKS endpoint');
+        if (!empty($result['error']) || !empty($result['warning'])) {
+            return $result;
+        }
+
+        $response = wp_remote_get($url, array(
+            'timeout' => 15,
+            'sslverify' => true,
+            'headers' => array('Accept' => 'application/json')
+        ));
+
+        if (is_wp_error($response)) {
+            return array('warning' => sprintf(__('JWKS endpoint could not be reached: %s.', 'aoauth-client-sso'), $response->get_error_message()));
+        }
+
+        $data = json_decode(wp_remote_retrieve_body($response), true);
+        if (!is_array($data) || empty($data['keys']) || !is_array($data['keys'])) {
+            return array('warning' => __('JWKS endpoint responded but did not include a keys array.', 'aoauth-client-sso'));
+        }
+
+        return array(
+            'status_code' => wp_remote_retrieve_response_code($response),
+            'reachable' => true,
+            'keys_found' => count($data['keys'])
+        );
+    }
+
+    private function extract_oauth_error_from_url($url) {
+        if (empty($url)) {
+            return '';
+        }
+
+        $parts = wp_parse_url($url);
+        $query = array();
+
+        if (!empty($parts['query'])) {
+            wp_parse_str($parts['query'], $query);
+        }
+
+        if (!empty($parts['fragment'])) {
+            $fragment = array();
+            wp_parse_str($parts['fragment'], $fragment);
+            $query = array_merge($query, $fragment);
+        }
+
+        if (empty($query['error'])) {
+            return '';
+        }
+
+        $description = !empty($query['error_description']) ? $query['error_description'] : $query['error'];
+        return sanitize_text_field($description);
+    }
+    
+    public function ajax_preview_theme() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+        
+        $theme = sanitize_text_field($_GET['theme'] ?? 'modern');
+        
+        header('Content-Type: text/css');
+        
+        $theme_file = AOAUTH_PLUGIN_DIR . 'public/css/themes/' . $theme . '.css';
+        
+        if (file_exists($theme_file)) {
+            $css_content = file_get_contents($theme_file);
+            $preview_class = '.aoauth-preview-' . $theme;
+            $css_content = str_replace('.aoauth-login-buttons .aoauth-button', $preview_class, $css_content);
+            echo $css_content;
+        } else {
+            echo '.aoauth-preview-modern { 
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                border-radius: 8px; 
+                color: #fff; 
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                padding: 10px 16px;
+            }';
+        }
+        
+        exit;
+    }
+    
+    public function ajax_factory_reset() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+        
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+        
+        $default_settings = AOAUTH_Core::get_default_settings();
+        
+        update_option('aoauth_settings', $default_settings);
+        
+        delete_option('aoauth_applications');
+        
+        $this->logger->clear_logs();
+        
+        $this->logger->log('factory_reset', array(
+            'user_id' => get_current_user_id(),
+            'user_login' => wp_get_current_user()->user_login
+        ), get_current_user_id(), null, 'info');
+        
+        wp_send_json_success(array('message' => __('Factory reset completed. All settings restored to defaults and all providers removed.', 'aoauth-client-sso')));
+    }
+    
+    /**
+     * AJAX handler for unlinking a single account
+     */
+    /**
+ * AJAX handler for unlinking a single account
+ */
+public function ajax_unlink_account() {
+    $nonce = sanitize_text_field($_POST['nonce'] ?? '');
+    $user_id = intval($_POST['user_id'] ?? 0);
+    $provider = sanitize_text_field($_POST['provider'] ?? '');
+    
+    // Check both possible nonces: user-specific and global admin
+    if (!wp_verify_nonce($nonce, 'aoauth_unlink_' . $user_id) && !wp_verify_nonce($nonce, 'aoauth_admin_nonce')) {
+        wp_send_json_error(array('message' => __('Security check failed. Please refresh the page and try again.', 'aoauth-client-sso')));
+    }
+    
+    if (!$user_id || !$provider) {
+        wp_send_json_error(array('message' => __('Invalid request parameters.', 'aoauth-client-sso')));
+    }
+    
+    // Check if user can edit this user (admin or self)
+    if (!current_user_can('edit_user', $user_id)) {
+        wp_send_json_error(array('message' => __('You do not have permission to unlink this account.', 'aoauth-client-sso')));
+    }
+    
+    $current_user_id = get_current_user_id();
+    $target_user = get_userdata($user_id);
+    
+    if (!$target_user) {
+        wp_send_json_error(array('message' => __('User not found.', 'aoauth-client-sso')));
+    }
+    
+    // Check if target user is an administrator
+    $is_target_admin = in_array('administrator', (array) $target_user->roles);
+    
+    // Only apply the "only admin" restriction if the target user is actually an admin
+    if ($is_target_admin) {
+        $admin_count = count(get_users(array('role' => 'administrator')));
+        
+        // Prevent unlinking the only administrator account
+        if ($admin_count === 1) {
+            wp_send_json_error(array('message' => __('Cannot unlink the only administrator account. Please create another admin account first.', 'aoauth-client-sso')));
+        }
+    }
+    
+    // If user is unlinking themselves (not an admin action), check if they have a password
+    if ($user_id === $current_user_id) {
+        // Check if user has a WordPress password set
+        if (empty($target_user->user_pass)) {
+            wp_send_json_error(array(
+                'message' => __('You cannot unlink your SSO account because you have no WordPress password set. Please set a password first via "Lost your password?" on the login page.', 'aoauth-client-sso')
+            ));
+        }
+    }
+    
+    // Verify the user actually has this provider linked
+    $linked_provider = get_user_meta($user_id, '_aoauth_provider', true);
+    
+    if ($linked_provider !== $provider) {
+        wp_send_json_error(array('message' => __('Provider mismatch or account not linked.', 'aoauth-client-sso')));
+    }
+    
+    // Perform unlinking
+    $deleted = delete_user_meta($user_id, '_aoauth_provider');
+    delete_user_meta($user_id, '_aoauth_linked_' . $provider);
+    delete_user_meta($user_id, '_aoauth_created');
+    delete_user_meta($user_id, '_aoauth_last_login');
+    
+    if ($deleted) {
+        $this->logger->log('account_unlinked', array(
+            'user_id' => $user_id,
+            'provider' => $provider,
+            'action_by' => $current_user_id
+        ), $user_id, $provider, 'info');
+        
+        wp_send_json_success(array('message' => __('SSO account unlinked successfully.', 'aoauth-client-sso')));
+    } else {
+        wp_send_json_error(array('message' => __('Failed to unlink account. Please try again.', 'aoauth-client-sso')));
+    }
+}
+    
+    /**
+     * AJAX handler for bulk unlinking accounts
+     */
+    public function ajax_bulk_unlink_accounts() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+        
+        if (!current_user_can('delete_users')) {
+            wp_send_json_error(array('message' => __('You do not have permission to perform bulk unlinking.', 'aoauth-client-sso')));
+        }
+        
+        $user_ids = isset($_POST['user_ids']) ? array_map('intval', (array)$_POST['user_ids']) : array();
+        
+        if (empty($user_ids)) {
+            wp_send_json_error(array('message' => __('No users selected.', 'aoauth-client-sso')));
+        }
+        
+        $unlinked_count = 0;
+        $failed_count = 0;
+        $current_user_id = get_current_user_id();
+        $admin_count = count(get_users(array('role' => 'administrator')));
+        
+        foreach ($user_ids as $user_id) {
+            $provider = get_user_meta($user_id, '_aoauth_provider', true);
+            
+            if (empty($provider)) {
+                $failed_count++;
+                continue;
+            }
+            
+            // Prevent unlinking the only admin
+            if ($user_id === $current_user_id && $admin_count === 1) {
+                $failed_count++;
+                continue;
+            }
+            
+            $result = delete_user_meta($user_id, '_aoauth_provider');
+            delete_user_meta($user_id, '_aoauth_linked_' . $provider);
+            delete_user_meta($user_id, '_aoauth_created');
+            delete_user_meta($user_id, '_aoauth_last_login');
+            
+            if ($result) {
+                $unlinked_count++;
+                $this->logger->log('account_unlinked_bulk', array(
+                    'user_id' => $user_id,
+                    'provider' => $provider,
+                    'action_by' => $current_user_id
+                ), $user_id, $provider, 'info');
+            } else {
+                $failed_count++;
+            }
+        }
+        
+        wp_send_json_success(array(
+            'message' => sprintf(
+                __('Unlinked %d accounts. Failed: %d', 'aoauth-client-sso'),
+                $unlinked_count,
+                $failed_count
+            ),
+            'unlinked' => $unlinked_count,
+            'failed' => $failed_count
+        ));
+    }
+    
+    /**
+     * Verify Cloudflare Turnstile token
+     */
+    public function ajax_verify_turnstile() {
+        check_ajax_referer('aoauth_public_nonce', 'nonce');
+        
+        $token = sanitize_text_field($_POST['token'] ?? '');
+        $settings = get_option('aoauth_settings', array());
+        $secret = aoauth_core()->get_security()->decrypt_secret($settings['turnstile_secret_key'] ?? '');
+        
+        if (empty($token) || empty($secret)) {
+            wp_send_json_error(array('message' => __('Missing verification data.', 'aoauth-client-sso')));
+        }
+        
+        $response = wp_remote_post('https://challenges.cloudflare.com/turnstile/v0/siteverify', array(
+            'body' => array(
+                'secret' => $secret,
+                'response' => $token
+            ),
+            'timeout' => 10
+        ));
+        
+        if (is_wp_error($response)) {
+            $this->logger->log('turnstile_verification_failed', array(
+                'error' => $response->get_error_message()
+            ), null, null, 'error');
+            wp_send_json_error(array('message' => __('Verification service unavailable.', 'aoauth-client-sso')));
+        }
+        
+        $body = json_decode(wp_remote_retrieve_body($response), true);
+        
+        if (!empty($body['success'])) {
+            $this->logger->log('turnstile_verification_success', array(), null, null, 'success');
+            wp_send_json_success(array('verification' => $this->create_bot_verification_token('turnstile')));
+        } else {
+            $error_codes = isset($body['error-codes']) ? implode(', ', $body['error-codes']) : 'unknown';
+            $this->logger->log('turnstile_verification_failed', array(
+                'error_codes' => $error_codes
+            ), null, null, 'error');
+            wp_send_json_error(array('message' => __('Bot challenge failed. Please try again.', 'aoauth-client-sso')));
+        }
+    }
+    
+    /**
+     * Verify Google reCAPTCHA v3 token
+     */
+    public function ajax_verify_recaptcha() {
+        check_ajax_referer('aoauth_public_nonce', 'nonce');
+        
+        $token = sanitize_text_field($_POST['token'] ?? '');
+        $settings = get_option('aoauth_settings', array());
+        $secret = aoauth_core()->get_security()->decrypt_secret($settings['recaptcha_secret_key'] ?? '');
+        $expected_score = floatval($settings['recaptcha_score_threshold'] ?? 0.5);
+        
+        if (empty($token) || empty($secret)) {
+            wp_send_json_error(array('message' => __('Missing verification data.', 'aoauth-client-sso')));
+        }
+        
+        $response = wp_remote_post('https://www.google.com/recaptcha/api/siteverify', array(
+            'body' => array(
+                'secret' => $secret,
+                'response' => $token
+            ),
+            'timeout' => 10
+        ));
+        
+        if (is_wp_error($response)) {
+            $this->logger->log('recaptcha_verification_failed', array(
+                'error' => $response->get_error_message()
+            ), null, null, 'error');
+            wp_send_json_error(array('message' => __('Verification service unavailable.', 'aoauth-client-sso')));
+        }
+        
+        $body = json_decode(wp_remote_retrieve_body($response), true);
+        
+        if (!empty($body['success']) && isset($body['score']) && $body['score'] >= $expected_score) {
+            $this->logger->log('recaptcha_verification_success', array(
+                'score' => $body['score']
+            ), null, null, 'success');
+            wp_send_json_success(array('verification' => $this->create_bot_verification_token('recaptcha')));
+        } else {
+            $this->logger->log('recaptcha_verification_failed', array(
+                'score' => $body['score'] ?? 'unknown',
+                'error_codes' => implode(', ', $body['error-codes'] ?? array())
+            ), null, null, 'error');
+            wp_send_json_error(array('message' => sprintf(
+                __('Bot verification failed. Score %s is below threshold of %s.', 'aoauth-client-sso'),
+                $body['score'] ?? 'unknown',
+                $expected_score
+            )));
+        }
+    }
+    
+    private function create_bot_verification_token($type) {
+        $token = aoauth_core()->get_security()->generate_secure_token(48);
+        set_transient('aoauth_bot_' . md5($token), array(
+            'verified' => true,
+            'type' => sanitize_key($type),
+            'created_at' => time(),
+            'ip' => sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? '')
+        ), 5 * MINUTE_IN_SECONDS);
+        
+        return $token;
+    }
+    
+    public function add_plugin_action_links($links) {
+        $wizard_link = '<a href="' . admin_url('admin.php?page=aoauth-wizard') . '">' . __('Add Provider', 'aoauth-client-sso') . '</a>';
+        $settings_link = '<a href="' . admin_url('admin.php?page=aoauth-settings') . '">' . __('Settings', 'aoauth-client-sso') . '</a>';
+        
+        array_unshift($links, $settings_link);
+        array_unshift($links, $wizard_link);
+        
+        return $links;
+    }
+}

@@ -1,0 +1,29 @@
+.aoauth-login-buttons .aoauth-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+.aoauth-login-buttons .aoauth-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+.aoauth-login-buttons .aoauth-button:hover::before {
+    left: 100%;
+}
+.aoauth-login-buttons .aoauth-button:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(102,126,234,0.4);
+}
+.aoauth-login-buttons .aoauth-button-icon img {
+    filter: brightness(0) invert(1);
+}
