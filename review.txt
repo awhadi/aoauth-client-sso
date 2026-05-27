@@ -1,45 +1,26 @@
-Version: 2.2.0
+Version: 2.2.1
 Date: 2026-05-27
 Author: Awhadi / Codex
 
 Summary:
-User Management was reorganized into clearer groups, and account linking now supports multiple enabled providers on the same WordPress user. The WordPress profile SSO section now shows all connected providers and lets users link additional providers from their own profile. Existing themes were restyled to look visibly different without external fonts, and the Paper Plane overlay was revised so a small plane moves left-to-right while the overlay fills behind it.
+Tools now separates normal Activity Logs from low-level Deep Debug. The log toggle controls database-backed logs shown on the Logs screen, while Deep Debug shows wp-config.php status and the exact constant needed to enable protected debug files. Tools also now includes a shortcode reference so administrators can quickly find the link and unlink shortcodes.
 
 Files changed:
 - aoauth-client-sso.php
 - CHANGELOG.md
 - review.txt
-- admin/class-admin.php
 - admin/css/admin-style.css
-- admin/views/user-management-settings.php
-- includes/class-core.php
-- includes/class-sso-handler.php
-- includes/class-user-manager.php
-- public/css/login-single-sign-on.css
-- public/css/themes/gradient.css
-- public/css/themes/icon-only.css
-- public/css/themes/modern.css
-- public/css/themes/outline.css
-- public/css/themes/rounded.css
-- public/css/themes/simple.css
+- admin/views/tools-settings.php
+- includes/class-debug.php
 
-Security notes:
-- Provider identity is stored per provider using subject when available, with email as fallback.
-- A provider identity cannot be linked to more than one WordPress user.
-- Provider email may differ from the WordPress email only after the logged-in user completes a nonce-protected OAuth link flow.
-- Admins editing another user's profile can view provider status, but cannot initiate OAuth linking for that other user from their own session.
-- Legacy `_aoauth_provider` metadata remains as a primary provider for backward compatibility.
-
-UX notes:
-- User Management now matches the grouped structure used by the other settings tabs.
-- User profiles show multiple connected SSO providers as cards.
-- Existing themes now differ in color, sizing, shape, and emphasis while using system fonts.
-- Paper Plane overlay now visually communicates motion and screen coverage more clearly.
+Security/UX notes:
+- Deep Debug is intentionally controlled from wp-config.php because it can write detailed OAuth/request data to files.
+- The plugin now recognizes `define("OAUTH-DEBUG", "enabled");` in addition to the existing `AOAUTH_DEBUG` constant.
+- Shortcode documentation is informational only and does not change shortcode behavior.
 
 Rollback plan:
-Restore the previous v2.1.0 tag, clear caches, and verify login with the original primary provider. Existing legacy provider metadata remains compatible, but multi-provider links added after this release would not be understood by older versions.
+Restore v2.2.0 if needed. Remove `define("OAUTH-DEBUG", "enabled");` from wp-config.php after troubleshooting if it was added.
 
 Verification:
 - Full plugin PHP syntax check passed.
-- JavaScript syntax checks passed for public/js/login-single-sign-on.js and admin/js/admin-dashboard.js.
 - `git diff --check` passed.

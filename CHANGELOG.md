@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.2.1] - 2026-05-27
+
+### Added
+- Added a Tools shortcode reference for `[aoauth_link_account]` and `[aoauth_unlink_account]`.
+- Added support for `define("OAUTH-DEBUG", "enabled");` as a low-level debug constant.
+
+### Changed
+- Separated Activity Logs from Deep Debug in Tools so the Logs screen toggle is distinct from wp-config.php debug mode.
+- Moved the Activity Logs toggle before log retention and clarified that Deep Debug is controlled by wp-config.php.
+
 ## [2.2.0] - 2026-05-27
 
 ### Added

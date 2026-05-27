@@ -1374,6 +1374,36 @@
     flex-wrap: wrap;
 }
 
+.aoauth-toggle-readonly {
+    cursor: help;
+    margin-right: 8px;
+    opacity: 0.75;
+}
+
+.aoauth-code-reference {
+    padding: 12px 0 16px;
+}
+
+.aoauth-code-reference code,
+.aoauth-shortcode-reference code {
+    display: inline-block;
+    padding: 6px 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #fff;
+    color: #0f172a;
+    font-size: 12px;
+}
+
+.aoauth-shortcode-reference {
+    display: grid;
+    gap: 14px;
+}
+
+.aoauth-shortcode-reference p {
+    margin: 8px 0 0;
+}
+
 .aoauth-tools-card.danger-zone {
     background: #fef2f2;
     border-color: #fecaca;

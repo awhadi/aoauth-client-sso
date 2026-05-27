@@ -1,7 +1,7 @@
 <?php
 /**
  * Debug Logger for aOAUTH Client SSO
- * Only enabled when AOAUTH_DEBUG is defined as true in wp-config.php
+ * Only enabled when AOAUTH_DEBUG is true or OAUTH-DEBUG is "enabled" in wp-config.php.
  * Logs are stored in /wp-content/uploads/aoauth-debug/
  */
 
@@ -18,7 +18,7 @@ class AOAUTH_Debug {
     private $show_sensitive_data = false;
     
     private function __construct() {
-        if (defined('AOAUTH_DEBUG') && AOAUTH_DEBUG === true) {
+        if ($this->is_debug_constant_enabled()) {
             $this->enabled = true;
             
             // Allow showing sensitive data if explicitly enabled (for deep debugging)
@@ -33,6 +33,18 @@ class AOAUTH_Debug {
             $this->write_raw('Sensitive Data Mode: ' . ($this->show_sensitive_data ? 'SHOWING' : 'HIDDEN'));
             $this->write_raw('===========================================');
         }
+    }
+
+    private function is_debug_constant_enabled() {
+        if (defined('AOAUTH_DEBUG') && AOAUTH_DEBUG === true) {
+            return true;
+        }
+
+        if (defined('OAUTH-DEBUG') && constant('OAUTH-DEBUG') === 'enabled') {
+            return true;
+        }
+
+        return false;
     }
     
     public static function get_instance() {
