@@ -31,6 +31,7 @@ class AOAUTH_Admin {
         add_action('wp_ajax_aoauth_clear_bot_verifications', array($this, 'ajax_clear_bot_verifications'));
         add_action('wp_ajax_aoauth_clear_linking_lockouts', array($this, 'ajax_clear_linking_lockouts'));
         add_action('wp_ajax_aoauth_clear_oauth_temp_data', array($this, 'ajax_clear_oauth_temp_data'));
+        add_action('wp_ajax_aoauth_toggle_deep_debug', array($this, 'ajax_toggle_deep_debug'));
         add_action('wp_ajax_aoauth_client_debug_log', array($this, 'ajax_client_debug_log'));
         add_action('wp_ajax_nopriv_aoauth_client_debug_log', array($this, 'ajax_client_debug_log'));
         
@@ -225,6 +226,8 @@ class AOAUTH_Admin {
                 'confirm_clear_logs' => __('Are you sure you want to clear all logs? This action cannot be undone.', 'aoauth-client-sso'),
                 'import_success' => __('Configuration imported successfully', 'aoauth-client-sso'),
                 'import_error' => __('Failed to import configuration', 'aoauth-client-sso'),
+                'deep_debug_enabled' => __('Deep Debug enabled in wp-config.php.', 'aoauth-client-sso'),
+                'deep_debug_disabled' => __('Deep Debug disabled in wp-config.php.', 'aoauth-client-sso'),
                 // New translations for unlinking
                 'confirm_unlink' => __('Are you sure you want to unlink this SSO account?', 'aoauth-client-sso'),
                 'confirm_bulk_unlink' => __('Are you sure you want to unlink SSO accounts for selected users?', 'aoauth-client-sso'),
@@ -1640,6 +1643,82 @@ class AOAUTH_Admin {
         $deleted = $this->delete_transients_by_prefixes(array('aoauth_state_', 'aoauth_test_state_', 'aoauth_link_'), true);
         $this->logger->log('oauth_temp_data_cleared', array('deleted' => $deleted, 'expired_only' => true), get_current_user_id(), null, 'info');
         wp_send_json_success(array('message' => sprintf(__('Cleared %d expired OAuth temporary record(s).', 'aoauth-client-sso'), $deleted)));
+    }
+
+    public function ajax_toggle_deep_debug() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+
+        $enabled = !empty($_POST['enabled']);
+        $result = $this->update_wp_config_deep_debug($enabled);
+        if (is_wp_error($result)) {
+            wp_send_json_error(array(
+                'message' => $result->get_error_message(),
+                'snippet' => 'define("OAUTH-DEBUG", "enabled");'
+            ));
+        }
+
+        $this->logger->log($enabled ? 'deep_debug_enabled' : 'deep_debug_disabled', array(
+            'updated_wp_config' => true
+        ), get_current_user_id(), null, 'info');
+
+        wp_send_json_success(array(
+            'message' => $enabled ? __('Deep Debug enabled in wp-config.php.', 'aoauth-client-sso') : __('Deep Debug disabled in wp-config.php.', 'aoauth-client-sso'),
+            'enabled' => $enabled
+        ));
+    }
+
+    private function update_wp_config_deep_debug($enabled) {
+        $config_path = $this->get_wp_config_path();
+        if (!$config_path || !is_readable($config_path)) {
+            return new WP_Error('wp_config_not_found', __('Could not find a readable wp-config.php file. Update it manually with the displayed constant.', 'aoauth-client-sso'));
+        }
+
+        if (!is_writable($config_path)) {
+            return new WP_Error('wp_config_not_writable', __('wp-config.php is not writable by WordPress. Update it manually with the displayed constant.', 'aoauth-client-sso'));
+        }
+
+        $config = file_get_contents($config_path);
+        if ($config === false) {
+            return new WP_Error('wp_config_read_failed', __('Could not read wp-config.php. Update it manually with the displayed constant.', 'aoauth-client-sso'));
+        }
+
+        $constant_line = 'define("OAUTH-DEBUG", "enabled");';
+        $config = preg_replace('/^[ \t]*define\s*\(\s*[\'"]OAUTH-DEBUG[\'"]\s*,\s*[\'"]enabled[\'"]\s*\)\s*;\s*[\r\n]*/mi', '', $config);
+        $config = preg_replace('/^[ \t]*define\s*\(\s*[\'"]AOAUTH_DEBUG[\'"]\s*,\s*true\s*\)\s*;\s*[\r\n]*/mi', '', $config);
+
+        if ($enabled) {
+            $marker_pattern = '/\/\*\s*That\'s all, stop editing!.*?\*\//i';
+            if (preg_match($marker_pattern, $config)) {
+                $config = preg_replace($marker_pattern, $constant_line . PHP_EOL . '$0', $config, 1);
+            } else {
+                $config .= PHP_EOL . $constant_line . PHP_EOL;
+            }
+        }
+
+        if (file_put_contents($config_path, $config, LOCK_EX) === false) {
+            return new WP_Error('wp_config_write_failed', __('Could not write wp-config.php. Update it manually with the displayed constant.', 'aoauth-client-sso'));
+        }
+
+        return true;
+    }
+
+    private function get_wp_config_path() {
+        $candidates = array(
+            ABSPATH . 'wp-config.php',
+            dirname(ABSPATH) . '/wp-config.php',
+        );
+
+        foreach ($candidates as $candidate) {
+            if (file_exists($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return '';
     }
 
     private function delete_transients_by_prefixes($prefixes, $expired_only) {

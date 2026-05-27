@@ -60,20 +60,20 @@ $debug_constant = 'define("OAUTH-DEBUG", "enabled");';
                 <div class="aoauth-setting-row">
                     <div class="aoauth-setting-label">
                         <label><?php esc_html_e('Deep Debug Mode', 'aoauth-client-sso'); ?></label>
-                        <p class="aoauth-setting-help"><?php esc_html_e('Add the wp-config.php constant below to enable protected debug files under uploads/aoauth-debug/.', 'aoauth-client-sso'); ?></p>
+                        <p class="aoauth-setting-help"><?php esc_html_e('Toggles the wp-config.php constant when WordPress can write to that file. Debug files are stored under uploads/aoauth-debug/.', 'aoauth-client-sso'); ?></p>
                     </div>
                     <div class="aoauth-setting-control">
-                        <label class="aoauth-toggle aoauth-toggle-readonly" title="<?php esc_attr_e('Controlled by wp-config.php', 'aoauth-client-sso'); ?>">
-                            <input type="checkbox" disabled <?php checked($debug_enabled); ?>>
+                        <label class="aoauth-toggle">
+                            <input type="checkbox" id="aoauth-deep-debug-toggle" value="1" <?php checked($debug_enabled); ?>>
                             <span class="aoauth-toggle-slider"></span>
                         </label>
-                        <span class="aoauth-status-badge aoauth-status-<?php echo $debug_enabled ? 'success' : 'info'; ?>"><?php echo $debug_enabled ? esc_html__('Enabled', 'aoauth-client-sso') : esc_html__('Off', 'aoauth-client-sso'); ?></span>
+                        <span id="aoauth-deep-debug-status" class="aoauth-status-badge aoauth-status-<?php echo $debug_enabled ? 'success' : 'info'; ?>"><?php echo $debug_enabled ? esc_html__('Enabled', 'aoauth-client-sso') : esc_html__('Off', 'aoauth-client-sso'); ?></span>
                     </div>
                 </div>
 
                 <div class="aoauth-code-reference">
                     <code><?php echo esc_html($debug_constant); ?></code>
-                    <p class="aoauth-setting-help"><?php esc_html_e('Place this above the "stop editing" line in wp-config.php. Remove it after troubleshooting.', 'aoauth-client-sso'); ?></p>
+                    <p class="aoauth-setting-help"><?php esc_html_e('If automatic toggling fails, place this above the "stop editing" line in wp-config.php. Remove it after troubleshooting.', 'aoauth-client-sso'); ?></p>
                 </div>
             </div>
         </div>

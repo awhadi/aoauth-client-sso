@@ -3,7 +3,7 @@
  * Plugin Name: aOAUTH Client SSO
  * Plugin URI: https://awhadi.online
  * Description: Professional OAuth 2.0 and OpenID Connect Single Sign-On client for WordPress. Supports multiple providers with secure authentication.
- * Version: 2.2.1
+ * Version: 2.3.0
  * Author: Awhadi
  * Author URI: https://awhadi.online
  * License: GPL v2 or later
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('AOAUTH_VERSION', '2.2.1');
+define('AOAUTH_VERSION', '2.3.0');
 define('AOAUTH_PLUGIN_FILE', __FILE__);
 define('AOAUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AOAUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -98,7 +98,9 @@ add_action('plugins_loaded', 'aoauth_init');
 function aoauth_redirect_after_activation() {
     if (get_transient('aoauth_activation_redirect')) {
         delete_transient('aoauth_activation_redirect');
-        if (!isset($_GET['activate-multi'])) {
+        $applications = get_option('aoauth_applications', array());
+        $has_configured_provider = is_array($applications) && !empty($applications);
+        if (!$has_configured_provider && !isset($_GET['activate-multi'])) {
             wp_safe_redirect(admin_url('admin.php?page=aoauth-wizard'));
             exit;
         }

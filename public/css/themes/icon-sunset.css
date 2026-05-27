@@ -1,0 +1,35 @@
+.aoauth-login-buttons .aoauth-providers-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+}
+
+.aoauth-login-buttons .aoauth-button {
+    width: 58px;
+    height: 58px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(251,146,60,0.38);
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 28%, #fff7ed 0%, #fed7aa 48%, #fb923c 100%);
+    box-shadow: 0 12px 28px rgba(249,115,22,0.22);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.aoauth-login-buttons .aoauth-button-text {
+    display: none;
+}
+
+.aoauth-login-buttons .aoauth-button:hover {
+    box-shadow: 0 16px 34px rgba(249,115,22,0.3);
+    transform: translateY(-2px) scale(1.06);
+}
+
+.aoauth-login-buttons .aoauth-button-icon img {
+    width: 25px;
+    height: 25px;
+    filter: none;
+}

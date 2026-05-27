@@ -474,6 +474,24 @@
     --aoauth-overlay-accent: #facc15;
 }
 
+.aoauth-overlay-theme-icon-aurora {
+    --aoauth-overlay-start: #0f766e;
+    --aoauth-overlay-end: #4f46e5;
+    --aoauth-overlay-accent: #ccfbf1;
+}
+
+.aoauth-overlay-theme-icon-sunset {
+    --aoauth-overlay-start: #c2410c;
+    --aoauth-overlay-end: #fb923c;
+    --aoauth-overlay-accent: #ffedd5;
+}
+
+.aoauth-overlay-theme-icon-neon {
+    --aoauth-overlay-start: #581c87;
+    --aoauth-overlay-end: #a855f7;
+    --aoauth-overlay-accent: #f5d0fe;
+}
+
 .aoauth-verification-overlay.is-visible {
     display: flex;
 }

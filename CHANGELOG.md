@@ -2,6 +2,23 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.3.0] - 2026-05-27
+
+### Added
+- Added an admin-controlled Deep Debug toggle that updates wp-config.php when WordPress has write permission.
+- Added Icon Aurora, Icon Sunset, and Icon Neon icon-only theme variants with light icon surfaces for provider logo visibility.
+- Added log table indexes for provider/status/date filtering.
+
+### Changed
+- Prevented the setup wizard from opening after activation when any provider is already configured, whether enabled or disabled.
+- Optimized the Logs screen by keeping pagination and avoiding the duplicate initial AJAX reload after the first server-rendered page.
+- Extended verification overlay theme colors for the new icon-only theme variants.
+
+### Performance
+- Logs remain paginated at 50 entries per page.
+- Added database indexes to reduce filtered Logs screen query cost on larger log tables.
+- Frontend impact remains limited to login/profile pages because new theme CSS only loads when selected.
+
 ## [2.2.1] - 2026-05-27
 
 ### Added

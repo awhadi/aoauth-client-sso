@@ -451,6 +451,12 @@
     margin: 16px 0;
 }
 
+.aoauth-log-results-summary {
+    margin: 10px 0 12px;
+    color: #64748b;
+    font-size: 13px;
+}
+
 .aoauth-session-summary {
     display: flex;
     align-items: center;
@@ -735,6 +741,40 @@
     display: none;
 }
 
+.aoauth-theme-card[data-theme="icon-aurora"] .theme-preview-button,
+.aoauth-theme-card[data-theme="icon-sunset"] .theme-preview-button,
+.aoauth-theme-card[data-theme="icon-neon"] .theme-preview-button {
+    width: 42px;
+    height: 42px;
+    min-height: 42px;
+    padding: 0;
+    margin: 0 auto;
+}
+
+.aoauth-theme-card[data-theme="icon-aurora"] .theme-preview-button {
+    background: linear-gradient(135deg, #ccfbf1 0%, #e0e7ff 100%);
+    border: 1px solid rgba(20,184,166,0.34);
+    border-radius: 16px;
+}
+
+.aoauth-theme-card[data-theme="icon-sunset"] .theme-preview-button {
+    background: radial-gradient(circle at 35% 28%, #fff7ed 0%, #fed7aa 48%, #fb923c 100%);
+    border: 1px solid rgba(251,146,60,0.38);
+    border-radius: 50%;
+}
+
+.aoauth-theme-card[data-theme="icon-neon"] .theme-preview-button {
+    background: linear-gradient(145deg, #fdf4ff 0%, #e9d5ff 52%, #c4b5fd 100%);
+    border: 1px solid rgba(168,85,247,0.36);
+    border-radius: 14px;
+}
+
+.aoauth-theme-card[data-theme="icon-aurora"] .theme-preview-button .aoauth-button-text,
+.aoauth-theme-card[data-theme="icon-sunset"] .theme-preview-button .aoauth-button-text,
+.aoauth-theme-card[data-theme="icon-neon"] .theme-preview-button .aoauth-button-text {
+    display: none;
+}
+
 .aoauth-theme-card[data-theme="rounded"] .theme-preview-button {
     background: #f0fdf4;
     border: 1px solid #86efac;
@@ -999,6 +1039,18 @@
 
 .aoauth-linking-preview-wrap[data-preview-theme="icon-only"] .aoauth-linking-preview-screen {
     background: radial-gradient(circle at top, #374151 0%, #111827 64%);
+}
+
+.aoauth-linking-preview-wrap[data-preview-theme="icon-aurora"] .aoauth-linking-preview-screen {
+    background: linear-gradient(135deg, #ccfbf1 0%, #e0e7ff 100%);
+}
+
+.aoauth-linking-preview-wrap[data-preview-theme="icon-sunset"] .aoauth-linking-preview-screen {
+    background: radial-gradient(circle at top, #fff7ed 0%, #fed7aa 48%, #fb923c 100%);
+}
+
+.aoauth-linking-preview-wrap[data-preview-theme="icon-neon"] .aoauth-linking-preview-screen {
+    background: linear-gradient(145deg, #fdf4ff 0%, #e9d5ff 52%, #c4b5fd 100%);
 }
 
 .aoauth-linking-preview-wrap[data-preview-theme="modern"] .aoauth-linking-preview-button {

@@ -308,7 +308,7 @@
         $overlay.find('.aoauth-verification-message').text(message);
         updateVerificationBranding($overlay, overlayConfig);
         $overlay
-            .removeClass('aoauth-overlay-spotlight aoauth-overlay-panel aoauth-overlay-minimal aoauth-overlay-paper-plane aoauth-overlay-glass-shield aoauth-overlay-aurora aoauth-overlay-theme-simple aoauth-overlay-theme-modern aoauth-overlay-theme-rounded aoauth-overlay-theme-gradient aoauth-overlay-theme-outline aoauth-overlay-theme-icon-only')
+            .removeClass('aoauth-overlay-spotlight aoauth-overlay-panel aoauth-overlay-minimal aoauth-overlay-paper-plane aoauth-overlay-glass-shield aoauth-overlay-aurora aoauth-overlay-theme-simple aoauth-overlay-theme-modern aoauth-overlay-theme-rounded aoauth-overlay-theme-gradient aoauth-overlay-theme-outline aoauth-overlay-theme-icon-only aoauth-overlay-theme-icon-aurora aoauth-overlay-theme-icon-sunset aoauth-overlay-theme-icon-neon')
             .addClass('aoauth-overlay-' + overlayVariant)
             .addClass('aoauth-overlay-theme-' + overlayTheme)
             .toggleClass('aoauth-overlay-branding-hidden', !overlayConfig.overlay_branding_enabled);

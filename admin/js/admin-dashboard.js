@@ -585,6 +585,35 @@
                 $button.prop('disabled', false).text(originalText);
             });
         });
+
+        $('#aoauth-deep-debug-toggle').on('change', function() {
+            var $toggle = $(this);
+            var enabled = $toggle.is(':checked') ? 1 : 0;
+            var $status = $('#aoauth-deep-debug-status');
+
+            $toggle.prop('disabled', true);
+            $.post(aoauth_admin.ajaxurl, {
+                action: 'aoauth_toggle_deep_debug',
+                nonce: aoauth_admin.nonce,
+                enabled: enabled
+            }, function(response) {
+                if (response.success) {
+                    $status
+                        .removeClass('aoauth-status-success aoauth-status-info')
+                        .addClass(enabled ? 'aoauth-status-success' : 'aoauth-status-info')
+                        .text(enabled ? 'Enabled' : 'Off');
+                    aoauthShowToast(response.data.message, 'success');
+                } else {
+                    $toggle.prop('checked', !enabled);
+                    aoauthShowToast((response.data && response.data.message) || 'Could not update wp-config.php.', 'error');
+                }
+            }).fail(function() {
+                $toggle.prop('checked', !enabled);
+                aoauthShowToast('Could not update wp-config.php.', 'error');
+            }).always(function() {
+                $toggle.prop('disabled', false);
+            });
+        });
         
         // ============================================
         // PAGINATED LOGS
@@ -610,6 +639,7 @@
                 if (response.success) {
                     var tbody = $('#aoauth-logs-tbody');
                     tbody.empty();
+                    $('.aoauth-log-results-summary').text(response.data.total + (response.data.total === 1 ? ' log entry found.' : ' log entries found.'));
                     
                     $.each(response.data.logs, function(i, log) {
                         var eventType = log.event_type.replace(/_/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
@@ -667,7 +697,9 @@
         }
         
         if ($('#aoauth-logs-pagination').length) {
-            loadLogsPage(1);
+            var initialPage = parseInt($('#aoauth-logs-pagination').data('current-page'), 10) || 1;
+            var initialPages = parseInt($('#aoauth-logs-pagination').data('total-pages'), 10) || 1;
+            renderPagination(initialPage, initialPages);
         }
 
         $('#aoauth-log-filters').on('submit', function(e) {

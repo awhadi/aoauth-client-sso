@@ -1,5 +1,7 @@
 <?php if (!defined('ABSPATH')) exit;
 $current_page = isset($_GET['page']) ? $_GET['page'] : '';
+$log_limit = 50;
+$total_pages = $log_limit > 0 ? (int) ceil((int) $total_logs / $log_limit) : 1;
 ?>
 <div class="aoauth-admin-wrap">
     <div class="aoauth-admin-header">
@@ -52,6 +54,10 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : '';
             <button type="submit" class="aoauth-admin-button aoauth-admin-button-secondary"><?php esc_html_e('Filter', 'aoauth-client-sso'); ?></button>
         </form>
         
+        <div class="aoauth-log-results-summary">
+            <?php echo esc_html(sprintf(_n('%d log entry found.', '%d log entries found.', (int) $total_logs, 'aoauth-client-sso'), (int) $total_logs)); ?>
+        </div>
+
         <div class="aoauth-logs-table-wrap">
             <table class="aoauth-logs-table">
                 <thead>
@@ -79,7 +85,7 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : '';
             </table>
         </div>
         
-        <div class="aoauth-pagination" id="aoauth-logs-pagination"></div>
+        <div class="aoauth-pagination" id="aoauth-logs-pagination" data-current-page="1" data-total-pages="<?php echo esc_attr($total_pages); ?>"></div>
         <?php else: ?>
             <div class="aoauth-notice"><?php esc_html_e('Detailed logs are disabled. Enable them in Settings.', 'aoauth-client-sso'); ?></div>
         <?php endif; ?>

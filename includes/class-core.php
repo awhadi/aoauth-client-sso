@@ -199,7 +199,11 @@ class AOAUTH_Core {
             PRIMARY KEY (id),
             KEY event_type (event_type),
             KEY user_id (user_id),
-            KEY created_at (created_at)
+            KEY provider (provider),
+            KEY status (status),
+            KEY created_at (created_at),
+            KEY status_created_at (status, created_at),
+            KEY provider_created_at (provider, created_at)
         ) $charset_collate;";
         
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
