@@ -1,9 +1,9 @@
-Version: 2.1.0
+Version: 2.2.0
 Date: 2026-05-27
 Author: Awhadi / Codex
 
 Summary:
-Sign-In Experience, Security, User Management, and Tools were refined so related settings are grouped together and existing SSO behavior stays intact. Verification overlays now inherit theme styling, include optional provider/aOAUTH branding, and offer Paper Plane, Glass Shield, and Aurora styles. A new self-service `[aoauth_link_account]` shortcode lets logged-in users link an enabled SSO provider when account linking is allowed. Tools now focuses on useful maintenance actions instead of repeating the Users screen.
+User Management was reorganized into clearer groups, and account linking now supports multiple enabled providers on the same WordPress user. The WordPress profile SSO section now shows all connected providers and lets users link additional providers from their own profile. Existing themes were restyled to look visibly different without external fonts, and the Paper Plane overlay was revised so a small plane moves left-to-right while the overlay fills behind it.
 
 Files changed:
 - aoauth-client-sso.php
@@ -11,32 +11,35 @@ Files changed:
 - review.txt
 - admin/class-admin.php
 - admin/css/admin-style.css
-- admin/js/admin-dashboard.js
-- admin/views/security-settings.php
-- admin/views/sign-in-experience-settings.php
-- admin/views/tools-settings.php
 - admin/views/user-management-settings.php
 - includes/class-core.php
 - includes/class-sso-handler.php
+- includes/class-user-manager.php
 - public/css/login-single-sign-on.css
-- public/js/login-single-sign-on.js
+- public/css/themes/gradient.css
+- public/css/themes/icon-only.css
+- public/css/themes/modern.css
+- public/css/themes/outline.css
+- public/css/themes/rounded.css
+- public/css/themes/simple.css
 
 Security notes:
-- Existing public login bot protection remains enforced for normal SSO login.
-- Self-service account linking requires a logged-in session, account-linking settings enabled, a user-specific nonce, and matching provider/WordPress email addresses.
-- Maintenance actions require manage_options and the existing admin nonce.
-- Verification overlay branding is presentation-only and does not alter Turnstile or reCAPTCHA token verification.
+- Provider identity is stored per provider using subject when available, with email as fallback.
+- A provider identity cannot be linked to more than one WordPress user.
+- Provider email may differ from the WordPress email only after the logged-in user completes a nonce-protected OAuth link flow.
+- Admins editing another user's profile can view provider status, but cannot initiate OAuth linking for that other user from their own session.
+- Legacy `_aoauth_provider` metadata remains as a primary provider for backward compatibility.
 
 UX notes:
-- Sign-In Experience now groups login display, button appearance, account linking, and verification overlay controls.
-- Verification overlay preview sits beside the settings and updates with selected theme/style.
-- Verification overlay color and message-style fields were removed from the UI because colors are now theme-derived.
-- Tools now exposes Plugin Debug Logging, WordPress debug status, SSO-linked user count, and focused maintenance actions.
+- User Management now matches the grouped structure used by the other settings tabs.
+- User profiles show multiple connected SSO providers as cards.
+- Existing themes now differ in color, sizing, shape, and emphasis while using system fonts.
+- Paper Plane overlay now visually communicates motion and screen coverage more clearly.
 
 Rollback plan:
-Restore the previous v2.0.0 tag, clear object/page caches, and verify a normal SSO login plus one bot-protected login. If settings need rollback, import a pre-release configuration backup from Tools > Backup & Restore.
+Restore the previous v2.1.0 tag, clear caches, and verify login with the original primary provider. Existing legacy provider metadata remains compatible, but multi-provider links added after this release would not be understood by older versions.
 
 Verification:
-- PHP syntax checks passed for the plugin entrypoint, touched classes, and touched admin views.
+- Full plugin PHP syntax check passed.
 - JavaScript syntax checks passed for public/js/login-single-sign-on.js and admin/js/admin-dashboard.js.
-- Existing login, bot verification, account unlink, admin settings save, backup/restore, and factory reset paths were preserved while new features were added beside them.
+- `git diff --check` passed.

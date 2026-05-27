@@ -358,13 +358,13 @@ class AOAUTH_Admin {
             return;
         }
         
-        $linked_provider = get_user_meta($user->ID, '_aoauth_provider', true);
+        $linked_providers = AOAUTH_Core::get_user_linked_providers($user->ID);
+        $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
         $applications = get_option('aoauth_applications', array());
-        $provider_data = null;
-        
-        if ($linked_provider && isset($applications[$linked_provider])) {
-            $provider_data = $applications[$linked_provider];
-        }
+        $enabled_applications = array_filter($applications, function($application) {
+            return !empty($application['enabled']);
+        });
+        $can_link_on_this_profile = (int) get_current_user_id() === (int) $user->ID;
         ?>
         <div class="aoauth-profile-unlink-section">
             <h2><?php esc_html_e('SSO Account Connection', 'aoauth-client-sso'); ?></h2>
@@ -374,32 +374,46 @@ class AOAUTH_Admin {
                         <label><?php esc_html_e('Single Sign-On Status', 'aoauth-client-sso'); ?></label>
                     </th>
                     <td>
-                        <?php if ($linked_provider && $provider_data): ?>
+                        <?php if (!empty($linked_providers)): ?>
                             <div class="aoauth-connected-info">
-                                <div class="aoauth-connected-badge">
-                                    <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . $linked_provider . '.png'); ?>" 
-                                         alt="<?php echo esc_attr($provider_data['provider_name']); ?>"
-                                         class="aoauth-provider-icon-small"
-                                         onerror="this.src='<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png'); ?>'">
-                                    <strong><?php echo esc_html($provider_data['app_name']); ?></strong>
-                                    <span class="aoauth-connected-status"><?php esc_html_e('Connected', 'aoauth-client-sso'); ?></span>
-                                </div>
                                 <p class="description">
-                                    <?php esc_html_e('Your WordPress account is linked with this SSO provider. You can sign in using this provider.', 'aoauth-client-sso'); ?>
+                                    <?php esc_html_e('This WordPress account can sign in with the connected SSO providers below.', 'aoauth-client-sso'); ?>
                                 </p>
-                                <div class="aoauth-unlink-warning">
-                                    <p class="description">
-                                        <?php esc_html_e('Warning: If you unlink this account, you will no longer be able to sign in using this SSO provider. Make sure you have another way to access your account.', 'aoauth-client-sso'); ?>
-                                    </p>
+                                <div class="aoauth-profile-provider-grid">
+                                    <?php foreach ($linked_providers as $provider_slug => $connection): ?>
+                                        <?php
+                                        $provider_data = $applications[$provider_slug] ?? array(
+                                            'provider_name' => $provider_slug,
+                                            'app_name' => ucfirst($provider_slug),
+                                        );
+                                        $provider_email = !empty($connection['email']) ? $connection['email'] : get_user_meta($user->ID, '_aoauth_provider_email_' . $provider_slug, true);
+                                        ?>
+                                        <div class="aoauth-profile-provider-card">
+                                            <div class="aoauth-connected-badge">
+                                                <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . sanitize_key($provider_data['provider_name']) . '.png'); ?>"
+                                                     alt="<?php echo esc_attr($provider_data['provider_name']); ?>"
+                                                     class="aoauth-provider-icon-small"
+                                                     onerror="this.src='<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png'); ?>'">
+                                                <strong><?php echo esc_html($provider_data['app_name']); ?></strong>
+                                                <span class="aoauth-connected-status"><?php esc_html_e('Connected', 'aoauth-client-sso'); ?></span>
+                                            </div>
+                                            <?php if ($provider_email): ?>
+                                                <p class="description"><?php echo esc_html($provider_email); ?></p>
+                                            <?php endif; ?>
+                                            <button type="button"
+                                                    class="aoauth-admin-button aoauth-admin-button-danger-ghost aoauth-unlink-profile-btn"
+                                                    data-user-id="<?php echo esc_attr($user->ID); ?>"
+                                                    data-provider="<?php echo esc_attr($provider_slug); ?>"
+                                                    data-nonce="<?php echo esc_attr(wp_create_nonce('aoauth_unlink_' . $user->ID)); ?>">
+                                                <span class="dashicons dashicons-unlink"></span>
+                                                <?php esc_html_e('Unlink', 'aoauth-client-sso'); ?>
+                                            </button>
+                                        </div>
+                                    <?php endforeach; ?>
                                 </div>
-                                <button type="button" 
-                                        class="aoauth-admin-button aoauth-admin-button-danger aoauth-unlink-profile-btn"
-                                        data-user-id="<?php echo esc_attr($user->ID); ?>"
-                                        data-provider="<?php echo esc_attr($linked_provider); ?>"
-                                        data-nonce="<?php echo esc_attr(wp_create_nonce('aoauth_unlink_' . $user->ID)); ?>">
-                                    <span class="dashicons dashicons-unlink"></span>
-                                    <?php esc_html_e('Unlink SSO Account', 'aoauth-client-sso'); ?>
-                                </button>
+                                <div class="aoauth-unlink-warning">
+                                    <p class="description"><?php esc_html_e('Warning: before unlinking, make sure this user has another provider or a WordPress password available.', 'aoauth-client-sso'); ?></p>
+                                </div>
                             </div>
                         <?php else: ?>
                             <div class="aoauth-no-connection">
@@ -410,6 +424,44 @@ class AOAUTH_Admin {
                                 <p class="description">
                                     <?php esc_html_e('To link an SSO provider, sign in using the provider on the login page.', 'aoauth-client-sso'); ?>
                                 </p>
+                            </div>
+                        <?php endif; ?>
+                        <?php if (!empty($enabled_applications) && !empty($settings['allow_account_linking']) && !empty($settings['enable_self_service_account_linking'])): ?>
+                            <div class="aoauth-profile-link-options">
+                                <h3><?php esc_html_e('Link Another SSO Provider', 'aoauth-client-sso'); ?></h3>
+                                <?php if ($can_link_on_this_profile): ?>
+                                    <div class="aoauth-profile-provider-grid">
+                                        <?php foreach ($enabled_applications as $app_id => $app): ?>
+                                            <?php
+                                            if (isset($linked_providers[$app_id])) {
+                                                continue;
+                                            }
+                                            $provider_name = sanitize_key($app['provider_name'] ?? $app_id);
+                                            $link_url = add_query_arg(array(
+                                                'oauth' => 'login',
+                                                'provider' => $app_id,
+                                                'aoauth_link_current_user' => '1',
+                                                'redirect_to' => get_edit_profile_url($user->ID),
+                                                '_wpnonce' => wp_create_nonce('aoauth_login_' . $app_id),
+                                                'aoauth_link_nonce' => wp_create_nonce('aoauth_link_current_user_' . $user->ID . '_' . $app_id),
+                                            ), wp_login_url());
+                                            ?>
+                                            <a class="aoauth-profile-provider-card aoauth-profile-provider-link" href="<?php echo esc_url($link_url); ?>">
+                                                <span class="aoauth-connected-badge">
+                                                    <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . $provider_name . '.png'); ?>"
+                                                         alt="<?php echo esc_attr($provider_name); ?>"
+                                                         class="aoauth-provider-icon-small"
+                                                         onerror="this.src='<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png'); ?>'">
+                                                    <strong><?php echo esc_html($app['app_name'] ?? ucfirst($provider_name)); ?></strong>
+                                                </span>
+                                                <span class="aoauth-profile-link-action"><?php esc_html_e('Link provider', 'aoauth-client-sso'); ?></span>
+                                            </a>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <p class="description"><?php esc_html_e('Provider email may differ from the WordPress email. The provider account itself must not already be linked to another WordPress user.', 'aoauth-client-sso'); ?></p>
+                                <?php else: ?>
+                                    <p class="description"><?php esc_html_e('For security, users must link providers from their own profile while logged in as themselves.', 'aoauth-client-sso'); ?></p>
+                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
                     </td>
@@ -433,29 +485,34 @@ class AOAUTH_Admin {
      */
     public function render_unlink_column($value, $column_name, $user_id) {
         if ($column_name === 'aoauth_sso') {
-            $provider = get_user_meta($user_id, '_aoauth_provider', true);
+            $linked_providers = AOAUTH_Core::get_user_linked_providers($user_id);
             $applications = get_option('aoauth_applications', array());
             
-            if ($provider && isset($applications[$provider])) {
-                $app_name = $applications[$provider]['app_name'];
-                $provider_name = $applications[$provider]['provider_name'];
-                return '<span class="aoauth-provider-cell">
-                            <img src="' . esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . $provider_name . '.png') . '" 
-                                 class="aoauth-provider-cell-icon"
-                                 onerror="this.style.display=\'none\'">
-                            ' . esc_html($app_name) . '
-                        </span>';
+            if (!empty($linked_providers)) {
+                $provider_badges = array();
+                foreach (array_keys($linked_providers) as $provider) {
+                    $provider_name = $applications[$provider]['provider_name'] ?? $provider;
+                    $app_name = $applications[$provider]['app_name'] ?? ucfirst($provider);
+                    $provider_badges[] = '<span class="aoauth-provider-cell">
+                                <img src="' . esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . sanitize_key($provider_name) . '.png') . '"
+                                     class="aoauth-provider-cell-icon"
+                                     onerror="this.style.display=\'none\'">
+                                ' . esc_html($app_name) . '
+                            </span>';
+                }
+                return implode(' ', $provider_badges);
             }
             return '<span class="aoauth-no-provider">—</span>';
         }
         
         if ($column_name === 'aoauth_actions') {
-            $provider = get_user_meta($user_id, '_aoauth_provider', true);
+            $linked_providers = AOAUTH_Core::get_user_linked_providers($user_id);
             $current_user = wp_get_current_user();
             
-            if ($provider) {
+            if (!empty($linked_providers)) {
                 $disabled = '';
                 $title = '';
+                $primary_provider = array_key_first($linked_providers);
                 
                 // Prevent admin from unlinking themselves if they're the only admin
                 if ($user_id === $current_user->ID && count(get_users(array('role' => 'administrator'))) === 1) {
@@ -466,7 +523,7 @@ class AOAUTH_Admin {
                 return '<button type="button" 
                                 class="aoauth-admin-button aoauth-admin-button-danger-ghost aoauth-unlink-user-btn" 
                                 data-user-id="' . esc_attr($user_id) . '"
-                                data-provider="' . esc_attr($provider) . '"
+                                data-provider="' . esc_attr($primary_provider) . '"
                                 data-nonce="' . esc_attr(wp_create_nonce('aoauth_unlink_' . $user_id)) . '"
                                 ' . $disabled . '
                                 title="' . esc_attr($title) . '">
@@ -507,9 +564,9 @@ class AOAUTH_Admin {
         
         foreach ($user_ids as $user_id) {
             $user_id = intval($user_id);
-            $provider = get_user_meta($user_id, '_aoauth_provider', true);
+            $linked_providers = AOAUTH_Core::get_user_linked_providers($user_id);
             
-            if (empty($provider)) {
+            if (empty($linked_providers)) {
                 $failed_count++;
                 continue;
             }
@@ -520,20 +577,19 @@ class AOAUTH_Admin {
                 continue;
             }
             
-            $result = delete_user_meta($user_id, '_aoauth_provider');
-            delete_user_meta($user_id, '_aoauth_linked_' . $provider);
-            delete_user_meta($user_id, '_aoauth_created');
-            delete_user_meta($user_id, '_aoauth_last_login');
-            
-            if ($result) {
-                $unlinked_count++;
-                $this->logger->log('account_unlinked_bulk', array(
-                    'user_id' => $user_id,
-                    'provider' => $provider,
-                    'action_by' => $current_user_id
-                ), $user_id, $provider, 'info');
-            } else {
-                $failed_count++;
+            foreach (array_keys($linked_providers) as $provider) {
+                $result = AOAUTH_Core::unlink_user_provider($user_id, $provider);
+
+                if ($result) {
+                    $unlinked_count++;
+                    $this->logger->log('account_unlinked_bulk', array(
+                        'user_id' => $user_id,
+                        'provider' => $provider,
+                        'action_by' => $current_user_id
+                    ), $user_id, $provider, 'info');
+                } else {
+                    $failed_count++;
+                }
             }
         }
         
@@ -1671,17 +1727,14 @@ public function ajax_unlink_account() {
     }
     
     // Verify the user actually has this provider linked
-    $linked_provider = get_user_meta($user_id, '_aoauth_provider', true);
+    $linked_providers = AOAUTH_Core::get_user_linked_providers($user_id);
     
-    if ($linked_provider !== $provider) {
+    if (!isset($linked_providers[$provider])) {
         wp_send_json_error(array('message' => __('Provider mismatch or account not linked.', 'aoauth-client-sso')));
     }
     
     // Perform unlinking
-    $deleted = delete_user_meta($user_id, '_aoauth_provider');
-    delete_user_meta($user_id, '_aoauth_linked_' . $provider);
-    delete_user_meta($user_id, '_aoauth_created');
-    delete_user_meta($user_id, '_aoauth_last_login');
+    $deleted = AOAUTH_Core::unlink_user_provider($user_id, $provider);
     
     if ($deleted) {
         $this->logger->log('account_unlinked', array(
@@ -1718,9 +1771,9 @@ public function ajax_unlink_account() {
         $admin_count = count(get_users(array('role' => 'administrator')));
         
         foreach ($user_ids as $user_id) {
-            $provider = get_user_meta($user_id, '_aoauth_provider', true);
+            $linked_providers = AOAUTH_Core::get_user_linked_providers($user_id);
             
-            if (empty($provider)) {
+            if (empty($linked_providers)) {
                 $failed_count++;
                 continue;
             }
@@ -1731,20 +1784,19 @@ public function ajax_unlink_account() {
                 continue;
             }
             
-            $result = delete_user_meta($user_id, '_aoauth_provider');
-            delete_user_meta($user_id, '_aoauth_linked_' . $provider);
-            delete_user_meta($user_id, '_aoauth_created');
-            delete_user_meta($user_id, '_aoauth_last_login');
-            
-            if ($result) {
-                $unlinked_count++;
-                $this->logger->log('account_unlinked_bulk', array(
-                    'user_id' => $user_id,
-                    'provider' => $provider,
-                    'action_by' => $current_user_id
-                ), $user_id, $provider, 'info');
-            } else {
-                $failed_count++;
+            foreach (array_keys($linked_providers) as $provider) {
+                $result = AOAUTH_Core::unlink_user_provider($user_id, $provider);
+
+                if ($result) {
+                    $unlinked_count++;
+                    $this->logger->log('account_unlinked_bulk', array(
+                        'user_id' => $user_id,
+                        'provider' => $provider,
+                        'action_by' => $current_user_id
+                    ), $user_id, $provider, 'info');
+                } else {
+                    $failed_count++;
+                }
             }
         }
         

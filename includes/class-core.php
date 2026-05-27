@@ -485,6 +485,113 @@ class AOAUTH_Core {
         $provider_key = strtolower($provider_name);
         return AOAUTH_PLUGIN_URL . 'admin/images/providers/' . $provider_key . '.png';
     }
+
+    public static function get_user_linked_providers($user_id) {
+        $linked_providers = get_user_meta($user_id, '_aoauth_linked_providers', true);
+        if (!is_array($linked_providers)) {
+            $linked_providers = array();
+        }
+
+        $legacy_provider = get_user_meta($user_id, '_aoauth_provider', true);
+        if ($legacy_provider && empty($linked_providers[$legacy_provider])) {
+            $linked_at = (int) get_user_meta($user_id, '_aoauth_linked_' . $legacy_provider, true);
+            $linked_providers[$legacy_provider] = array(
+                'linked_at' => $linked_at ?: time(),
+                'email' => '',
+                'subject' => '',
+            );
+        }
+
+        return $linked_providers;
+    }
+
+    public static function link_user_provider($user_id, $provider_slug, $provider_email = '', $provider_subject = '') {
+        $provider_slug = sanitize_key($provider_slug);
+        if (!$user_id || !$provider_slug) {
+            return false;
+        }
+
+        $linked_providers = self::get_user_linked_providers($user_id);
+        $linked_providers[$provider_slug] = array(
+            'linked_at' => time(),
+            'email' => sanitize_email($provider_email),
+            'subject' => sanitize_text_field($provider_subject),
+        );
+
+        update_user_meta($user_id, '_aoauth_linked_providers', $linked_providers);
+        update_user_meta($user_id, '_aoauth_linked_' . $provider_slug, time());
+        update_user_meta($user_id, '_aoauth_provider_email_' . $provider_slug, sanitize_email($provider_email));
+        update_user_meta($user_id, '_aoauth_provider_subject_' . $provider_slug, sanitize_text_field($provider_subject));
+
+        if (!get_user_meta($user_id, '_aoauth_provider', true)) {
+            update_user_meta($user_id, '_aoauth_provider', $provider_slug);
+        }
+
+        return true;
+    }
+
+    public static function unlink_user_provider($user_id, $provider_slug) {
+        $provider_slug = sanitize_key($provider_slug);
+        $linked_providers = self::get_user_linked_providers($user_id);
+        unset($linked_providers[$provider_slug]);
+
+        if (!empty($linked_providers)) {
+            update_user_meta($user_id, '_aoauth_linked_providers', $linked_providers);
+        } else {
+            delete_user_meta($user_id, '_aoauth_linked_providers');
+        }
+
+        delete_user_meta($user_id, '_aoauth_linked_' . $provider_slug);
+        delete_user_meta($user_id, '_aoauth_provider_email_' . $provider_slug);
+        delete_user_meta($user_id, '_aoauth_provider_subject_' . $provider_slug);
+
+        if (get_user_meta($user_id, '_aoauth_provider', true) === $provider_slug) {
+            $next_provider = !empty($linked_providers) ? array_key_first($linked_providers) : '';
+            if ($next_provider) {
+                update_user_meta($user_id, '_aoauth_provider', $next_provider);
+            } else {
+                delete_user_meta($user_id, '_aoauth_provider');
+                delete_user_meta($user_id, '_aoauth_created');
+                delete_user_meta($user_id, '_aoauth_last_login');
+            }
+        }
+
+        return true;
+    }
+
+    public static function find_linked_user_by_provider_identity($provider_slug, $provider_email = '', $provider_subject = '') {
+        $provider_slug = sanitize_key($provider_slug);
+        $provider_subject = sanitize_text_field($provider_subject);
+        $provider_email = sanitize_email($provider_email);
+
+        $identity_meta = '';
+        $identity_value = '';
+        if ($provider_subject !== '') {
+            $identity_meta = '_aoauth_provider_subject_' . $provider_slug;
+            $identity_value = $provider_subject;
+        } elseif ($provider_email !== '') {
+            $identity_meta = '_aoauth_provider_email_' . $provider_slug;
+            $identity_value = $provider_email;
+        }
+
+        if ($identity_meta === '') {
+            return 0;
+        }
+
+        $users = get_users(array(
+            'meta_key' => $identity_meta,
+            'meta_value' => $identity_value,
+            'number' => 1,
+            'fields' => 'ID',
+        ));
+
+        return !empty($users) ? (int) $users[0] : 0;
+    }
+
+    public static function provider_identity_belongs_to_other_user($user_id, $provider_slug, $provider_email = '', $provider_subject = '') {
+        $linked_user_id = self::find_linked_user_by_provider_identity($provider_slug, $provider_email, $provider_subject);
+        return $linked_user_id && (int) $linked_user_id !== (int) $user_id;
+    }
     
     public function get_security() {
         return $this->security;

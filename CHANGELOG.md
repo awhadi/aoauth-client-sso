@@ -2,6 +2,24 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.2.0] - 2026-05-27
+
+### Added
+- Added multi-provider account linking so one WordPress user can connect multiple enabled SSO providers.
+- Added provider linking cards directly on the WordPress user profile screen for the current logged-in user's own profile.
+- Added provider identity metadata for linked provider subject/email values so future logins can resolve to the correct WordPress user even when the provider email differs from the WordPress email.
+
+### Changed
+- Reorganized the User Management tab into User Creation, Role Redirects, and Account Linking groups.
+- Updated existing SSO themes with distinct colors, weights, sizing, and shapes without importing external fonts.
+- Refined the Paper Plane verification overlay so the plane travels left-to-right while the overlay grows behind it.
+- Updated profile and shortcode unlink displays to handle multiple connected providers.
+
+### Security
+- Blocks linking when the same provider identity is already attached to a different WordPress user.
+- Allows provider/WordPress email mismatch only after a logged-in, nonce-protected OAuth linking flow proves control of the provider account.
+- Admins viewing another user's profile can see SSO status, but linking must be started by the user from their own logged-in profile.
+
 ## [2.1.0] - 2026-05-27
 
 ### Added

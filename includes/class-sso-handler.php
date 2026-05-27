@@ -371,8 +371,25 @@ class AOAUTH_SSO_Handler {
             exit;
         }
 
-        $user_manager = new AOAUTH_User_Manager();
-        $result = $user_manager->process_oauth_user($user_info, $provider, $provider_slug);
+        $provider_subject = $this->get_provider_subject($user_info);
+        $linked_user_id = AOAUTH_Core::find_linked_user_by_provider_identity($provider_slug, $user_info['email'], $provider_subject);
+        if ($linked_user_id) {
+            $ban_until = aoauth_core()->get_security()->get_user_login_ban($linked_user_id);
+            if ($ban_until) {
+                $remaining = max(1, ceil(($ban_until - time()) / 60));
+                $result = new WP_Error(
+                    'aoauth_login_banned',
+                    sprintf(__('Too many failed account-linking attempts. Login is temporarily blocked for %d minutes.', 'aoauth-client-sso'), $remaining)
+                );
+            } else {
+                AOAUTH_Core::link_user_provider($linked_user_id, $provider_slug, $user_info['email'], $provider_subject);
+                update_user_meta($linked_user_id, '_aoauth_last_login', time());
+                $result = $linked_user_id;
+            }
+        } else {
+            $user_manager = new AOAUTH_User_Manager();
+            $result = $user_manager->process_oauth_user($user_info, $provider, $provider_slug);
+        }
         
         if (is_wp_error($result)) {
             $debug->error('User processing failed', array('error' => $result->get_error_message()));
@@ -1030,26 +1047,47 @@ class AOAUTH_SSO_Handler {
 
         $user = get_userdata($user_id);
         $provider_email = isset($user_info['email']) ? sanitize_email($user_info['email']) : '';
-        if (!$user || empty($provider_email) || strtolower($provider_email) !== strtolower($user->user_email)) {
+        $provider_subject = $this->get_provider_subject($user_info);
+
+        if (!$user || empty($provider_email)) {
             $this->logger->log('account_linking_failed', array(
                 'flow_id' => $flow_id,
                 'provider' => $provider_slug,
-                'reason' => 'email_mismatch'
+                'reason' => 'missing_provider_email'
             ), $user_id, $provider_slug, 'error');
-            return new WP_Error('account_linking_email_mismatch', __('The provider email must match your WordPress account email.', 'aoauth-client-sso'));
+            return new WP_Error('account_linking_missing_email', __('The provider did not return an email address for this account.', 'aoauth-client-sso'));
         }
 
-        update_user_meta($user_id, '_aoauth_provider', $provider_slug);
-        update_user_meta($user_id, '_aoauth_linked_' . $provider_slug, time());
+        if (AOAUTH_Core::provider_identity_belongs_to_other_user($user_id, $provider_slug, $provider_email, $provider_subject)) {
+            $this->logger->log('account_linking_failed', array(
+                'flow_id' => $flow_id,
+                'provider' => $provider_slug,
+                'reason' => 'provider_identity_already_linked'
+            ), $user_id, $provider_slug, 'error');
+            return new WP_Error('account_linking_identity_in_use', __('This provider account is already linked to another WordPress user.', 'aoauth-client-sso'));
+        }
+
+        AOAUTH_Core::link_user_provider($user_id, $provider_slug, $provider_email, $provider_subject);
         update_user_meta($user_id, '_aoauth_last_login', time());
 
         $this->logger->log('account_linked_self_service', array(
             'flow_id' => $flow_id,
             'provider' => $provider_slug,
+            'provider_email_matches_wordpress' => strtolower($provider_email) === strtolower($user->user_email),
             'redirect_path' => $this->get_url_path_for_log($redirect_to)
         ), $user_id, $provider_slug, 'success');
 
         return true;
+    }
+
+    private function get_provider_subject($user_info) {
+        foreach (array('subject', 'sub', 'id', 'user_id') as $subject_key) {
+            if (!empty($user_info[$subject_key])) {
+                return sanitize_text_field((string) $user_info[$subject_key]);
+            }
+        }
+
+        return '';
     }
     
     private function consume_bot_protection_verification_for_login($provider_slug, $requested_flow_id = '') {
@@ -1182,19 +1220,22 @@ class AOAUTH_SSO_Handler {
             return '<div class="aoauth-frontend-unlink"><p>' . esc_html__('No SSO providers are available to link.', 'aoauth-client-sso') . '</p></div>';
         }
 
-        $current_provider = get_user_meta(get_current_user_id(), '_aoauth_provider', true);
+        $linked_providers = AOAUTH_Core::get_user_linked_providers(get_current_user_id());
         $theme = isset($settings['login_button_theme']) ? sanitize_key($settings['login_button_theme']) : 'modern';
         $layout = isset($settings['login_button_layout']) ? sanitize_key($settings['login_button_layout']) : 'vertical';
 
         ob_start();
         ?>
         <div class="aoauth-login-buttons aoauth-account-link-buttons aoauth-theme-<?php echo esc_attr($theme); ?> aoauth-layout-<?php echo esc_attr($layout); ?>">
-            <?php if ($current_provider): ?>
-                <p class="aoauth-account-link-status"><?php echo esc_html(sprintf(__('Your account is currently linked to %s.', 'aoauth-client-sso'), ucfirst($current_provider))); ?></p>
+            <?php if (!empty($linked_providers)): ?>
+                <p class="aoauth-account-link-status"><?php echo esc_html(sprintf(__('Your account is linked to %d SSO provider(s).', 'aoauth-client-sso'), count($linked_providers))); ?></p>
             <?php endif; ?>
             <div class="aoauth-providers-grid">
                 <?php foreach ($enabled_apps as $app_id => $app): ?>
                     <?php
+                    if (isset($linked_providers[$app_id])) {
+                        continue;
+                    }
                     $provider_name = sanitize_key($app['provider_name'] ?? $app_id);
                     $link_url = add_query_arg(array(
                         'oauth' => 'login',
@@ -1226,13 +1267,8 @@ class AOAUTH_SSO_Handler {
         }
         
         $user_id = get_current_user_id();
-        $linked_provider = get_user_meta($user_id, '_aoauth_provider', true);
+        $linked_providers = AOAUTH_Core::get_user_linked_providers($user_id);
         $applications = get_option('aoauth_applications', array());
-        $provider_data = null;
-        
-        if ($linked_provider && isset($applications[$linked_provider])) {
-            $provider_data = $applications[$linked_provider];
-        }
         
         wp_enqueue_style('aoauth-account-unlink', AOAUTH_PLUGIN_URL . 'public/css/login-single-sign-on.css', array(), AOAUTH_VERSION);
         wp_enqueue_script('aoauth-account-unlink', AOAUTH_PLUGIN_URL . 'public/js/account-unlink.js', array('jquery'), AOAUTH_VERSION, true);
@@ -1249,24 +1285,32 @@ class AOAUTH_SSO_Handler {
         ob_start();
         ?>
         <div class="aoauth-frontend-unlink">
-            <?php if ($linked_provider && $provider_data): ?>
-                <div class="aoauth-frontend-connected">
-                    <p>
-                        <strong><?php esc_html_e('Connected SSO Account:', 'aoauth-client-sso'); ?></strong>
-                        <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . $linked_provider . '.png'); ?>" 
-                             alt="<?php echo esc_attr($provider_data['provider_name']); ?>"
-                             class="aoauth-frontend-provider-icon"
-                             onerror="this.style.display='none'">
-                        <?php echo esc_html($provider_data['app_name']); ?>
-                    </p>
-                    <button type="button" 
-                            class="aoauth-frontend-unlink-btn aoauth-unlink-profile-btn"
-                            data-user-id="<?php echo esc_attr($user_id); ?>"
-                            data-provider="<?php echo esc_attr($linked_provider); ?>"
-                            data-nonce="<?php echo esc_attr(wp_create_nonce('aoauth_unlink_' . $user_id)); ?>">
-                        <?php esc_html_e('Disconnect SSO Account', 'aoauth-client-sso'); ?>
-                    </button>
-                </div>
+            <?php if (!empty($linked_providers)): ?>
+                <?php foreach ($linked_providers as $linked_provider => $connection): ?>
+                    <?php
+                    $provider_data = $applications[$linked_provider] ?? array(
+                        'provider_name' => $linked_provider,
+                        'app_name' => ucfirst($linked_provider),
+                    );
+                    ?>
+                    <div class="aoauth-frontend-connected">
+                        <p>
+                            <strong><?php esc_html_e('Connected SSO Account:', 'aoauth-client-sso'); ?></strong>
+                            <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . sanitize_key($provider_data['provider_name']) . '.png'); ?>"
+                                 alt="<?php echo esc_attr($provider_data['provider_name']); ?>"
+                                 class="aoauth-frontend-provider-icon"
+                                 onerror="this.style.display='none'">
+                            <?php echo esc_html($provider_data['app_name']); ?>
+                        </p>
+                        <button type="button"
+                                class="aoauth-frontend-unlink-btn aoauth-unlink-profile-btn"
+                                data-user-id="<?php echo esc_attr($user_id); ?>"
+                                data-provider="<?php echo esc_attr($linked_provider); ?>"
+                                data-nonce="<?php echo esc_attr(wp_create_nonce('aoauth_unlink_' . $user_id)); ?>">
+                            <?php esc_html_e('Disconnect SSO Account', 'aoauth-client-sso'); ?>
+                        </button>
+                    </div>
+                <?php endforeach; ?>
             <?php else: ?>
                 <p><?php esc_html_e('No SSO account is currently connected to your WordPress account.', 'aoauth-client-sso'); ?></p>
                 <p class="description">

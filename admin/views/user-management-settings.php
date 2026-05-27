@@ -6,7 +6,13 @@ $role_redirects = isset($settings['role_redirects']) && is_array($settings['role
         <div class="aoauth-settings-section">
             <h3 class="aoauth-section-title"><?php esc_html_e('User Management', 'aoauth-client-sso'); ?></h3>
 
-            <div class="aoauth-setting-row">
+            <div class="aoauth-setting-group">
+                <div class="aoauth-setting-group-header">
+                    <h4><?php esc_html_e('User Creation', 'aoauth-client-sso'); ?></h4>
+                    <p><?php esc_html_e('Controls how new WordPress users are created after successful SSO.', 'aoauth-client-sso'); ?></p>
+                </div>
+
+                <div class="aoauth-setting-row">
                 <div class="aoauth-setting-label">
                     <label for="auto_create_users"><?php esc_html_e('Auto-Create Users', 'aoauth-client-sso'); ?></label>
                     <p class="aoauth-setting-help"><?php esc_html_e('Create WordPress users after successful SSO when no account exists.', 'aoauth-client-sso'); ?></p>
@@ -20,7 +26,7 @@ $role_redirects = isset($settings['role_redirects']) && is_array($settings['role
                 </div>
             </div>
 
-            <div class="aoauth-setting-row <?php echo empty($settings['auto_create_users']) ? 'aoauth-is-hidden' : ''; ?>" id="default-role-row">
+                <div class="aoauth-setting-row <?php echo empty($settings['auto_create_users']) ? 'aoauth-is-hidden' : ''; ?>" id="default-role-row">
                 <div class="aoauth-setting-label">
                     <label for="default_role"><?php esc_html_e('Default User Role', 'aoauth-client-sso'); ?></label>
                     <p class="aoauth-setting-help"><?php esc_html_e('Applied to new SSO users unless provider role mapping overrides it.', 'aoauth-client-sso'); ?></p>
@@ -33,8 +39,15 @@ $role_redirects = isset($settings['role_redirects']) && is_array($settings['role
                     </select>
                 </div>
             </div>
+            </div>
 
-            <div class="aoauth-setting-row-full">
+            <div class="aoauth-setting-group">
+                <div class="aoauth-setting-group-header">
+                    <h4><?php esc_html_e('Role Redirects', 'aoauth-client-sso'); ?></h4>
+                    <p><?php esc_html_e('Routes users to the right place after authentication.', 'aoauth-client-sso'); ?></p>
+                </div>
+
+                <div class="aoauth-setting-row-full">
                 <div class="aoauth-setting-label-full">
                     <label><?php esc_html_e('Role-Based Redirects', 'aoauth-client-sso'); ?></label>
                     <p class="aoauth-setting-help"><?php esc_html_e('Set a path or safe same-site URL for each role after successful authentication.', 'aoauth-client-sso'); ?></p>
@@ -48,8 +61,15 @@ $role_redirects = isset($settings['role_redirects']) && is_array($settings['role
                     <?php endforeach; ?>
                 </div>
             </div>
+            </div>
 
-            <div class="aoauth-setting-row">
+            <div class="aoauth-setting-group">
+                <div class="aoauth-setting-group-header">
+                    <h4><?php esc_html_e('Account Linking', 'aoauth-client-sso'); ?></h4>
+                    <p><?php esc_html_e('Lets users connect one or more enabled SSO providers to the same WordPress account.', 'aoauth-client-sso'); ?></p>
+                </div>
+
+                <div class="aoauth-setting-row">
                 <div class="aoauth-setting-label">
                     <label for="allow_account_linking"><?php esc_html_e('Allow Account Linking', 'aoauth-client-sso'); ?></label>
                     <p class="aoauth-setting-help"><?php esc_html_e('Allow existing users to confirm their WordPress password and attach an SSO provider.', 'aoauth-client-sso'); ?></p>
@@ -105,6 +125,7 @@ $role_redirects = isset($settings['role_redirects']) && is_array($settings['role
                         <input type="number" id="linking_login_ban_minutes" name="linking_login_ban_minutes" class="aoauth-form-control aoauth-number-input" value="<?php echo esc_attr($settings['linking_login_ban_minutes'] ?? 15); ?>" min="0" max="1440">
                     </div>
                 </div>
+            </div>
             </div>
         </div>
 

@@ -1,5 +1,5 @@
 .aoauth-login-buttons .aoauth-button {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #db2777 0%, #f59e0b 100%);
     border: none;
     border-radius: 12px;
     color: #fff;
@@ -22,7 +22,7 @@
 }
 .aoauth-login-buttons .aoauth-button:hover {
     transform: scale(1.02);
-    box-shadow: 0 8px 25px rgba(102,126,234,0.4);
+    box-shadow: 0 8px 25px rgba(219,39,119,0.32);
 }
 .aoauth-login-buttons .aoauth-button-icon img {
     filter: brightness(0) invert(1);

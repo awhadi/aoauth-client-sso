@@ -5,11 +5,11 @@
     gap: 15px;
 }
 .aoauth-login-buttons .aoauth-button {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
+    background: #111827;
+    border: 1px solid #374151;
+    border-radius: 14px;
+    width: 54px;
+    height: 54px;
     padding: 0;
     display: inline-flex;
     align-items: center;
@@ -21,10 +21,11 @@
 }
 .aoauth-login-buttons .aoauth-button:hover {
     transform: scale(1.1);
-    border-color: #667eea;
-    box-shadow: 0 4px 12px rgba(102,126,234,0.2);
+    border-color: #facc15;
+    box-shadow: 0 8px 18px rgba(17,24,39,0.28);
 }
 .aoauth-login-buttons .aoauth-button-icon img {
     width: 24px;
     height: 24px;
+    filter: drop-shadow(0 1px 1px rgba(255,255,255,0.2));
 }

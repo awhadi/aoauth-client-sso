@@ -1,12 +1,14 @@
 .aoauth-login-buttons .aoauth-button {
-    background: transparent;
-    border: 2px solid #667eea;
+    background: #fff;
+    border: 2px solid #0f766e;
     border-radius: 8px;
-    color: #667eea;
+    color: #0f766e;
+    font-size: 13px;
+    text-transform: uppercase;
     transition: all 0.3s ease;
 }
 .aoauth-login-buttons .aoauth-button:hover {
-    background: #667eea;
+    background: #0f766e;
     color: #fff;
     transform: translateY(-2px);
 }
