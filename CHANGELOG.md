@@ -2,6 +2,30 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.1.0] - 2026-05-27
+
+### Added
+- Added self-service account linking with the `[aoauth_link_account]` shortcode for logged-in users.
+- Added an admin setting to enable or disable self-service account linking.
+- Added verification overlay branding with the verification provider name and "Powered by aOAUTH Client SSO".
+- Added Paper Plane, Glass Shield, and Aurora verification overlay styles.
+- Added Tools maintenance actions for bot verifications, account-linking lockouts, and expired OAuth temporary data.
+
+### Changed
+- Reorganized settings into related groups so each tab reads as connected workflows instead of isolated rows.
+- Moved verification overlay appearance controls into a clearer Sign-In Experience group with a right-side preview.
+- Removed manual verification overlay color and message-style controls from the UI; overlay colors now follow the selected SSO theme.
+- Reworked Tools session management to show useful SSO status and maintenance actions instead of duplicating the WordPress Users table.
+- Renamed the Tools logging toggle to Plugin Debug Logging while keeping WordPress debug status as an informational badge.
+- Improved Spotlight, Full Panel, and Minimal overlay presentation while preserving existing bot verification behavior.
+
+### Security
+- Self-service account linking requires a logged-in user, a user-specific nonce, enabled account-linking settings, and a provider email matching the WordPress account email.
+- Tools maintenance actions require administrator capability and the existing admin nonce.
+
+### Performance
+- Reused existing admin/public CSS and JavaScript assets instead of adding new frontend bundles.
+
 ## [2.0.0] - 2026-05-25
 
 ### Added

@@ -563,6 +563,28 @@
                 aoauthShowToast('Error clearing logs', 'error');
             });
         });
+
+        $('.aoauth-maintenance-action').on('click', function() {
+            var $button = $(this);
+            var action = $button.data('action');
+            var originalText = $button.text();
+
+            $button.prop('disabled', true).text('Working...');
+            $.post(aoauth_admin.ajaxurl, {
+                action: action,
+                nonce: aoauth_admin.nonce
+            }, function(response) {
+                if (response.success) {
+                    aoauthShowToast(response.data.message, 'success');
+                } else {
+                    aoauthShowToast(response.data.message || 'Maintenance action failed.', 'error');
+                }
+            }).fail(function() {
+                aoauthShowToast('Maintenance action failed.', 'error');
+            }).always(function() {
+                $button.prop('disabled', false).text(originalText);
+            });
+        });
         
         // ============================================
         // PAGINATED LOGS
@@ -697,9 +719,13 @@
         function updateLinkingPreview() {
             var selectedTheme = $('input[name="login_button_theme"]:checked').val() || 'modern';
             var title = $('#linking_page_title').val() || 'Link Your Account';
+            var overlayVariant = $('#bot_overlay_variant').val() || 'spotlight';
+            var showBranding = $('#bot_overlay_branding_enabled').is(':checked');
 
             $('.aoauth-linking-preview-wrap')
-                .attr('data-preview-theme', selectedTheme);
+                .attr('data-preview-theme', selectedTheme)
+                .attr('data-overlay-variant', overlayVariant)
+                .toggleClass('aoauth-overlay-preview-branding-hidden', !showBranding);
             $('.aoauth-linking-preview-title').text(title);
         }
 
@@ -710,7 +736,7 @@
             updateLinkingPreview();
         });
 
-        $('#linking_page_title').on('input change', updateLinkingPreview);
+        $('#linking_page_title, #bot_overlay_variant, #bot_overlay_branding_enabled').on('input change', updateLinkingPreview);
         updateLinkingPreview();
     });
 })(jQuery);

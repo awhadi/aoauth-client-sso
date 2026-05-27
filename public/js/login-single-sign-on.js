@@ -291,22 +291,27 @@
                 $('<div>', { class: 'aoauth-verification-panel' }).append(
                     $('<div>', { class: 'aoauth-verification-ring' }),
                     $('<div>', { class: 'aoauth-verification-message' })
-                )
+                ),
+                $('<div>', { class: 'aoauth-verification-branding', 'aria-hidden': 'true' }).append(
+                    $('<div>', { class: 'aoauth-verification-provider-mark' }),
+                    $('<div>', { class: 'aoauth-verification-powered' })
+                ),
+                $('<div>', { class: 'aoauth-verification-plane' })
             );
             $('body').append($overlay);
         }
 
         var overlayConfig = aoauth_public.bot_protection || {};
         var overlayVariant = overlayConfig.overlay_variant || 'spotlight';
-        var overlayColor = overlayConfig.overlay_color || '#0f172a';
-        var messageStyle = overlayConfig.overlay_message_style || 'standard';
+        var overlayTheme = overlayConfig.overlay_theme || 'modern';
 
         $overlay.find('.aoauth-verification-message').text(message);
+        updateVerificationBranding($overlay, overlayConfig);
         $overlay
-            .removeClass('aoauth-overlay-spotlight aoauth-overlay-panel aoauth-overlay-minimal aoauth-message-standard aoauth-message-quiet aoauth-message-strong')
+            .removeClass('aoauth-overlay-spotlight aoauth-overlay-panel aoauth-overlay-minimal aoauth-overlay-paper-plane aoauth-overlay-glass-shield aoauth-overlay-aurora aoauth-overlay-theme-simple aoauth-overlay-theme-modern aoauth-overlay-theme-rounded aoauth-overlay-theme-gradient aoauth-overlay-theme-outline aoauth-overlay-theme-icon-only')
             .addClass('aoauth-overlay-' + overlayVariant)
-            .addClass('aoauth-message-' + messageStyle)
-            .css('--aoauth-overlay-color', overlayColor);
+            .addClass('aoauth-overlay-theme-' + overlayTheme)
+            .toggleClass('aoauth-overlay-branding-hidden', !overlayConfig.overlay_branding_enabled);
 
         if ($origin && $origin.length) {
             var offset = $origin.offset();
@@ -322,6 +327,27 @@
         }
         $overlay.addClass('is-visible');
         $('body').addClass('aoauth-verification-active');
+    }
+
+    function updateVerificationBranding($overlay, overlayConfig) {
+        var providerLabels = {
+            turnstile: 'Cloudflare Turnstile',
+            recaptcha: 'Google reCAPTCHA'
+        };
+        var providerLabel = providerLabels[overlayConfig.type] || 'Bot verification';
+        var pluginLogo = overlayConfig.plugin_logo_url || '';
+
+        $overlay.find('.aoauth-verification-provider-mark').text(providerLabel);
+        var $powered = $overlay.find('.aoauth-verification-powered').empty();
+        if (pluginLogo) {
+            $('<img>', {
+                src: pluginLogo,
+                alt: ''
+            }).appendTo($powered);
+        }
+        $('<span>', {
+            text: 'Powered by aOAUTH Client SSO'
+        }).appendTo($powered);
     }
 
     function hideBotOverlay() {

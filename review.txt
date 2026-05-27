@@ -1,57 +1,42 @@
-Version: 2.0.0
-Date: 2026-05-25
+Version: 2.1.0
+Date: 2026-05-27
 Author: Awhadi / Codex
 
 Summary:
-Major security, performance, and admin UX refactor for WordPress review readiness. Settings are now split into purpose-specific tabs: Sign-In Experience, User Management, Security, Tools, and Logs. Frontend loading remains minimal: SSO login assets load on the WordPress login page, the brand badge loads only for eligible SSO users, and the account unlink shortcode now uses a small public script instead of the admin dashboard script.
+Sign-In Experience, Security, User Management, and Tools were refined so related settings are grouped together and existing SSO behavior stays intact. Verification overlays now inherit theme styling, include optional provider/aOAUTH branding, and offer Paper Plane, Glass Shield, and Aurora styles. A new self-service `[aoauth_link_account]` shortcode lets logged-in users link an enabled SSO provider when account linking is allowed. Tools now focuses on useful maintenance actions instead of repeating the Users screen.
 
 Files changed:
 - aoauth-client-sso.php
 - CHANGELOG.md
+- review.txt
 - admin/class-admin.php
 - admin/css/admin-style.css
-- admin/css/toast-notices.css
-- admin/images/menu-icon.svg
 - admin/js/admin-dashboard.js
-- admin/js/settings-form-controls.js
-- admin/js/toast-notices.js
-- admin/views/logs.php
-- admin/views/providers.php
-- admin/views/settings.php
-- admin/views/shared-admin-tabs.php
-- admin/views/sign-in-experience-settings.php
-- admin/views/user-management-settings.php
 - admin/views/security-settings.php
+- admin/views/sign-in-experience-settings.php
 - admin/views/tools-settings.php
+- admin/views/user-management-settings.php
 - includes/class-core.php
-- includes/class-logger.php
 - includes/class-sso-handler.php
-- includes/class-user-manager.php
-- public/css/account-linking-page.css
 - public/css/login-single-sign-on.css
-- public/css/sso-brand-badge.css
-- public/js/account-unlink.js
 - public/js/login-single-sign-on.js
-- public/js/sso-brand-badge.js
 
 Security notes:
-- OAuth callback failures now redirect with a generic public message while detailed errors remain in debug/log channels.
-- Log ordering is restricted to a whitelist of known database columns.
-- Single-account unlink AJAX now requires the user-specific nonce and no longer accepts the global admin nonce.
-- Full login bans are enforced for SSO login attempts and WordPress password authentication during the ban period.
-- Role redirect settings are sanitized to relative paths or safe validated URLs.
+- Existing public login bot protection remains enforced for normal SSO login.
+- Self-service account linking requires a logged-in session, account-linking settings enabled, a user-specific nonce, and matching provider/WordPress email addresses.
+- Maintenance actions require manage_options and the existing admin nonce.
+- Verification overlay branding is presentation-only and does not alter Turnstile or reCAPTCHA token verification.
 
 UX notes:
-- "Login Button Theme" is renamed to "Single Sign-On Theme" because it now controls login, account-linking, and verification overlay presentation.
-- User management now includes role redirect inputs for all editable roles.
-- Security settings explain the practical impact of High vs Medium security levels.
-- Tools now contains debug guidance, log controls, SSO user visibility, backup/restore, and factory reset.
-- Logs now include filtering controls.
+- Sign-In Experience now groups login display, button appearance, account linking, and verification overlay controls.
+- Verification overlay preview sits beside the settings and updates with selected theme/style.
+- Verification overlay color and message-style fields were removed from the UI because colors are now theme-derived.
+- Tools now exposes Plugin Debug Logging, WordPress debug status, SSO-linked user count, and focused maintenance actions.
 
 Rollback plan:
-Restore the previous tag, deactivate and reactivate the plugin if needed, then verify provider configuration and login flow. If database settings need rollback, import a configuration backup from Tools > Backup & Restore before re-enabling production SSO.
+Restore the previous v2.0.0 tag, clear object/page caches, and verify a normal SSO login plus one bot-protected login. If settings need rollback, import a pre-release configuration backup from Tools > Backup & Restore.
 
 Verification:
-- PHP syntax check passed for all plugin PHP files.
-- JavaScript syntax check passed for admin and public JavaScript files.
-- Renamed asset references were checked with ripgrep.
+- PHP syntax checks passed for the plugin entrypoint, touched classes, and touched admin views.
+- JavaScript syntax checks passed for public/js/login-single-sign-on.js and admin/js/admin-dashboard.js.
+- Existing login, bot verification, account unlink, admin settings save, backup/restore, and factory reset paths were preserved while new features were added beside them.

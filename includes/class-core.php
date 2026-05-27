@@ -103,6 +103,7 @@ class AOAUTH_Core {
             'auto_create_users' => '1',
             'default_role' => 'subscriber',
             'allow_account_linking' => '0',
+            'enable_self_service_account_linking' => '0',
             'delete_data_on_uninstall' => '0',
             'security_level' => 'high',
             'rate_limit_attempts' => '5',
@@ -126,8 +127,7 @@ class AOAUTH_Core {
             'bot_overlay_enabled' => '1',
             'bot_overlay_message' => 'Verifying secure sign-in...',
             'bot_overlay_variant' => 'spotlight',
-            'bot_overlay_color' => '#0f172a',
-            'bot_overlay_message_style' => 'standard',
+            'bot_overlay_branding_enabled' => '1',
             'enable_bot_protection' => '0',
             'bot_protection_provider' => 'turnstile',
             'role_redirects' => self::get_default_role_redirects()
@@ -361,8 +361,9 @@ class AOAUTH_Core {
                 'overlay_enabled' => !empty($settings['bot_overlay_enabled']),
                 'overlay_message' => $settings['bot_overlay_message'] ?? 'Verifying secure sign-in...',
                 'overlay_variant' => $settings['bot_overlay_variant'] ?? 'spotlight',
-                'overlay_color' => $settings['bot_overlay_color'] ?? '#0f172a',
-                'overlay_message_style' => $settings['bot_overlay_message_style'] ?? 'standard'
+                'overlay_theme' => $theme,
+                'overlay_branding_enabled' => !empty($settings['bot_overlay_branding_enabled']),
+                'plugin_logo_url' => AOAUTH_PLUGIN_URL . 'admin/images/logo.png'
             );
         } elseif ($recaptcha_enabled) {
             $localize_data['bot_protection'] = array(
@@ -372,8 +373,9 @@ class AOAUTH_Core {
                 'overlay_enabled' => !empty($settings['bot_overlay_enabled']),
                 'overlay_message' => $settings['bot_overlay_message'] ?? 'Verifying secure sign-in...',
                 'overlay_variant' => $settings['bot_overlay_variant'] ?? 'spotlight',
-                'overlay_color' => $settings['bot_overlay_color'] ?? '#0f172a',
-                'overlay_message_style' => $settings['bot_overlay_message_style'] ?? 'standard'
+                'overlay_theme' => $theme,
+                'overlay_branding_enabled' => !empty($settings['bot_overlay_branding_enabled']),
+                'plugin_logo_url' => AOAUTH_PLUGIN_URL . 'admin/images/logo.png'
             );
         } else {
             $localize_data['bot_protection'] = array(

@@ -28,6 +28,9 @@ class AOAUTH_Admin {
         add_action('wp_ajax_aoauth_test_connection', array($this, 'ajax_test_connection'));
         add_action('wp_ajax_aoauth_preview_theme', array($this, 'ajax_preview_theme'));
         add_action('wp_ajax_aoauth_factory_reset', array($this, 'ajax_factory_reset'));
+        add_action('wp_ajax_aoauth_clear_bot_verifications', array($this, 'ajax_clear_bot_verifications'));
+        add_action('wp_ajax_aoauth_clear_linking_lockouts', array($this, 'ajax_clear_linking_lockouts'));
+        add_action('wp_ajax_aoauth_clear_oauth_temp_data', array($this, 'ajax_clear_oauth_temp_data'));
         add_action('wp_ajax_aoauth_client_debug_log', array($this, 'ajax_client_debug_log'));
         add_action('wp_ajax_nopriv_aoauth_client_debug_log', array($this, 'ajax_client_debug_log'));
         
@@ -325,8 +328,7 @@ class AOAUTH_Admin {
         $available_themes = aoauth_core()->get_available_themes();
         $sso_users = get_users(array(
             'meta_key' => '_aoauth_provider',
-            'number' => 25,
-            'fields' => array('ID', 'user_login', 'user_email', 'display_name')
+            'fields' => 'ID'
         ));
 
         include AOAUTH_PLUGIN_DIR . 'admin/views/settings.php';
@@ -1091,13 +1093,8 @@ class AOAUTH_Admin {
         }
 
         $overlay_variant = sanitize_key($settings['bot_overlay_variant'] ?? 'spotlight');
-        if (!in_array($overlay_variant, array('spotlight', 'panel', 'minimal'), true)) {
+        if (!in_array($overlay_variant, array('spotlight', 'panel', 'minimal', 'paper-plane', 'glass-shield', 'aurora'), true)) {
             $overlay_variant = 'spotlight';
-        }
-
-        $overlay_message_style = sanitize_key($settings['bot_overlay_message_style'] ?? 'standard');
-        if (!in_array($overlay_message_style, array('standard', 'quiet', 'strong'), true)) {
-            $overlay_message_style = 'standard';
         }
 
         $turnstile_secret_key = array_key_exists('turnstile_secret_key', $raw_settings)
@@ -1115,6 +1112,7 @@ class AOAUTH_Admin {
             'auto_create_users' => $is_enabled('auto_create_users'),
             'default_role' => $role,
             'allow_account_linking' => $allow_account_linking,
+            'enable_self_service_account_linking' => $is_enabled('enable_self_service_account_linking'),
             'delete_data_on_uninstall' => $is_enabled('delete_data_on_uninstall'),
             'security_level' => sanitize_text_field($settings['security_level']),
             'rate_limit_attempts' => max(1, min(100, intval($settings['rate_limit_attempts']))),
@@ -1138,8 +1136,7 @@ class AOAUTH_Admin {
             'bot_overlay_enabled' => $is_enabled('bot_overlay_enabled'),
             'bot_overlay_message' => sanitize_text_field($settings['bot_overlay_message']),
             'bot_overlay_variant' => $overlay_variant,
-            'bot_overlay_color' => sanitize_hex_color($settings['bot_overlay_color']) ?: '#0f172a',
-            'bot_overlay_message_style' => $overlay_message_style,
+            'bot_overlay_branding_enabled' => $is_enabled('bot_overlay_branding_enabled'),
             'role_redirects' => $role_redirects,
         );
         
@@ -1551,6 +1548,72 @@ class AOAUTH_Admin {
         ), get_current_user_id(), null, 'info');
         
         wp_send_json_success(array('message' => __('Factory reset completed. All settings restored to defaults and all providers removed.', 'aoauth-client-sso')));
+    }
+
+    public function ajax_clear_bot_verifications() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+
+        $deleted = $this->delete_transients_by_prefixes(array('aoauth_bot_'), false);
+        $this->logger->log('bot_verifications_cleared', array('deleted' => $deleted), get_current_user_id(), null, 'info');
+        wp_send_json_success(array('message' => sprintf(__('Cleared %d bot verification record(s).', 'aoauth-client-sso'), $deleted)));
+    }
+
+    public function ajax_clear_linking_lockouts() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+
+        $deleted = $this->delete_transients_by_prefixes(array('aoauth_linking_lock_', 'aoauth_linking_attempts_'), false);
+        $this->logger->log('linking_lockouts_cleared', array('deleted' => $deleted), get_current_user_id(), null, 'info');
+        wp_send_json_success(array('message' => sprintf(__('Cleared %d account-linking lockout record(s).', 'aoauth-client-sso'), $deleted)));
+    }
+
+    public function ajax_clear_oauth_temp_data() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+
+        $deleted = $this->delete_transients_by_prefixes(array('aoauth_state_', 'aoauth_test_state_', 'aoauth_link_'), true);
+        $this->logger->log('oauth_temp_data_cleared', array('deleted' => $deleted, 'expired_only' => true), get_current_user_id(), null, 'info');
+        wp_send_json_success(array('message' => sprintf(__('Cleared %d expired OAuth temporary record(s).', 'aoauth-client-sso'), $deleted)));
+    }
+
+    private function delete_transients_by_prefixes($prefixes, $expired_only) {
+        global $wpdb;
+
+        $deleted = 0;
+        foreach ($prefixes as $prefix) {
+            $timeout_like = $wpdb->esc_like('_transient_timeout_' . $prefix) . '%';
+            if ($expired_only) {
+                $timeout_names = $wpdb->get_col($wpdb->prepare(
+                    "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s AND option_value < %d",
+                    $timeout_like,
+                    time()
+                ));
+            } else {
+                $timeout_names = $wpdb->get_col($wpdb->prepare(
+                    "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+                    $timeout_like
+                ));
+            }
+
+            foreach ($timeout_names as $timeout_name) {
+                $transient_name = substr($timeout_name, strlen('_transient_timeout_'));
+                if (delete_transient($transient_name)) {
+                    $deleted++;
+                }
+            }
+        }
+
+        return $deleted;
     }
     
     /**

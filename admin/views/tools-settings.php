@@ -6,83 +6,75 @@ $debug_enabled = aoauth_core()->get_debug()->is_enabled();
         <div class="aoauth-settings-section">
             <h3 class="aoauth-section-title"><?php esc_html_e('Debug & Logs', 'aoauth-client-sso'); ?></h3>
 
-            <div class="aoauth-setting-row">
-                <div class="aoauth-setting-label">
-                    <label><?php esc_html_e('Debug Mode', 'aoauth-client-sso'); ?></label>
-                    <p class="aoauth-setting-help">
-                        <?php echo $debug_enabled
-                            ? esc_html__('WordPress debugging is currently enabled. Plugin debug events can be recorded in logs.', 'aoauth-client-sso')
-                            : esc_html__('WordPress debugging is not enabled. Add WP_DEBUG and WP_DEBUG_LOG to wp-config.php to capture low-level debug output.', 'aoauth-client-sso'); ?>
-                    </p>
+            <div class="aoauth-setting-group">
+                <div class="aoauth-setting-row">
+                    <div class="aoauth-setting-label">
+                        <label for="enable_logs"><?php esc_html_e('Plugin Debug Logging', 'aoauth-client-sso'); ?></label>
+                        <p class="aoauth-setting-help"><?php esc_html_e('Record authentication, provider, security, and admin utility events in the plugin logs.', 'aoauth-client-sso'); ?></p>
+                    </div>
+                    <div class="aoauth-setting-control">
+                        <label class="aoauth-toggle">
+                            <input type="hidden" name="enable_logs" value="0">
+                            <input type="checkbox" id="enable_logs" name="enable_logs" value="1" <?php checked(!empty($settings['enable_logs'])); ?>>
+                            <span class="aoauth-toggle-slider"></span>
+                        </label>
+                    </div>
                 </div>
-                <div class="aoauth-setting-control">
-                    <span class="aoauth-status-badge aoauth-status-<?php echo $debug_enabled ? 'success' : 'info'; ?>"><?php echo $debug_enabled ? esc_html__('Enabled', 'aoauth-client-sso') : esc_html__('Manual setup required', 'aoauth-client-sso'); ?></span>
-                </div>
-            </div>
 
-            <div class="aoauth-setting-row">
-                <div class="aoauth-setting-label">
-                    <label for="enable_logs"><?php esc_html_e('Enable Detailed Logs', 'aoauth-client-sso'); ?></label>
-                    <p class="aoauth-setting-help"><?php esc_html_e('Record authentication, provider, and security events.', 'aoauth-client-sso'); ?></p>
+                <div class="aoauth-setting-row">
+                    <div class="aoauth-setting-label">
+                        <label><?php esc_html_e('WordPress Debug Status', 'aoauth-client-sso'); ?></label>
+                        <p class="aoauth-setting-help">
+                            <?php echo $debug_enabled
+                                ? esc_html__('WP_DEBUG or WP_DEBUG_LOG is enabled for low-level PHP debugging.', 'aoauth-client-sso')
+                                : esc_html__('WP_DEBUG is controlled in wp-config.php. Plugin logging can still be enabled above.', 'aoauth-client-sso'); ?>
+                        </p>
+                    </div>
+                    <div class="aoauth-setting-control">
+                        <span class="aoauth-status-badge aoauth-status-<?php echo $debug_enabled ? 'success' : 'info'; ?>"><?php echo $debug_enabled ? esc_html__('Enabled', 'aoauth-client-sso') : esc_html__('Off', 'aoauth-client-sso'); ?></span>
+                    </div>
                 </div>
-                <div class="aoauth-setting-control">
-                    <label class="aoauth-toggle">
-                        <input type="hidden" name="enable_logs" value="0">
-                        <input type="checkbox" id="enable_logs" name="enable_logs" value="1" <?php checked(!empty($settings['enable_logs'])); ?>>
-                        <span class="aoauth-toggle-slider"></span>
-                    </label>
-                </div>
-            </div>
 
-            <div class="aoauth-setting-row">
-                <div class="aoauth-setting-label"><label for="logs_retention_period"><?php esc_html_e('Log Retention Period', 'aoauth-client-sso'); ?></label></div>
-                <div class="aoauth-setting-control">
-                    <select id="logs_retention_period" name="logs_retention_period" class="aoauth-form-control">
-                        <?php foreach (array('7_days' => '7 Days', '14_days' => '14 Days', '30_days' => '30 Days', '60_days' => '60 Days', '90_days' => '90 Days', '6_months' => '6 Months', '1_year' => '1 Year', 'forever' => 'Forever') as $value => $label): ?>
-                            <option value="<?php echo esc_attr($value); ?>" <?php selected($settings['logs_retention_period'] ?? '30_days', $value); ?>><?php echo esc_html($label); ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                <div class="aoauth-setting-row">
+                    <div class="aoauth-setting-label"><label for="logs_retention_period"><?php esc_html_e('Log Retention Period', 'aoauth-client-sso'); ?></label></div>
+                    <div class="aoauth-setting-control">
+                        <select id="logs_retention_period" name="logs_retention_period" class="aoauth-form-control">
+                            <?php foreach (array('7_days' => '7 Days', '14_days' => '14 Days', '30_days' => '30 Days', '60_days' => '60 Days', '90_days' => '90 Days', '6_months' => '6 Months', '1_year' => '1 Year', 'forever' => 'Forever') as $value => $label): ?>
+                                <option value="<?php echo esc_attr($value); ?>" <?php selected($settings['logs_retention_period'] ?? '30_days', $value); ?>><?php echo esc_html($label); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                 </div>
-            </div>
 
-            <div class="aoauth-setting-row">
-                <div class="aoauth-setting-label">
-                    <label><?php esc_html_e('Clear Logs', 'aoauth-client-sso'); ?></label>
-                    <p class="aoauth-setting-help"><?php esc_html_e('Delete all authentication logs from the database.', 'aoauth-client-sso'); ?></p>
-                </div>
-                <div class="aoauth-setting-control">
-                    <button type="button" id="aoauth-clear-logs-settings-btn" class="aoauth-admin-button aoauth-admin-button-secondary"><?php esc_html_e('Clear All Logs', 'aoauth-client-sso'); ?></button>
+                <div class="aoauth-setting-row">
+                    <div class="aoauth-setting-label">
+                        <label><?php esc_html_e('Clear Logs', 'aoauth-client-sso'); ?></label>
+                        <p class="aoauth-setting-help"><?php esc_html_e('Delete all authentication logs from the database.', 'aoauth-client-sso'); ?></p>
+                    </div>
+                    <div class="aoauth-setting-control">
+                        <button type="button" id="aoauth-clear-logs-settings-btn" class="aoauth-admin-button aoauth-admin-button-secondary"><?php esc_html_e('Clear All Logs', 'aoauth-client-sso'); ?></button>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="aoauth-settings-section">
             <h3 class="aoauth-section-title"><?php esc_html_e('Session Management', 'aoauth-client-sso'); ?></h3>
-            <div class="aoauth-setting-row">
-                <div class="aoauth-setting-label">
-                    <label><?php esc_html_e('SSO Users', 'aoauth-client-sso'); ?></label>
-                    <p class="aoauth-setting-help"><?php esc_html_e('Recently found users with an SSO provider attached.', 'aoauth-client-sso'); ?></p>
+            <div class="aoauth-setting-group">
+                <div class="aoauth-session-summary">
+                    <div>
+                        <span class="aoauth-session-count"><?php echo esc_html(count($sso_users)); ?></span>
+                        <span><?php esc_html_e('SSO-linked users', 'aoauth-client-sso'); ?></span>
+                    </div>
+                    <a class="aoauth-admin-button aoauth-admin-button-secondary" href="<?php echo esc_url(admin_url('users.php')); ?>"><?php esc_html_e('Open Users', 'aoauth-client-sso'); ?></a>
                 </div>
-                <div class="aoauth-setting-control">
-                    <span class="aoauth-status-badge aoauth-status-info"><?php echo esc_html(count($sso_users)); ?></span>
+
+                <div class="aoauth-maintenance-actions">
+                    <button type="button" class="aoauth-admin-button aoauth-admin-button-secondary aoauth-maintenance-action" data-action="aoauth_clear_bot_verifications"><?php esc_html_e('Clear Bot Verifications', 'aoauth-client-sso'); ?></button>
+                    <button type="button" class="aoauth-admin-button aoauth-admin-button-secondary aoauth-maintenance-action" data-action="aoauth_clear_linking_lockouts"><?php esc_html_e('Clear Linking Lockouts', 'aoauth-client-sso'); ?></button>
+                    <button type="button" class="aoauth-admin-button aoauth-admin-button-secondary aoauth-maintenance-action" data-action="aoauth_clear_oauth_temp_data"><?php esc_html_e('Clear Expired OAuth Temp Data', 'aoauth-client-sso'); ?></button>
                 </div>
             </div>
-            <?php if (!empty($sso_users)): ?>
-                <div class="aoauth-compact-table-wrap">
-                    <table class="aoauth-logs-table">
-                        <thead><tr><th><?php esc_html_e('User', 'aoauth-client-sso'); ?></th><th><?php esc_html_e('Provider', 'aoauth-client-sso'); ?></th><th><?php esc_html_e('Last SSO Login', 'aoauth-client-sso'); ?></th></tr></thead>
-                        <tbody>
-                            <?php foreach ($sso_users as $sso_user): ?>
-                                <tr>
-                                    <td><?php echo esc_html($sso_user->display_name ?: $sso_user->user_login); ?></td>
-                                    <td><?php echo esc_html(get_user_meta($sso_user->ID, '_aoauth_provider', true)); ?></td>
-                                    <td><?php $last_login = get_user_meta($sso_user->ID, '_aoauth_last_login', true); echo $last_login ? esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), (int) $last_login)) : '-'; ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php endif; ?>
         </div>
 
         <div class="aoauth-settings-section">

@@ -66,6 +66,20 @@ $role_redirects = isset($settings['role_redirects']) && is_array($settings['role
             <div id="account-linking-security-row" class="<?php echo empty($settings['allow_account_linking']) ? 'aoauth-is-hidden' : ''; ?>">
                 <div class="aoauth-setting-row">
                     <div class="aoauth-setting-label">
+                        <label for="enable_self_service_account_linking"><?php esc_html_e('Self-Service Account Linking', 'aoauth-client-sso'); ?></label>
+                        <p class="aoauth-setting-help"><?php esc_html_e('Allow logged-in users to link an SSO provider from a front-end page using [aoauth_link_account].', 'aoauth-client-sso'); ?></p>
+                    </div>
+                    <div class="aoauth-setting-control">
+                        <label class="aoauth-toggle">
+                            <input type="hidden" name="enable_self_service_account_linking" value="0">
+                            <input type="checkbox" id="enable_self_service_account_linking" name="enable_self_service_account_linking" value="1" <?php checked(!empty($settings['enable_self_service_account_linking'])); ?>>
+                            <span class="aoauth-toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="aoauth-setting-row">
+                    <div class="aoauth-setting-label">
                         <label for="linking_max_attempts"><?php esc_html_e('Max Password Attempts', 'aoauth-client-sso'); ?></label>
                     </div>
                     <div class="aoauth-setting-control">

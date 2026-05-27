@@ -25,6 +25,7 @@ class AOAUTH_SSO_Handler {
         add_action('wp_login', array($this, 'wp_login_handler'), 10, 2);
         add_action('user_register', array($this, 'user_register_handler'));
         $this->register_unlink_shortcode();
+        $this->register_link_shortcode();
         
         $this->debug->info('SSO Handler initialized');
         $this->debug->log_end('AOAUTH_SSO_Handler::init');
@@ -358,6 +359,18 @@ class AOAUTH_SSO_Handler {
             'display_name' => $user_info['display_name'] ?? 'missing'
         ));
         
+        if (!empty($state_data['link_user_id'])) {
+            $link_result = $this->complete_self_service_account_linking((int) $state_data['link_user_id'], $user_info, $provider_slug, $flow_id, $redirect_to);
+            if (is_wp_error($link_result)) {
+                $debug->error('Self-service account linking failed', array('error' => $link_result->get_error_message()));
+                $this->redirect_with_error($link_result->get_error_message());
+                return;
+            }
+
+            wp_safe_redirect($redirect_to ?: get_edit_profile_url((int) $state_data['link_user_id']));
+            exit;
+        }
+
         $user_manager = new AOAUTH_User_Manager();
         $result = $user_manager->process_oauth_user($user_info, $provider, $provider_slug);
         
@@ -921,8 +934,19 @@ class AOAUTH_SSO_Handler {
         'send_credentials_in_header' => !empty($provider['send_credentials_in_header'])
     ));
     
+    $is_account_link_request = !empty($_GET['aoauth_link_current_user']);
+    $link_user_id = 0;
+    if ($is_account_link_request) {
+        $link_user_id = $this->validate_self_service_link_request($provider_slug);
+        if (!$link_user_id) {
+            wp_die(esc_html__('Account linking is not available for this request.', 'aoauth-client-sso'));
+        }
+    }
+
     $requested_flow_id = isset($_GET['aoauth_flow_id']) ? sanitize_text_field(wp_unslash($_GET['aoauth_flow_id'])) : '';
-    $bot_verification = $this->consume_bot_protection_verification_for_login($provider_slug, $requested_flow_id);
+    $bot_verification = $is_account_link_request
+        ? array('verified' => true, 'type' => 'authenticated_link', 'flow_id' => $this->security->generate_secure_token(18), 'provider' => $provider_slug)
+        : $this->consume_bot_protection_verification_for_login($provider_slug, $requested_flow_id);
     if (false === $bot_verification) {
         $debug->error('Bot protection verification missing or expired');
         $this->logger->log('bot_protection_required_failed', array(
@@ -944,6 +968,10 @@ class AOAUTH_SSO_Handler {
         'flow_id' => $flow_id,
         'timestamp' => time(),
     );
+
+    if ($is_account_link_request) {
+        $state_data['link_user_id'] = $link_user_id;
+    }
     
     set_transient('aoauth_state_' . $state, $state_data, 10 * MINUTE_IN_SECONDS);
     $debug->debug('State transient created', array('state_key' => substr($state, 0, 10) . '...'));
@@ -970,6 +998,59 @@ class AOAUTH_SSO_Handler {
     wp_redirect($auth_url);
     exit;
 }
+
+    private function validate_self_service_link_request($provider_slug) {
+        $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
+        if (empty($settings['allow_account_linking']) || empty($settings['enable_self_service_account_linking']) || !is_user_logged_in()) {
+            return 0;
+        }
+
+        $link_nonce = isset($_GET['aoauth_link_nonce']) ? sanitize_text_field(wp_unslash($_GET['aoauth_link_nonce'])) : '';
+        $user_id = get_current_user_id();
+        if (!wp_verify_nonce($link_nonce, 'aoauth_link_current_user_' . $user_id . '_' . $provider_slug)) {
+            $this->logger->log('account_linking_failed', array(
+                'provider' => $provider_slug,
+                'reason' => 'self_service_nonce_failed'
+            ), $user_id, $provider_slug, 'error');
+            return 0;
+        }
+
+        return $user_id;
+    }
+
+    private function complete_self_service_account_linking($user_id, $user_info, $provider_slug, $flow_id, $redirect_to) {
+        $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
+        if (empty($settings['allow_account_linking']) || empty($settings['enable_self_service_account_linking'])) {
+            return new WP_Error('account_linking_disabled', __('Account linking is disabled.', 'aoauth-client-sso'));
+        }
+
+        if (!is_user_logged_in() || get_current_user_id() !== $user_id) {
+            return new WP_Error('account_linking_session_mismatch', __('Please log in again before linking this provider.', 'aoauth-client-sso'));
+        }
+
+        $user = get_userdata($user_id);
+        $provider_email = isset($user_info['email']) ? sanitize_email($user_info['email']) : '';
+        if (!$user || empty($provider_email) || strtolower($provider_email) !== strtolower($user->user_email)) {
+            $this->logger->log('account_linking_failed', array(
+                'flow_id' => $flow_id,
+                'provider' => $provider_slug,
+                'reason' => 'email_mismatch'
+            ), $user_id, $provider_slug, 'error');
+            return new WP_Error('account_linking_email_mismatch', __('The provider email must match your WordPress account email.', 'aoauth-client-sso'));
+        }
+
+        update_user_meta($user_id, '_aoauth_provider', $provider_slug);
+        update_user_meta($user_id, '_aoauth_linked_' . $provider_slug, time());
+        update_user_meta($user_id, '_aoauth_last_login', time());
+
+        $this->logger->log('account_linked_self_service', array(
+            'flow_id' => $flow_id,
+            'provider' => $provider_slug,
+            'redirect_path' => $this->get_url_path_for_log($redirect_to)
+        ), $user_id, $provider_slug, 'success');
+
+        return true;
+    }
     
     private function consume_bot_protection_verification_for_login($provider_slug, $requested_flow_id = '') {
         $settings = get_option('aoauth_settings', array());
@@ -1073,6 +1154,66 @@ class AOAUTH_SSO_Handler {
     public function register_unlink_shortcode() {
         add_shortcode('aoauth_unlink_account', array($this, 'render_unlink_shortcode'));
         $this->debug->debug('Unlink shortcode registered');
+    }
+
+    public function register_link_shortcode() {
+        add_shortcode('aoauth_link_account', array($this, 'render_link_shortcode'));
+        $this->debug->debug('Link shortcode registered');
+    }
+
+    public function render_link_shortcode($atts) {
+        if (!is_user_logged_in()) {
+            return '<div class="aoauth-frontend-unlink"><p>' . esc_html__('Please log in to link an SSO provider.', 'aoauth-client-sso') . '</p></div>';
+        }
+
+        $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
+        if (empty($settings['allow_account_linking']) || empty($settings['enable_self_service_account_linking'])) {
+            return '<div class="aoauth-frontend-unlink"><p>' . esc_html__('Account linking is not enabled.', 'aoauth-client-sso') . '</p></div>';
+        }
+
+        $applications = get_option('aoauth_applications', array());
+        $enabled_apps = array_filter($applications, function($app) {
+            return !empty($app['enabled']);
+        });
+
+        wp_enqueue_style('aoauth-account-linking-shortcode', AOAUTH_PLUGIN_URL . 'public/css/login-single-sign-on.css', array(), AOAUTH_VERSION);
+
+        if (empty($enabled_apps)) {
+            return '<div class="aoauth-frontend-unlink"><p>' . esc_html__('No SSO providers are available to link.', 'aoauth-client-sso') . '</p></div>';
+        }
+
+        $current_provider = get_user_meta(get_current_user_id(), '_aoauth_provider', true);
+        $theme = isset($settings['login_button_theme']) ? sanitize_key($settings['login_button_theme']) : 'modern';
+        $layout = isset($settings['login_button_layout']) ? sanitize_key($settings['login_button_layout']) : 'vertical';
+
+        ob_start();
+        ?>
+        <div class="aoauth-login-buttons aoauth-account-link-buttons aoauth-theme-<?php echo esc_attr($theme); ?> aoauth-layout-<?php echo esc_attr($layout); ?>">
+            <?php if ($current_provider): ?>
+                <p class="aoauth-account-link-status"><?php echo esc_html(sprintf(__('Your account is currently linked to %s.', 'aoauth-client-sso'), ucfirst($current_provider))); ?></p>
+            <?php endif; ?>
+            <div class="aoauth-providers-grid">
+                <?php foreach ($enabled_apps as $app_id => $app): ?>
+                    <?php
+                    $provider_name = sanitize_key($app['provider_name'] ?? $app_id);
+                    $link_url = add_query_arg(array(
+                        'oauth' => 'login',
+                        'provider' => $app_id,
+                        'aoauth_link_current_user' => '1',
+                        'redirect_to' => get_edit_profile_url(get_current_user_id()),
+                        '_wpnonce' => wp_create_nonce('aoauth_login_' . $app_id),
+                        'aoauth_link_nonce' => wp_create_nonce('aoauth_link_current_user_' . get_current_user_id() . '_' . $app_id),
+                    ), wp_login_url());
+                    ?>
+                    <a href="<?php echo esc_url($link_url); ?>" class="aoauth-button aoauth-provider-<?php echo esc_attr($app_id); ?>">
+                        <span class="aoauth-button-icon"><img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . $provider_name . '.png'); ?>" alt="<?php echo esc_attr($provider_name); ?>"></span>
+                        <span class="aoauth-button-text"><?php echo esc_html(sprintf(__('Link %s', 'aoauth-client-sso'), $app['app_name'] ?? ucfirst($provider_name))); ?></span>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <?php
+        return ob_get_clean();
     }
     
     public function render_unlink_shortcode($atts) {
