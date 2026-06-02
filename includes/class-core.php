@@ -39,7 +39,8 @@ class AOAUTH_Core {
         load_plugin_textdomain('aoauth-client-sso', false, dirname(AOAUTH_PLUGIN_BASENAME) . '/languages');
         
         add_action('login_enqueue_scripts', array($this, 'enqueue_login_assets'));
-        add_action('login_form', array($this, 'render_login_buttons'));
+        add_action('login_form', array($this, 'render_login_buttons_inside_form'));
+        add_action('login_footer', array($this, 'render_login_buttons_below_form'));
         
         add_action('wp_enqueue_scripts', array($this, 'enqueue_brand_badge'));
         add_action('wp_footer', array($this, 'render_brand_badge'));
@@ -112,9 +113,11 @@ class AOAUTH_Core {
             'logs_retention_period' => '30_days',
             'login_button_theme' => 'modern',
             'login_button_layout' => 'vertical',
+            'login_button_position' => 'below_form',
             'enable_turnstile' => '0',
             'turnstile_site_key' => '',
             'turnstile_secret_key' => '',
+            'turnstile_display_mode' => 'invisible',
             'enable_recaptcha' => '0',
             'recaptcha_site_key' => '',
             'recaptcha_secret_key' => '',
@@ -127,6 +130,7 @@ class AOAUTH_Core {
             'bot_overlay_enabled' => '1',
             'bot_overlay_message' => 'Verifying secure sign-in...',
             'bot_overlay_variant' => 'spotlight',
+            'bot_overlay_opacity' => '86',
             'bot_overlay_branding_enabled' => '1',
             'enable_bot_protection' => '0',
             'bot_protection_provider' => 'turnstile',
@@ -365,9 +369,11 @@ class AOAUTH_Core {
                 'overlay_enabled' => !empty($settings['bot_overlay_enabled']),
                 'overlay_message' => $settings['bot_overlay_message'] ?? 'Verifying secure sign-in...',
                 'overlay_variant' => $settings['bot_overlay_variant'] ?? 'spotlight',
+                'overlay_opacity' => intval($settings['bot_overlay_opacity'] ?? 86),
                 'overlay_theme' => $theme,
                 'overlay_branding_enabled' => !empty($settings['bot_overlay_branding_enabled']),
-                'plugin_logo_url' => AOAUTH_PLUGIN_URL . 'admin/images/logo.png'
+                'plugin_logo_url' => AOAUTH_PLUGIN_URL . 'admin/images/logo.png',
+                'display_mode' => $settings['turnstile_display_mode'] ?? 'invisible'
             );
         } elseif ($recaptcha_enabled) {
             $localize_data['bot_protection'] = array(
@@ -377,6 +383,7 @@ class AOAUTH_Core {
                 'overlay_enabled' => !empty($settings['bot_overlay_enabled']),
                 'overlay_message' => $settings['bot_overlay_message'] ?? 'Verifying secure sign-in...',
                 'overlay_variant' => $settings['bot_overlay_variant'] ?? 'spotlight',
+                'overlay_opacity' => intval($settings['bot_overlay_opacity'] ?? 86),
                 'overlay_theme' => $theme,
                 'overlay_branding_enabled' => !empty($settings['bot_overlay_branding_enabled']),
                 'plugin_logo_url' => AOAUTH_PLUGIN_URL . 'admin/images/logo.png'
@@ -396,6 +403,24 @@ class AOAUTH_Core {
         $this->debug->log_end('AOAUTH_Core::enqueue_login_assets');
     }
     
+    public function render_login_buttons_inside_form() {
+        $settings = array_merge(self::get_default_settings(), get_option('aoauth_settings', array()));
+        if (($settings['login_button_position'] ?? 'below_form') !== 'inside_form') {
+            return;
+        }
+
+        $this->render_login_buttons();
+    }
+
+    public function render_login_buttons_below_form() {
+        $settings = array_merge(self::get_default_settings(), get_option('aoauth_settings', array()));
+        if (($settings['login_button_position'] ?? 'below_form') !== 'below_form') {
+            return;
+        }
+
+        $this->render_login_buttons();
+    }
+
     public function render_login_buttons() {
         $this->debug->log_start('AOAUTH_Core::render_login_buttons');
         
@@ -439,7 +464,7 @@ class AOAUTH_Core {
             ), wp_login_url());
             
             echo '<a href="' . esc_url($login_url) . '" class="aoauth-button aoauth-provider-' . esc_attr($app_id) . '">';
-            echo '<span class="aoauth-button-icon"><img src="' . esc_url($icon_url) . '" alt="' . $provider_name . '" onerror="this.src=\'' . esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png') . '\'"></span>';
+            echo '<span class="aoauth-button-icon"><img src="' . esc_url($icon_url) . '" alt="' . $provider_name . '" data-fallback-src="' . esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png') . '"></span>';
             echo '<span class="aoauth-button-text">' . esc_html($app_name) . '</span>';
             echo '</a>';
         }
@@ -479,6 +504,7 @@ class AOAUTH_Core {
         
         if (!empty($settings['enable_logs'])) {
             $this->logger->delete_old_logs();
+            update_option('aoauth_last_retention_run', current_time('mysql'));
             $this->debug->info('Logs retention cron executed');
         }
         

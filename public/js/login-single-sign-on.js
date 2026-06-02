@@ -3,6 +3,20 @@
     var activeRequests = {};
     var turnstileTimeouts = {};
 
+    $(document).on('error', 'img[data-fallback-src], img[data-hide-on-error]', function() {
+        var $image = $(this);
+        var fallbackSrc = $image.data('fallback-src');
+
+        if (fallbackSrc && $image.attr('src') !== fallbackSrc) {
+            $image.attr('src', fallbackSrc);
+            return;
+        }
+
+        if ($image.data('hide-on-error')) {
+            $image.addClass('aoauth-is-hidden');
+        }
+    });
+
     function createFlowId() {
         return 'flow-' + Date.now().toString(36) + '-' + Math.random().toString(36).substr(2, 10);
     }
@@ -84,14 +98,10 @@
                     return false;
                 }
                 
+                var displayMode = aoauth_public.bot_protection.display_mode || 'invisible';
                 var containerId = 'turnstile-container-' + buttonId;
                 
-                if ($('#' + containerId).length === 0) {
-                    $('<div>', {
-                        id: containerId,
-                        class: 'aoauth-bot-widget-container'
-                    }).appendTo('body');
-                }
+                createTurnstileContainer(containerId, displayMode);
                 
                 // CRITICAL FIX: Reset any existing widget first
                 if (turnstileWidgetIds[buttonId]) {
@@ -108,13 +118,16 @@
                 try {
                     turnstileWidgetIds[buttonId] = turnstile.render('#' + containerId, {
                         sitekey: aoauth_public.bot_protection.site_key,
-                        size: 'invisible',
+                        size: displayMode === 'invisible' ? 'invisible' : 'normal',
+                        appearance: displayMode === 'invisible' ? 'execute' : 'always',
                         callback: function(token) {
                             debugLog('debug', 'Turnstile callback received', {
                                 flow_id: flowId,
-                                provider: provider
+                                provider: provider,
+                                display_mode: displayMode
                             });
                             clearTimeout(turnstileTimeouts[buttonId]);
+                            hideVerificationRetry();
                             verifyToken(token, 'turnstile', loginUrl, $btn, containerId, buttonId, flowId, provider);
                         },
                         'error-callback': function(errorCode) {
@@ -125,9 +138,9 @@
                             });
                             clearTimeout(turnstileTimeouts[buttonId]);
                             hideBeautifulLoader($btn);
-                            hideBotOverlay();
+                            showVerificationRetry($btn);
                             var errorMsg = getTurnstileErrorMessage(errorCode);
-                            alert(errorMsg);
+                            updateVerificationMessage(errorMsg);
                             cleanupTurnstile(containerId, buttonId);
                         },
                         'expired-callback': function() {
@@ -137,8 +150,8 @@
                             });
                             clearTimeout(turnstileTimeouts[buttonId]);
                             hideBeautifulLoader($btn);
-                            hideBotOverlay();
-                            alert('Verification expired. Please try again.');
+                            updateVerificationMessage('Verification expired. Please try again.');
+                            showVerificationRetry($btn);
                             cleanupTurnstile(containerId, buttonId);
                         },
                         'timeout-callback': function() {
@@ -148,8 +161,8 @@
                             });
                             clearTimeout(turnstileTimeouts[buttonId]);
                             hideBeautifulLoader($btn);
-                            hideBotOverlay();
-                            alert('Verification timed out. Please refresh the page and try again.');
+                            updateVerificationMessage('Verification timed out. Please try again.');
+                            showVerificationRetry($btn);
                             cleanupTurnstile(containerId, buttonId);
                         }
                     });
@@ -166,8 +179,8 @@
                                 turnstile.reset(turnstileWidgetIds[buttonId]);
                             } catch(e) {}
                             hideBeautifulLoader($btn);
-                            hideBotOverlay();
-                            alert('Verification is taking too long. Please refresh the page and try again.');
+                            updateVerificationMessage('Verification is taking too long. Please try again.');
+                            showVerificationRetry($btn);
                             cleanupTurnstile(containerId, buttonId);
                         }
                     }, 30000);
@@ -180,8 +193,8 @@
                     });
                     clearTimeout(turnstileTimeouts[buttonId]);
                     hideBeautifulLoader($btn);
-                    hideBotOverlay();
-                    alert('Bot verification error. Please try again.');
+                    updateVerificationMessage('Bot verification error. Please try again.');
+                    showVerificationRetry($btn);
                     cleanupTurnstile(containerId, buttonId);
                 }
                 
@@ -258,7 +271,7 @@
     function shouldShowBotOverlay() {
         return typeof aoauth_public !== 'undefined' &&
             aoauth_public.bot_protection &&
-            aoauth_public.bot_protection.overlay_enabled;
+            (aoauth_public.bot_protection.overlay_enabled || aoauth_public.bot_protection.display_mode !== 'invisible');
     }
 
     function showBotOverlay($btn) {
@@ -290,7 +303,13 @@
             }).append(
                 $('<div>', { class: 'aoauth-verification-panel' }).append(
                     $('<div>', { class: 'aoauth-verification-ring' }),
-                    $('<div>', { class: 'aoauth-verification-message' })
+                    $('<div>', { class: 'aoauth-verification-message' }),
+                    $('<div>', { class: 'aoauth-verification-widget-slot' }),
+                    $('<button>', {
+                        type: 'button',
+                        class: 'aoauth-verification-retry',
+                        text: 'Try again'
+                    })
                 ),
                 $('<div>', { class: 'aoauth-verification-branding', 'aria-hidden': 'true' }).append(
                     $('<div>', { class: 'aoauth-verification-provider-mark' }),
@@ -304,14 +323,17 @@
         var overlayConfig = aoauth_public.bot_protection || {};
         var overlayVariant = overlayConfig.overlay_variant || 'spotlight';
         var overlayTheme = overlayConfig.overlay_theme || 'modern';
+        var overlayOpacity = parseInt(overlayConfig.overlay_opacity, 10) || 86;
 
         $overlay.find('.aoauth-verification-message').text(message);
+        hideVerificationRetry();
         updateVerificationBranding($overlay, overlayConfig);
         $overlay
-            .removeClass('aoauth-overlay-spotlight aoauth-overlay-panel aoauth-overlay-minimal aoauth-overlay-paper-plane aoauth-overlay-glass-shield aoauth-overlay-aurora aoauth-overlay-theme-simple aoauth-overlay-theme-modern aoauth-overlay-theme-rounded aoauth-overlay-theme-gradient aoauth-overlay-theme-outline aoauth-overlay-theme-icon-only aoauth-overlay-theme-icon-aurora aoauth-overlay-theme-icon-sunset aoauth-overlay-theme-icon-neon')
+            .removeClass('aoauth-overlay-spotlight aoauth-overlay-panel aoauth-overlay-minimal aoauth-overlay-paper-plane aoauth-overlay-glass-shield aoauth-overlay-aurora aoauth-overlay-hyperspace aoauth-overlay-constellation aoauth-overlay-signal-grid aoauth-overlay-theme-simple aoauth-overlay-theme-modern aoauth-overlay-theme-rounded aoauth-overlay-theme-gradient aoauth-overlay-theme-outline aoauth-overlay-theme-icon-only aoauth-overlay-theme-icon-aurora aoauth-overlay-theme-icon-sunset aoauth-overlay-theme-icon-neon')
             .addClass('aoauth-overlay-' + overlayVariant)
             .addClass('aoauth-overlay-theme-' + overlayTheme)
             .toggleClass('aoauth-overlay-branding-hidden', !overlayConfig.overlay_branding_enabled);
+        $overlay[0].style.setProperty('--aoauth-overlay-opacity', overlayOpacity / 100);
 
         if ($origin && $origin.length) {
             var offset = $origin.offset();
@@ -329,12 +351,56 @@
         $('body').addClass('aoauth-verification-active');
     }
 
+    function createTurnstileContainer(containerId, displayMode) {
+        if ($('#' + containerId).length) {
+            return;
+        }
+
+        var $container = $('<div>', {
+            id: containerId,
+            class: displayMode === 'invisible' ? 'aoauth-bot-widget-container' : 'aoauth-bot-widget-container-visible'
+        });
+
+        if (displayMode === 'invisible') {
+            $container.appendTo('body');
+            return;
+        }
+
+        var $slot = $('#aoauth-verification-overlay .aoauth-verification-widget-slot');
+        if ($slot.length) {
+            $slot.empty().append($container);
+        } else {
+            $container.appendTo('body');
+        }
+    }
+
+    function updateVerificationMessage(message) {
+        $('#aoauth-verification-overlay .aoauth-verification-message').text(message);
+    }
+
+    function showVerificationRetry($btn) {
+        var $overlay = $('#aoauth-verification-overlay');
+        $overlay.find('.aoauth-verification-retry')
+            .addClass('is-visible')
+            .off('click')
+            .on('click', function() {
+                hideBotOverlay();
+                if ($btn && $btn.length) {
+                    $btn.trigger('click');
+                }
+            });
+    }
+
+    function hideVerificationRetry() {
+        $('#aoauth-verification-overlay .aoauth-verification-retry').removeClass('is-visible').off('click');
+    }
+
     function updateVerificationBranding($overlay, overlayConfig) {
         var providerLabels = {
-            turnstile: 'Cloudflare Turnstile',
-            recaptcha: 'Google reCAPTCHA'
+            turnstile: 'Verified by Cloudflare Turnstile',
+            recaptcha: 'Verified by Google reCAPTCHA'
         };
-        var providerLabel = providerLabels[overlayConfig.type] || 'Bot verification';
+        var providerLabel = providerLabels[overlayConfig.type] || 'Bot verification active';
         var pluginLogo = overlayConfig.plugin_logo_url || '';
 
         $overlay.find('.aoauth-verification-provider-mark').text(providerLabel);
@@ -346,13 +412,14 @@
             }).appendTo($powered);
         }
         $('<span>', {
-            text: 'Powered by aOAUTH Client SSO'
+            text: 'Protected with aOAUTH Client SSO'
         }).appendTo($powered);
     }
 
     function hideBotOverlay() {
         $('#aoauth-verification-overlay').removeClass('is-visible');
         $('body').removeClass('aoauth-verification-active');
+        hideVerificationRetry();
     }
     
     function getTurnstileErrorMessage(errorCode) {
@@ -404,8 +471,8 @@
                     }, 200);
                 } else {
                     hideBeautifulLoader($btn);
-                    hideBotOverlay();
-                    alert(response.data.message || 'Verification failed. Please try again.');
+                    updateVerificationMessage(response.data.message || 'Verification failed. Please try again.');
+                    showVerificationRetry($btn);
                     if (containerId) cleanupTurnstile(containerId, buttonId);
                 }
             },
@@ -420,8 +487,8 @@
                     response_status: xhr.status
                 });
                 hideBeautifulLoader($btn);
-                hideBotOverlay();
-                alert('Verification error. Please refresh and try again.');
+                updateVerificationMessage('Verification error. Please try again.');
+                showVerificationRetry($btn);
                 if (containerId) cleanupTurnstile(containerId, buttonId);
             }
         });

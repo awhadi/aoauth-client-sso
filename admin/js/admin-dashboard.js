@@ -1,6 +1,19 @@
 (function($) {
+    $(document).on('error', 'img[data-fallback-src], img[data-hide-on-error]', function() {
+        var $image = $(this);
+        var fallbackSrc = $image.data('fallback-src');
 
-        // ============================================
+        if (fallbackSrc && $image.attr('src') !== fallbackSrc) {
+            $image.attr('src', fallbackSrc);
+            return;
+        }
+
+        if ($image.data('hide-on-error')) {
+            $image.addClass('aoauth-is-hidden');
+        }
+    });
+
+    // ============================================
     // ACCOUNT UNLINKING FUNCTIONALITY
     // ============================================
     
@@ -309,6 +322,11 @@
             }, function(response) {
                 if (response.success) {
                     aoauthShowToast(response.data.message, 'success');
+                    if ($button.data('reload') === 1) {
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    }
                 } else {
                     aoauthShowToast(response.data.message, 'error');
                     $toggle.prop('checked', !enabled);
@@ -586,6 +604,27 @@
             });
         });
 
+        $('.aoauth-clear-current-bot-verification').on('click', function() {
+            var $button = $(this);
+            var originalText = $button.text();
+
+            $button.prop('disabled', true).text('Working...');
+            $.post(aoauth_admin.ajaxurl, {
+                action: 'aoauth_clear_current_bot_verifications',
+                nonce: $button.data('nonce')
+            }, function(response) {
+                if (response.success) {
+                    aoauthShowToast(response.data.message, 'success');
+                } else {
+                    aoauthShowToast(response.data.message || 'Could not clear bot verification data.', 'error');
+                }
+            }).fail(function() {
+                aoauthShowToast('Could not clear bot verification data.', 'error');
+            }).always(function() {
+                $button.prop('disabled', false).text(originalText);
+            });
+        });
+
         $('#aoauth-deep-debug-toggle').on('change', function() {
             var $toggle = $(this);
             var enabled = $toggle.is(':checked') ? 1 : 0;
@@ -753,12 +792,19 @@
             var title = $('#linking_page_title').val() || 'Link Your Account';
             var overlayVariant = $('#bot_overlay_variant').val() || 'spotlight';
             var showBranding = $('#bot_overlay_branding_enabled').is(':checked');
+            var overlayOpacity = parseInt($('#bot_overlay_opacity').val(), 10) || 86;
+            var $previewWrap = $('.aoauth-linking-preview-wrap');
 
-            $('.aoauth-linking-preview-wrap')
+            $previewWrap
                 .attr('data-preview-theme', selectedTheme)
                 .attr('data-overlay-variant', overlayVariant)
+                .attr('data-overlay-opacity', overlayOpacity)
                 .toggleClass('aoauth-overlay-preview-branding-hidden', !showBranding);
+            $previewWrap.each(function() {
+                this.style.setProperty('--aoauth-preview-overlay-opacity', overlayOpacity / 100);
+            });
             $('.aoauth-linking-preview-title').text(title);
+            $('[data-range-value="bot_overlay_opacity"]').text(overlayOpacity + '%');
         }
 
         $('input[name="login_button_theme"]').on('change', function() {
@@ -768,7 +814,7 @@
             updateLinkingPreview();
         });
 
-        $('#linking_page_title, #bot_overlay_variant, #bot_overlay_branding_enabled').on('input change', updateLinkingPreview);
+        $('#linking_page_title, #bot_overlay_variant, #bot_overlay_branding_enabled, #bot_overlay_opacity').on('input change', updateLinkingPreview);
         updateLinkingPreview();
     });
 })(jQuery);

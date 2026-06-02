@@ -1,9 +1,9 @@
-Version: 2.3.0
-Date: 2026-05-27
+Version: 2.4.0
+Date: 2026-06-02
 Author: Awhadi / Codex
 
 Summary:
-Deep Debug can now be toggled from Tools when wp-config.php is writable, while still showing the manual constant for locked-down servers. The Logs screen keeps pagination but no longer performs a duplicate initial AJAX reload after rendering the first page. Three new icon-only themes were added with light/gradient icon surfaces so dark provider logos remain visible. Activation now opens the wizard only when no provider is configured.
+Sign-In Experience, bot verification, tools maintenance, shortcodes, and Users table SSO management were optimized without changing the core OAuth provider flow. SSO buttons now default below the WordPress login form, overlay controls are cleaner and more professional, Turnstile can be rendered visibly inside the overlay, log cleanup status is visible in Tools, and users can clear their own temporary bot verification records when troubleshooting.
 
 Files changed:
 - aoauth-client-sso.php
@@ -12,31 +12,39 @@ Files changed:
 - admin/class-admin.php
 - admin/css/admin-style.css
 - admin/js/admin-dashboard.js
-- admin/views/logs.php
+- admin/views/security-settings.php
+- admin/views/sign-in-experience-settings.php
 - admin/views/tools-settings.php
 - includes/class-core.php
+- includes/class-sso-handler.php
+- includes/class-user-manager.php
 - public/css/login-single-sign-on.css
 - public/css/themes/icon-aurora.css
 - public/css/themes/icon-neon.css
+- public/css/themes/icon-only.css
 - public/css/themes/icon-sunset.css
+- public/css/themes/outline.css
+- public/js/account-unlink.js
 - public/js/login-single-sign-on.js
 
 Security/UX notes:
-- Deep Debug writes to wp-config.php only for administrators and only with a valid admin nonce.
-- If wp-config.php is not writable, the UI fails safely and shows the manual constant.
-- Deep Debug can expose detailed request flow data in protected upload logs, so it should be disabled after troubleshooting.
-- New icon-only themes keep provider logos visible by avoiding dark icon surfaces.
+- SSO buttons default below the WordPress login form to reduce accidental provider clicks after password entry.
+- Bot verification clearing for users is scoped to the current request/IP data and requires a logged-in user nonce.
+- Global bot verification clearing remains administrator-only.
+- Managed Turnstile mode renders inside the overlay so timeout/retry states are clearer for visitors.
+- Users table SSO actions are merged into the provider column while keeping the existing unlink nonce and administrator safeguards.
+- Inline image fallback handlers were removed and replaced with external JavaScript handlers.
 
 Performance notes:
-- Logs are paginated at 50 rows per page.
-- The initial Logs page no longer repeats the same query through AJAX after server render.
-- Added provider/status/date indexes to the logs table for faster admin filtering.
-- Frontend impact is minimal: theme CSS is conditional, public SSO JS remains on login pages, and no new global frontend bundle was added.
+- Log cleanup remains native WP-Cron; Tools now shows next/last cleanup status and manual cleanup controls.
+- No new frontend JavaScript or CSS bundles were added.
+- Theme icon tinting is CSS-only.
+- Existing login, account linking, and unlink scripts are reused for new UI behavior.
 
 Rollback plan:
-Restore v2.2.1 if needed. If Deep Debug was enabled, disable it from Tools or remove `define("OAUTH-DEBUG", "enabled");` from wp-config.php.
+Restore v2.3.0 if needed. If Turnstile managed mode causes provider-specific issues, switch Turnstile Display Mode back to Invisible before rolling back.
 
 Verification:
 - Full plugin PHP syntax check passed.
-- JavaScript syntax checks passed for admin/js/admin-dashboard.js and public/js/login-single-sign-on.js.
+- JavaScript syntax checks passed for admin/js/admin-dashboard.js, public/js/login-single-sign-on.js, and public/js/account-unlink.js.
 - `git diff --check` passed.

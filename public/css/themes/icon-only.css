@@ -27,5 +27,5 @@
 .aoauth-login-buttons .aoauth-button-icon img {
     width: 24px;
     height: 24px;
-    filter: drop-shadow(0 1px 1px rgba(255,255,255,0.2));
+    filter: brightness(0) saturate(100%) invert(83%) sepia(70%) saturate(715%) hue-rotate(358deg) brightness(103%) contrast(96%) drop-shadow(0 1px 1px rgba(255,255,255,0.2));
 }

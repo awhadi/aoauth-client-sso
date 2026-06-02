@@ -2,6 +2,36 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.4.0] - 2026-06-02
+
+### Added
+- Added a Below Login Form SSO button position to reduce accidental provider clicks after users type WordPress credentials.
+- Added a Wrap Centered login button layout.
+- Added Bot Verification Overlay opacity control.
+- Added Hyperspace, Constellation, and Signal Grid professional overlay styles while keeping Spotlight and Minimal.
+- Added Turnstile display mode control with Invisible, Managed Visible in Overlay, and Non-Interactive options.
+- Added Tools cleanup status showing next and last log cleanup runs.
+- Added Run Cleanup Now and Reschedule Cleanup maintenance actions.
+- Added `[aoauth_clear_bot_verification]` for logged-in users to clear temporary bot verification records for their current session.
+- Added a matching profile-page bot verification troubleshooting action.
+
+### Changed
+- Clarified the Show Brand Badge help text to explain that it appears on front-end pages for SSO-authenticated users.
+- Renamed verification overlay settings to Bot Verification Overlay.
+- Made verification branding text more professional in the overlay and preview.
+- Merged Users table SSO actions into the SSO Provider column.
+- Moved image fallback behavior from inline handlers into existing external JavaScript files.
+- Tinted icon-oriented provider logos through theme CSS filters where CSS tinting is practical for PNG assets.
+
+### Security
+- Current-user bot verification clearing is scoped to the visitor's current request/IP data; global bot token clearing remains administrator-only.
+- Turnstile retry handling now resets stale widgets and keeps users in the verification overlay flow.
+- Existing OAuth callback, linking, nonce, provider identity, and admin permission checks remain intact.
+
+### Performance
+- Log cleanup remains native WP-Cron and now records last cleanup time for admin visibility.
+- No new frontend bundles were added; changes reuse existing public/admin CSS and JavaScript assets.
+
 ## [2.3.0] - 2026-05-27
 
 ### Added

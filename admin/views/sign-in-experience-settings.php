@@ -1,5 +1,9 @@
 <?php if (!defined('ABSPATH')) exit;
 $current_theme = $settings['login_button_theme'] ?? 'modern';
+$current_overlay_variant = $settings['bot_overlay_variant'] ?? 'spotlight';
+if (!in_array($current_overlay_variant, array('spotlight', 'hyperspace', 'constellation', 'signal-grid', 'minimal'), true)) {
+    $current_overlay_variant = 'spotlight';
+}
 ?>
 <div class="aoauth-settings-column">
     <form class="aoauth-settings-form">
@@ -29,7 +33,7 @@ $current_theme = $settings['login_button_theme'] ?? 'modern';
                 <div class="aoauth-setting-row">
                     <div class="aoauth-setting-label">
                         <label for="enable_brand_badge"><?php esc_html_e('Show Brand Badge', 'aoauth-client-sso'); ?></label>
-                        <p class="aoauth-setting-help"><?php esc_html_e('Display the aOAUTH badge only for users who signed in with SSO.', 'aoauth-client-sso'); ?></p>
+                        <p class="aoauth-setting-help"><?php esc_html_e('Show the aOAUTH badge on front-end pages for users who signed in with SSO.', 'aoauth-client-sso'); ?></p>
                     </div>
                     <div class="aoauth-setting-control">
                         <label class="aoauth-toggle">
@@ -87,7 +91,21 @@ $current_theme = $settings['login_button_theme'] ?? 'modern';
                                 <select id="login_button_layout" name="login_button_layout" class="aoauth-form-control">
                                     <option value="vertical" <?php selected($settings['login_button_layout'] ?? 'vertical', 'vertical'); ?>><?php esc_html_e('Vertical', 'aoauth-client-sso'); ?></option>
                                     <option value="horizontal" <?php selected($settings['login_button_layout'] ?? 'vertical', 'horizontal'); ?>><?php esc_html_e('Horizontal', 'aoauth-client-sso'); ?></option>
+                                    <option value="wrap-centered" <?php selected($settings['login_button_layout'] ?? 'vertical', 'wrap-centered'); ?>><?php esc_html_e('Wrap Centered', 'aoauth-client-sso'); ?></option>
                                     <option value="grid" <?php selected($settings['login_button_layout'] ?? 'vertical', 'grid'); ?>><?php esc_html_e('Grid', 'aoauth-client-sso'); ?></option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="aoauth-setting-row">
+                            <div class="aoauth-setting-label">
+                                <label for="login_button_position"><?php esc_html_e('SSO Button Position', 'aoauth-client-sso'); ?></label>
+                                <p class="aoauth-setting-help"><?php esc_html_e('Place SSO buttons below the WordPress login button to reduce accidental provider clicks.', 'aoauth-client-sso'); ?></p>
+                            </div>
+                            <div class="aoauth-setting-control">
+                                <select id="login_button_position" name="login_button_position" class="aoauth-form-control">
+                                    <option value="below_form" <?php selected($settings['login_button_position'] ?? 'below_form', 'below_form'); ?>><?php esc_html_e('Below Login Form', 'aoauth-client-sso'); ?></option>
+                                    <option value="inside_form" <?php selected($settings['login_button_position'] ?? 'below_form', 'inside_form'); ?>><?php esc_html_e('Inside Login Form', 'aoauth-client-sso'); ?></option>
                                 </select>
                             </div>
                         </div>
@@ -112,30 +130,40 @@ $current_theme = $settings['login_button_theme'] ?? 'modern';
 
                     <div class="aoauth-setting-group">
                         <div class="aoauth-setting-group-header">
-                            <h4><?php esc_html_e('Verification Overlay', 'aoauth-client-sso'); ?></h4>
+                            <h4><?php esc_html_e('Bot Verification Overlay', 'aoauth-client-sso'); ?></h4>
                             <p><?php esc_html_e('Used when full-screen verification overlay is enabled in Security.', 'aoauth-client-sso'); ?></p>
                         </div>
 
                         <div class="aoauth-setting-row">
                             <div class="aoauth-setting-label">
-                                <label for="bot_overlay_variant"><?php esc_html_e('Verification Overlay Style', 'aoauth-client-sso'); ?></label>
+                                <label for="bot_overlay_variant"><?php esc_html_e('Bot Verification Overlay Style', 'aoauth-client-sso'); ?></label>
                             </div>
                             <div class="aoauth-setting-control">
                                 <select id="bot_overlay_variant" name="bot_overlay_variant" class="aoauth-form-control">
-                                    <option value="spotlight" <?php selected($settings['bot_overlay_variant'] ?? 'spotlight', 'spotlight'); ?>><?php esc_html_e('Spotlight', 'aoauth-client-sso'); ?></option>
-                                    <option value="paper-plane" <?php selected($settings['bot_overlay_variant'] ?? 'spotlight', 'paper-plane'); ?>><?php esc_html_e('Paper Plane', 'aoauth-client-sso'); ?></option>
-                                    <option value="glass-shield" <?php selected($settings['bot_overlay_variant'] ?? 'spotlight', 'glass-shield'); ?>><?php esc_html_e('Glass Shield', 'aoauth-client-sso'); ?></option>
-                                    <option value="aurora" <?php selected($settings['bot_overlay_variant'] ?? 'spotlight', 'aurora'); ?>><?php esc_html_e('Aurora', 'aoauth-client-sso'); ?></option>
-                                    <option value="panel" <?php selected($settings['bot_overlay_variant'] ?? 'spotlight', 'panel'); ?>><?php esc_html_e('Full Panel', 'aoauth-client-sso'); ?></option>
-                                    <option value="minimal" <?php selected($settings['bot_overlay_variant'] ?? 'spotlight', 'minimal'); ?>><?php esc_html_e('Minimal', 'aoauth-client-sso'); ?></option>
+                                    <option value="spotlight" <?php selected($current_overlay_variant, 'spotlight'); ?>><?php esc_html_e('Spotlight', 'aoauth-client-sso'); ?></option>
+                                    <option value="hyperspace" <?php selected($current_overlay_variant, 'hyperspace'); ?>><?php esc_html_e('Hyperspace', 'aoauth-client-sso'); ?></option>
+                                    <option value="constellation" <?php selected($current_overlay_variant, 'constellation'); ?>><?php esc_html_e('Constellation', 'aoauth-client-sso'); ?></option>
+                                    <option value="signal-grid" <?php selected($current_overlay_variant, 'signal-grid'); ?>><?php esc_html_e('Signal Grid', 'aoauth-client-sso'); ?></option>
+                                    <option value="minimal" <?php selected($current_overlay_variant, 'minimal'); ?>><?php esc_html_e('Minimal', 'aoauth-client-sso'); ?></option>
                                 </select>
                             </div>
                         </div>
 
                         <div class="aoauth-setting-row">
                             <div class="aoauth-setting-label">
+                                <label for="bot_overlay_opacity"><?php esc_html_e('Overlay Opacity', 'aoauth-client-sso'); ?></label>
+                                <p class="aoauth-setting-help"><?php esc_html_e('Controls the strength of the bot verification screen cover.', 'aoauth-client-sso'); ?></p>
+                            </div>
+                            <div class="aoauth-setting-control">
+                                <input type="range" id="bot_overlay_opacity" name="bot_overlay_opacity" class="aoauth-range-control" value="<?php echo esc_attr($settings['bot_overlay_opacity'] ?? 86); ?>" min="35" max="96" step="1">
+                                <span class="aoauth-range-value" data-range-value="bot_overlay_opacity"><?php echo esc_html($settings['bot_overlay_opacity'] ?? 86); ?>%</span>
+                            </div>
+                        </div>
+
+                        <div class="aoauth-setting-row">
+                            <div class="aoauth-setting-label">
                                 <label for="bot_overlay_branding_enabled"><?php esc_html_e('Show Verification Branding', 'aoauth-client-sso'); ?></label>
-                                <p class="aoauth-setting-help"><?php esc_html_e('Show the verification provider and aOAUTH powered-by badge in the overlay corner.', 'aoauth-client-sso'); ?></p>
+                                <p class="aoauth-setting-help"><?php esc_html_e('Show a compact verification provider and aOAUTH Client SSO trust mark in the overlay corner.', 'aoauth-client-sso'); ?></p>
                             </div>
                             <div class="aoauth-setting-control">
                                 <label class="aoauth-toggle">
@@ -149,7 +177,7 @@ $current_theme = $settings['login_button_theme'] ?? 'modern';
                 </div>
 
                 <div class="aoauth-signin-preview">
-                    <div class="aoauth-linking-preview-wrap" data-preview-theme="<?php echo esc_attr($current_theme); ?>" data-overlay-variant="<?php echo esc_attr($settings['bot_overlay_variant'] ?? 'spotlight'); ?>">
+                    <div class="aoauth-linking-preview-wrap" data-preview-theme="<?php echo esc_attr($current_theme); ?>" data-overlay-variant="<?php echo esc_attr($current_overlay_variant); ?>" data-overlay-opacity="<?php echo esc_attr($settings['bot_overlay_opacity'] ?? 86); ?>">
                         <div class="aoauth-linking-preview-screen">
                             <div class="aoauth-linking-preview-card">
                                 <div class="aoauth-linking-preview-icon">
@@ -167,8 +195,8 @@ $current_theme = $settings['login_button_theme'] ?? 'modern';
                                     <span class="aoauth-overlay-preview-copy"><?php esc_html_e('Verifying secure sign-in...', 'aoauth-client-sso'); ?></span>
                                 </div>
                                 <div class="aoauth-overlay-preview-brand">
-                                    <span><?php esc_html_e('Cloudflare Turnstile', 'aoauth-client-sso'); ?></span>
-                                    <span><?php esc_html_e('Powered by aOAUTH Client SSO', 'aoauth-client-sso'); ?></span>
+                                    <span><?php esc_html_e('Verified by Cloudflare Turnstile', 'aoauth-client-sso'); ?></span>
+                                    <span><?php esc_html_e('Protected with aOAUTH Client SSO', 'aoauth-client-sso'); ?></span>
                                 </div>
                             </div>
                         </div>

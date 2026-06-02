@@ -31,5 +31,5 @@
 .aoauth-login-buttons .aoauth-button-icon img {
     width: 25px;
     height: 25px;
-    filter: none;
+    filter: brightness(0) saturate(100%) invert(30%) sepia(91%) saturate(2206%) hue-rotate(9deg) brightness(92%) contrast(92%);
 }

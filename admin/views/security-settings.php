@@ -82,6 +82,20 @@ $bot_provider = !empty($settings['bot_protection_provider']) ? $settings['bot_pr
                     <div class="aoauth-setting-control"><input type="password" id="turnstile_secret_key" name="turnstile_secret_key" class="aoauth-form-control" value="<?php echo esc_attr($settings['turnstile_secret_key'] ?? ''); ?>"></div>
                 </div>
 
+                <div class="aoauth-setting-row turnstile-fields <?php echo $bot_provider !== 'turnstile' ? 'aoauth-is-hidden' : ''; ?>">
+                    <div class="aoauth-setting-label">
+                        <label for="turnstile_display_mode"><?php esc_html_e('Turnstile Display Mode', 'aoauth-client-sso'); ?></label>
+                        <p class="aoauth-setting-help"><?php esc_html_e('Use Managed Visible in Overlay when invisible verification times out for visitors.', 'aoauth-client-sso'); ?></p>
+                    </div>
+                    <div class="aoauth-setting-control">
+                        <select id="turnstile_display_mode" name="turnstile_display_mode" class="aoauth-form-control">
+                            <option value="invisible" <?php selected($settings['turnstile_display_mode'] ?? 'invisible', 'invisible'); ?>><?php esc_html_e('Invisible', 'aoauth-client-sso'); ?></option>
+                            <option value="managed" <?php selected($settings['turnstile_display_mode'] ?? 'invisible', 'managed'); ?>><?php esc_html_e('Managed Visible in Overlay', 'aoauth-client-sso'); ?></option>
+                            <option value="non-interactive" <?php selected($settings['turnstile_display_mode'] ?? 'invisible', 'non-interactive'); ?>><?php esc_html_e('Non-Interactive', 'aoauth-client-sso'); ?></option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="aoauth-setting-row recaptcha-fields <?php echo $bot_provider !== 'recaptcha' ? 'aoauth-is-hidden' : ''; ?>">
                     <div class="aoauth-setting-label"><label for="recaptcha_site_key"><?php esc_html_e('reCAPTCHA Site Key', 'aoauth-client-sso'); ?></label></div>
                     <div class="aoauth-setting-control"><input type="text" id="recaptcha_site_key" name="recaptcha_site_key" class="aoauth-form-control" value="<?php echo esc_attr($settings['recaptcha_site_key'] ?? ''); ?>"></div>

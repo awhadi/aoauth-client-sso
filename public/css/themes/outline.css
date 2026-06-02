@@ -15,3 +15,6 @@
 .aoauth-login-buttons .aoauth-button:hover .aoauth-button-icon img {
     filter: brightness(0) invert(1);
 }
+.aoauth-login-buttons .aoauth-button-icon img {
+    filter: brightness(0) saturate(100%) invert(36%) sepia(91%) saturate(558%) hue-rotate(128deg) brightness(88%) contrast(92%);
+}

@@ -10,11 +10,26 @@
     animation: gradientShift 8s ease infinite;
     position: relative;
     overflow: hidden;
+    box-shadow: inset 0 -3px 0 rgba(255, 255, 255, 0.32);
 }
 
-
-/* Add subtle moving particles effect */
 .aoauth-admin-header::before {
+    bottom: -58px;
+    color: rgba(255, 255, 255, 0.16);
+    content: "a";
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 210px;
+    font-weight: 700;
+    left: -25px;
+    top: -55px;
+    line-height: 1;
+    pointer-events: none;
+    position: absolute;
+    text-transform: lowercase;
+    z-index: 0;
+}
+
+.aoauth-admin-header::after {
     content: '';
     position: absolute;
     top: 0;
@@ -23,16 +38,8 @@
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
     animation: shimmer 3s infinite;
-}
-.aoauth-admin-header::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #fff, transparent, #fff);
-    animation: borderPulse 2s ease infinite;
+    pointer-events: none;
+    z-index: 1;
 }
 
 @keyframes gradientShift {
@@ -53,18 +60,6 @@
     }
     100% {
         left: 100%;
-    }
-}
-
-@keyframes borderPulse {
-    0% {
-        opacity: 0.3;
-    }
-    50% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0.3;
     }
 }
 
@@ -177,6 +172,25 @@
     100% {
         transform: translate3d(460px, 90px, 0) rotate(12deg);
         opacity: 0;
+    }
+}
+
+@keyframes aoauthAdminSignalPreview {
+    0% {
+        background-position: 0 0, 0 0, center;
+    }
+    100% {
+        background-position: 56px 0, 0 56px, center;
+    }
+}
+
+@keyframes aoauthAdminConstellationPreview {
+    0%,
+    100% {
+        background-position: 0 0, 0 0, 0 0, center;
+    }
+    50% {
+        background-position: 12px -8px, -10px 12px, 8px 10px, center;
     }
 }
 
@@ -338,6 +352,8 @@
     display: flex;
     align-items: center;
     gap: 20px;
+    position: relative;
+    z-index: 2;
 }
 
 /* Header Actions - No slide animation */
@@ -345,6 +361,8 @@
     display: flex;
     align-items: center;
     gap: 16px;
+    position: relative;
+    z-index: 2;
 }
 
 /* Main Container */
@@ -478,6 +496,34 @@
     font-size: 30px;
     font-weight: 800;
     line-height: 1;
+}
+
+.aoauth-cron-status {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin: 12px 0;
+}
+
+.aoauth-cron-status > div {
+    padding: 12px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.aoauth-cron-status span {
+    display: block;
+    margin-bottom: 4px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.aoauth-cron-status strong {
+    color: #111827;
+    font-size: 13px;
 }
 
 .aoauth-maintenance-actions {
@@ -888,6 +934,7 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(51,65,85,0.82));
+    opacity: var(--aoauth-preview-overlay-opacity, 0.86);
 }
 
 .aoauth-overlay-preview-panel {
@@ -977,8 +1024,48 @@
     animation: aoauthOverlayDrift 7s ease-in-out infinite;
 }
 
+.aoauth-linking-preview-wrap[data-overlay-variant="hyperspace"] .aoauth-overlay-preview::before {
+    background:
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.18) 0 1px, transparent 1px 38px),
+        linear-gradient(135deg, rgba(2,6,23,0.96), rgba(30,41,59,0.9));
+    animation: aoauthAdminSignalPreview 2s linear infinite;
+}
+
+.aoauth-linking-preview-wrap[data-overlay-variant="constellation"] .aoauth-overlay-preview::before {
+    background:
+        radial-gradient(circle at 20% 24%, rgba(255,255,255,0.92) 0 1px, transparent 2px),
+        radial-gradient(circle at 76% 30%, rgba(255,255,255,0.68) 0 1px, transparent 2px),
+        radial-gradient(circle at 54% 78%, rgba(255,255,255,0.78) 0 1px, transparent 2px),
+        linear-gradient(135deg, rgba(15,23,42,0.98), rgba(49,46,129,0.9));
+    background-size: 120px 120px, 150px 150px, 130px 130px, 100% 100%;
+    animation: aoauthAdminConstellationPreview 5s ease-in-out infinite;
+}
+
+.aoauth-linking-preview-wrap[data-overlay-variant="signal-grid"] .aoauth-overlay-preview::before {
+    background:
+        linear-gradient(90deg, rgba(255,255,255,0.14) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,0.12) 1px, transparent 1px),
+        linear-gradient(135deg, rgba(15,23,42,0.96), rgba(12,74,110,0.88));
+    background-size: 28px 28px, 28px 28px, 100% 100%;
+    animation: aoauthAdminSignalPreview 2.4s linear infinite;
+}
+
 .aoauth-linking-preview-wrap[data-overlay-variant="minimal"] .aoauth-overlay-preview::before {
     opacity: 0.72;
+}
+
+.aoauth-range-control {
+    width: 180px;
+    accent-color: #667eea;
+}
+
+.aoauth-range-value {
+    display: inline-flex;
+    min-width: 42px;
+    margin-left: 8px;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 .aoauth-linking-preview-icon img {
@@ -1689,6 +1776,20 @@
     margin-top: 18px;
 }
 
+.aoauth-profile-verification-tools {
+    margin-top: 18px;
+    padding: 14px;
+    border: 1px solid #dbeafe;
+    border-radius: 8px;
+    background: #eff6ff;
+}
+
+.aoauth-profile-verification-tools h3 {
+    margin: 0 0 8px;
+    color: #1e3a8a;
+    font-size: 14px;
+}
+
 .aoauth-profile-link-options h3 {
     margin: 0 0 8px;
     color: #111827;
@@ -1739,6 +1840,11 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    margin: 2px 6px 2px 0;
+    padding: 3px 4px 3px 6px;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    background: #f8fafc;
 }
 
 .aoauth-provider-cell-icon {
@@ -1753,6 +1859,30 @@
     font-style: italic;
 }
 
+.aoauth-provider-cell-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #dc2626;
+    cursor: pointer;
+}
+
+.aoauth-provider-cell-action:hover:not(:disabled) {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.aoauth-provider-cell-action:disabled {
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
 /* Users Table Unlink Button */
 .aoauth-unlink-user-btn {
     min-height: 28px;
@@ -1762,6 +1892,12 @@
 
 .aoauth-unlink-user-btn:disabled {
     color: #9ca3af;
+}
+
+.aoauth-provider-cell .aoauth-unlink-user-btn {
+    min-height: 24px;
+    padding: 0;
+    font-size: 13px;
 }
 
 /* Unlink Modal */

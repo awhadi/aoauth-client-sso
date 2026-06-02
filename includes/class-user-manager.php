@@ -213,7 +213,7 @@ class AOAUTH_User_Manager {
                 <div class="provider-icon">
                     <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . $provider_slug . '.png'); ?>" 
                          alt="<?php echo esc_attr($provider_name); ?>"
-                         onerror="this.src='<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png'); ?>'">
+                         data-fallback-src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png'); ?>">
                 </div>
                 <h2><?php echo esc_html($page_title); ?></h2>
                 <p class="description"><?php echo sprintf(esc_html__('Confirm your WordPress password to link %s for secure SSO login.', 'aoauth-client-sso'), esc_html($provider_name)); ?></p>

@@ -29,8 +29,11 @@ class AOAUTH_Admin {
         add_action('wp_ajax_aoauth_preview_theme', array($this, 'ajax_preview_theme'));
         add_action('wp_ajax_aoauth_factory_reset', array($this, 'ajax_factory_reset'));
         add_action('wp_ajax_aoauth_clear_bot_verifications', array($this, 'ajax_clear_bot_verifications'));
+        add_action('wp_ajax_aoauth_clear_current_bot_verifications', array($this, 'ajax_clear_current_bot_verifications'));
         add_action('wp_ajax_aoauth_clear_linking_lockouts', array($this, 'ajax_clear_linking_lockouts'));
         add_action('wp_ajax_aoauth_clear_oauth_temp_data', array($this, 'ajax_clear_oauth_temp_data'));
+        add_action('wp_ajax_aoauth_run_log_cleanup', array($this, 'ajax_run_log_cleanup'));
+        add_action('wp_ajax_aoauth_reschedule_log_cleanup', array($this, 'ajax_reschedule_log_cleanup'));
         add_action('wp_ajax_aoauth_toggle_deep_debug', array($this, 'ajax_toggle_deep_debug'));
         add_action('wp_ajax_aoauth_client_debug_log', array($this, 'ajax_client_debug_log'));
         add_action('wp_ajax_nopriv_aoauth_client_debug_log', array($this, 'ajax_client_debug_log'));
@@ -396,7 +399,7 @@ class AOAUTH_Admin {
                                                 <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . sanitize_key($provider_data['provider_name']) . '.png'); ?>"
                                                      alt="<?php echo esc_attr($provider_data['provider_name']); ?>"
                                                      class="aoauth-provider-icon-small"
-                                                     onerror="this.src='<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png'); ?>'">
+                                                     data-fallback-src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png'); ?>">
                                                 <strong><?php echo esc_html($provider_data['app_name']); ?></strong>
                                                 <span class="aoauth-connected-status"><?php esc_html_e('Connected', 'aoauth-client-sso'); ?></span>
                                             </div>
@@ -454,7 +457,7 @@ class AOAUTH_Admin {
                                                     <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . $provider_name . '.png'); ?>"
                                                          alt="<?php echo esc_attr($provider_name); ?>"
                                                          class="aoauth-provider-icon-small"
-                                                         onerror="this.src='<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png'); ?>'">
+                                                         data-fallback-src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png'); ?>">
                                                     <strong><?php echo esc_html($app['app_name'] ?? ucfirst($provider_name)); ?></strong>
                                                 </span>
                                                 <span class="aoauth-profile-link-action"><?php esc_html_e('Link provider', 'aoauth-client-sso'); ?></span>
@@ -465,6 +468,17 @@ class AOAUTH_Admin {
                                 <?php else: ?>
                                     <p class="description"><?php esc_html_e('For security, users must link providers from their own profile while logged in as themselves.', 'aoauth-client-sso'); ?></p>
                                 <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($can_link_on_this_profile): ?>
+                            <div class="aoauth-profile-verification-tools">
+                                <h3><?php esc_html_e('Bot Verification Troubleshooting', 'aoauth-client-sso'); ?></h3>
+                                <p class="description"><?php esc_html_e('Clear temporary bot verification records for your current browser session if verification gets stuck.', 'aoauth-client-sso'); ?></p>
+                                <button type="button"
+                                        class="aoauth-admin-button aoauth-admin-button-secondary aoauth-clear-current-bot-verification"
+                                        data-nonce="<?php echo esc_attr(wp_create_nonce('aoauth_clear_current_bot_verification')); ?>">
+                                    <?php esc_html_e('Clear My Bot Verification', 'aoauth-client-sso'); ?>
+                                </button>
                             </div>
                         <?php endif; ?>
                     </td>
@@ -479,7 +493,6 @@ class AOAUTH_Admin {
      */
     public function add_unlink_column($columns) {
         $columns['aoauth_sso'] = __('SSO Provider', 'aoauth-client-sso');
-        $columns['aoauth_actions'] = __('SSO Actions', 'aoauth-client-sso');
         return $columns;
     }
     
@@ -490,51 +503,38 @@ class AOAUTH_Admin {
         if ($column_name === 'aoauth_sso') {
             $linked_providers = AOAUTH_Core::get_user_linked_providers($user_id);
             $applications = get_option('aoauth_applications', array());
+            $current_user = wp_get_current_user();
             
             if (!empty($linked_providers)) {
                 $provider_badges = array();
                 foreach (array_keys($linked_providers) as $provider) {
                     $provider_name = $applications[$provider]['provider_name'] ?? $provider;
                     $app_name = $applications[$provider]['app_name'] ?? ucfirst($provider);
+                    $disabled = '';
+                    $title = '';
+                    if ($user_id === $current_user->ID && count(get_users(array('role' => 'administrator'))) === 1) {
+                        $disabled = 'disabled';
+                        $title = __('Cannot unlink the only administrator account', 'aoauth-client-sso');
+                    }
                     $provider_badges[] = '<span class="aoauth-provider-cell">
                                 <img src="' . esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . sanitize_key($provider_name) . '.png') . '"
                                      class="aoauth-provider-cell-icon"
-                                     onerror="this.style.display=\'none\'">
-                                ' . esc_html($app_name) . '
+                                     data-hide-on-error="1">
+                                <span>' . esc_html($app_name) . '</span>
+                                <button type="button"
+                                        class="aoauth-provider-cell-action aoauth-unlink-user-btn"
+                                        data-user-id="' . esc_attr($user_id) . '"
+                                        data-provider="' . esc_attr($provider) . '"
+                                        data-nonce="' . esc_attr(wp_create_nonce('aoauth_unlink_' . $user_id)) . '"
+                                        ' . $disabled . '
+                                        title="' . esc_attr($title ?: __('Unlink this SSO provider', 'aoauth-client-sso')) . '">
+                                    <span class="dashicons dashicons-unlink"></span>
+                                </button>
                             </span>';
                 }
                 return implode(' ', $provider_badges);
             }
             return '<span class="aoauth-no-provider">—</span>';
-        }
-        
-        if ($column_name === 'aoauth_actions') {
-            $linked_providers = AOAUTH_Core::get_user_linked_providers($user_id);
-            $current_user = wp_get_current_user();
-            
-            if (!empty($linked_providers)) {
-                $disabled = '';
-                $title = '';
-                $primary_provider = array_key_first($linked_providers);
-                
-                // Prevent admin from unlinking themselves if they're the only admin
-                if ($user_id === $current_user->ID && count(get_users(array('role' => 'administrator'))) === 1) {
-                    $disabled = 'disabled';
-                    $title = __('Cannot unlink the only administrator account', 'aoauth-client-sso');
-                }
-                
-                return '<button type="button" 
-                                class="aoauth-admin-button aoauth-admin-button-danger-ghost aoauth-unlink-user-btn" 
-                                data-user-id="' . esc_attr($user_id) . '"
-                                data-provider="' . esc_attr($primary_provider) . '"
-                                data-nonce="' . esc_attr(wp_create_nonce('aoauth_unlink_' . $user_id)) . '"
-                                ' . $disabled . '
-                                title="' . esc_attr($title) . '">
-                            <span class="dashicons dashicons-unlink"></span> 
-                            ' . __('Unlink', 'aoauth-client-sso') . '
-                        </button>';
-            }
-            return '<span class="aoauth-no-action">—</span>';
         }
         
         return $value;
@@ -1151,9 +1151,24 @@ class AOAUTH_Admin {
             $role_redirects[$role_key] = $this->sanitize_role_redirect_path($redirect_value, $fallback_redirect);
         }
 
+        $login_button_layout = sanitize_key($settings['login_button_layout'] ?? 'vertical');
+        if (!in_array($login_button_layout, array('vertical', 'horizontal', 'grid', 'wrap-centered'), true)) {
+            $login_button_layout = $defaults['login_button_layout'];
+        }
+
+        $login_button_position = sanitize_key($settings['login_button_position'] ?? 'below_form');
+        if (!in_array($login_button_position, array('below_form', 'inside_form'), true)) {
+            $login_button_position = $defaults['login_button_position'];
+        }
+
         $overlay_variant = sanitize_key($settings['bot_overlay_variant'] ?? 'spotlight');
-        if (!in_array($overlay_variant, array('spotlight', 'panel', 'minimal', 'paper-plane', 'glass-shield', 'aurora'), true)) {
+        if (!in_array($overlay_variant, array('spotlight', 'minimal', 'hyperspace', 'constellation', 'signal-grid'), true)) {
             $overlay_variant = 'spotlight';
+        }
+
+        $turnstile_display_mode = sanitize_key($settings['turnstile_display_mode'] ?? 'invisible');
+        if (!in_array($turnstile_display_mode, array('invisible', 'managed', 'non-interactive'), true)) {
+            $turnstile_display_mode = 'invisible';
         }
 
         $turnstile_secret_key = array_key_exists('turnstile_secret_key', $raw_settings)
@@ -1167,7 +1182,8 @@ class AOAUTH_Admin {
             'enable_login_buttons' => $is_enabled('enable_login_buttons'),
             'enable_brand_badge' => $is_enabled('enable_brand_badge'),
             'login_button_theme' => sanitize_text_field($settings['login_button_theme']),
-            'login_button_layout' => sanitize_text_field($settings['login_button_layout']),
+            'login_button_layout' => $login_button_layout,
+            'login_button_position' => $login_button_position,
             'auto_create_users' => $is_enabled('auto_create_users'),
             'default_role' => $role,
             'allow_account_linking' => $allow_account_linking,
@@ -1183,6 +1199,7 @@ class AOAUTH_Admin {
             'enable_turnstile' => $is_enabled('enable_bot_protection') && $bot_protection_provider === 'turnstile' ? 1 : 0,
             'turnstile_site_key' => sanitize_text_field($settings['turnstile_site_key']),
             'turnstile_secret_key' => $turnstile_secret_key,
+            'turnstile_display_mode' => $turnstile_display_mode,
             'enable_recaptcha' => $is_enabled('enable_bot_protection') && $bot_protection_provider === 'recaptcha' ? 1 : 0,
             'recaptcha_site_key' => sanitize_text_field($settings['recaptcha_site_key']),
             'recaptcha_secret_key' => $recaptcha_secret_key,
@@ -1195,6 +1212,7 @@ class AOAUTH_Admin {
             'bot_overlay_enabled' => $is_enabled('bot_overlay_enabled'),
             'bot_overlay_message' => sanitize_text_field($settings['bot_overlay_message']),
             'bot_overlay_variant' => $overlay_variant,
+            'bot_overlay_opacity' => max(35, min(96, intval($settings['bot_overlay_opacity'] ?? $defaults['bot_overlay_opacity']))),
             'bot_overlay_branding_enabled' => $is_enabled('bot_overlay_branding_enabled'),
             'role_redirects' => $role_redirects,
         );
@@ -1621,6 +1639,53 @@ class AOAUTH_Admin {
         wp_send_json_success(array('message' => sprintf(__('Cleared %d bot verification record(s).', 'aoauth-client-sso'), $deleted)));
     }
 
+    public function ajax_clear_current_bot_verifications() {
+        check_ajax_referer('aoauth_clear_current_bot_verification', 'nonce');
+
+        if (!is_user_logged_in()) {
+            wp_send_json_error(array('message' => __('Please log in before clearing bot verification data.', 'aoauth-client-sso')));
+        }
+
+        $deleted = $this->delete_current_request_bot_verifications();
+        $this->logger->log('current_bot_verifications_cleared', array(
+            'deleted' => $deleted,
+            'ip_scope' => sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? '')
+        ), get_current_user_id(), null, 'info');
+
+        wp_send_json_success(array('message' => sprintf(__('Cleared %d temporary bot verification record(s) for your current session.', 'aoauth-client-sso'), $deleted)));
+    }
+
+    public function ajax_run_log_cleanup() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+
+        aoauth_core()->run_retention_cron();
+        $this->logger->log('log_cleanup_run_manually', array(
+            'retention_period' => get_option('aoauth_settings', array())['logs_retention_period'] ?? '30_days'
+        ), get_current_user_id(), null, 'info');
+
+        wp_send_json_success(array('message' => __('Log cleanup completed.', 'aoauth-client-sso')));
+    }
+
+    public function ajax_reschedule_log_cleanup() {
+        check_ajax_referer('aoauth_admin_nonce', 'nonce');
+
+        if (!current_user_can('manage_options')) {
+            wp_die(-1);
+        }
+
+        wp_clear_scheduled_hook('aoauth_retention_cron');
+        aoauth_core()->schedule_retention_cron();
+        $next_run = wp_next_scheduled('aoauth_retention_cron');
+
+        wp_send_json_success(array(
+            'message' => $next_run ? __('Log cleanup schedule refreshed.', 'aoauth-client-sso') : __('Log cleanup is not scheduled because activity logs are disabled.', 'aoauth-client-sso')
+        ));
+    }
+
     public function ajax_clear_linking_lockouts() {
         check_ajax_referer('aoauth_admin_nonce', 'nonce');
 
@@ -1742,6 +1807,34 @@ class AOAUTH_Admin {
 
             foreach ($timeout_names as $timeout_name) {
                 $transient_name = substr($timeout_name, strlen('_transient_timeout_'));
+                if (delete_transient($transient_name)) {
+                    $deleted++;
+                }
+            }
+        }
+
+        return $deleted;
+    }
+
+    private function delete_current_request_bot_verifications() {
+        global $wpdb;
+
+        $current_ip = sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? '');
+        if ($current_ip === '') {
+            return 0;
+        }
+
+        $deleted = 0;
+        $transient_like = $wpdb->esc_like('_transient_aoauth_bot_') . '%';
+        $option_names = $wpdb->get_col($wpdb->prepare(
+            "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+            $transient_like
+        ));
+
+        foreach ($option_names as $option_name) {
+            $transient_name = substr($option_name, strlen('_transient_'));
+            $verification_data = get_transient($transient_name);
+            if (is_array($verification_data) && isset($verification_data['ip']) && $verification_data['ip'] === $current_ip) {
                 if (delete_transient($transient_name)) {
                     $deleted++;
                 }

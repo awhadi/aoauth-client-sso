@@ -1,6 +1,8 @@
 <?php if (!defined('ABSPATH')) exit;
 $debug_enabled = aoauth_core()->get_debug()->is_enabled();
 $debug_constant = 'define("OAUTH-DEBUG", "enabled");';
+$next_cleanup = wp_next_scheduled('aoauth_retention_cron');
+$last_cleanup = get_option('aoauth_last_retention_run', '');
 ?>
 <div class="aoauth-settings-column">
     <form class="aoauth-settings-form">
@@ -30,6 +32,7 @@ $debug_constant = 'define("OAUTH-DEBUG", "enabled");';
                 <div class="aoauth-setting-row">
                     <div class="aoauth-setting-label">
                         <label for="logs_retention_period"><?php esc_html_e('Log Retention Period', 'aoauth-client-sso'); ?></label>
+                        <p class="aoauth-setting-help"><?php esc_html_e('Old records are removed by native WordPress cron, so this may not appear in Action Scheduler screens.', 'aoauth-client-sso'); ?></p>
                     </div>
                     <div class="aoauth-setting-control">
                         <select id="logs_retention_period" name="logs_retention_period" class="aoauth-form-control">
@@ -38,6 +41,22 @@ $debug_constant = 'define("OAUTH-DEBUG", "enabled");';
                             <?php endforeach; ?>
                         </select>
                     </div>
+                </div>
+
+                <div class="aoauth-cron-status">
+                    <div>
+                        <span><?php esc_html_e('Next Cleanup', 'aoauth-client-sso'); ?></span>
+                        <strong><?php echo $next_cleanup ? esc_html(date_i18n(get_option('date_format') . ' ' . get_option('time_format'), $next_cleanup)) : esc_html__('Not scheduled', 'aoauth-client-sso'); ?></strong>
+                    </div>
+                    <div>
+                        <span><?php esc_html_e('Last Cleanup', 'aoauth-client-sso'); ?></span>
+                        <strong><?php echo $last_cleanup ? esc_html($last_cleanup) : esc_html__('Not yet run', 'aoauth-client-sso'); ?></strong>
+                    </div>
+                </div>
+
+                <div class="aoauth-maintenance-actions">
+                    <button type="button" class="aoauth-admin-button aoauth-admin-button-secondary aoauth-maintenance-action" data-action="aoauth_run_log_cleanup" data-reload="1"><?php esc_html_e('Run Cleanup Now', 'aoauth-client-sso'); ?></button>
+                    <button type="button" class="aoauth-admin-button aoauth-admin-button-secondary aoauth-maintenance-action" data-action="aoauth_reschedule_log_cleanup" data-reload="1"><?php esc_html_e('Reschedule Cleanup', 'aoauth-client-sso'); ?></button>
                 </div>
 
                 <div class="aoauth-setting-row">
@@ -90,7 +109,7 @@ $debug_constant = 'define("OAUTH-DEBUG", "enabled");';
                 </div>
 
                 <div class="aoauth-maintenance-actions">
-                    <button type="button" class="aoauth-admin-button aoauth-admin-button-secondary aoauth-maintenance-action" data-action="aoauth_clear_bot_verifications"><?php esc_html_e('Clear Bot Verifications', 'aoauth-client-sso'); ?></button>
+                    <button type="button" class="aoauth-admin-button aoauth-admin-button-secondary aoauth-maintenance-action" data-action="aoauth_clear_bot_verifications"><?php esc_html_e('Clear All Bot Verification Tokens', 'aoauth-client-sso'); ?></button>
                     <button type="button" class="aoauth-admin-button aoauth-admin-button-secondary aoauth-maintenance-action" data-action="aoauth_clear_linking_lockouts"><?php esc_html_e('Clear Linking Lockouts', 'aoauth-client-sso'); ?></button>
                     <button type="button" class="aoauth-admin-button aoauth-admin-button-secondary aoauth-maintenance-action" data-action="aoauth_clear_oauth_temp_data"><?php esc_html_e('Clear Expired OAuth Temp Data', 'aoauth-client-sso'); ?></button>
                 </div>
@@ -141,6 +160,10 @@ $debug_constant = 'define("OAUTH-DEBUG", "enabled");';
             <div>
                 <code>[aoauth_unlink_account]</code>
                 <p><?php esc_html_e('Shows the logged-in user their connected SSO providers and lets them disconnect a provider after confirmation.', 'aoauth-client-sso'); ?></p>
+            </div>
+            <div>
+                <code>[aoauth_clear_bot_verification]</code>
+                <p><?php esc_html_e('Shows logged-in users a button to clear temporary bot verification records for their current session when verification gets stuck.', 'aoauth-client-sso'); ?></p>
             </div>
         </div>
     </div>
