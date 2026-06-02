@@ -39,8 +39,7 @@ class AOAUTH_Core {
         load_plugin_textdomain('aoauth-client-sso', false, dirname(AOAUTH_PLUGIN_BASENAME) . '/languages');
         
         add_action('login_enqueue_scripts', array($this, 'enqueue_login_assets'));
-        add_action('login_form', array($this, 'render_login_buttons_inside_form'));
-        add_action('login_footer', array($this, 'render_login_buttons_below_form'));
+        add_action('login_footer', array($this, 'render_login_buttons_for_selected_position'));
         
         add_action('wp_enqueue_scripts', array($this, 'enqueue_brand_badge'));
         add_action('wp_footer', array($this, 'render_brand_badge'));
@@ -325,6 +324,10 @@ class AOAUTH_Core {
         $bot_protection_provider = !empty($settings['bot_protection_provider']) ? sanitize_key($settings['bot_protection_provider']) : 'turnstile';
         $turnstile_enabled = $bot_protection_enabled && $bot_protection_provider === 'turnstile' && !empty($settings['turnstile_site_key']);
         $recaptcha_enabled = $bot_protection_enabled && $bot_protection_provider === 'recaptcha' && !empty($settings['recaptcha_site_key']);
+        $overlay_variant = sanitize_key($settings['bot_overlay_variant'] ?? 'spotlight');
+        if (!in_array($overlay_variant, array('spotlight', 'constellation', 'minimal'), true)) {
+            $overlay_variant = 'spotlight';
+        }
         
         if ($turnstile_enabled) {
             wp_enqueue_script(
@@ -368,7 +371,7 @@ class AOAUTH_Core {
                 'site_key' => $settings['turnstile_site_key'],
                 'overlay_enabled' => !empty($settings['bot_overlay_enabled']),
                 'overlay_message' => $settings['bot_overlay_message'] ?? 'Verifying secure sign-in...',
-                'overlay_variant' => $settings['bot_overlay_variant'] ?? 'spotlight',
+                'overlay_variant' => $overlay_variant,
                 'overlay_opacity' => intval($settings['bot_overlay_opacity'] ?? 86),
                 'overlay_theme' => $theme,
                 'overlay_branding_enabled' => !empty($settings['bot_overlay_branding_enabled']),
@@ -382,7 +385,7 @@ class AOAUTH_Core {
                 'score_threshold' => floatval($settings['recaptcha_score_threshold'] ?? 0.5),
                 'overlay_enabled' => !empty($settings['bot_overlay_enabled']),
                 'overlay_message' => $settings['bot_overlay_message'] ?? 'Verifying secure sign-in...',
-                'overlay_variant' => $settings['bot_overlay_variant'] ?? 'spotlight',
+                'overlay_variant' => $overlay_variant,
                 'overlay_opacity' => intval($settings['bot_overlay_opacity'] ?? 86),
                 'overlay_theme' => $theme,
                 'overlay_branding_enabled' => !empty($settings['bot_overlay_branding_enabled']),
@@ -403,21 +406,8 @@ class AOAUTH_Core {
         $this->debug->log_end('AOAUTH_Core::enqueue_login_assets');
     }
     
-    public function render_login_buttons_inside_form() {
+    public function render_login_buttons_for_selected_position() {
         $settings = array_merge(self::get_default_settings(), get_option('aoauth_settings', array()));
-        if (($settings['login_button_position'] ?? 'below_form') !== 'inside_form') {
-            return;
-        }
-
-        $this->render_login_buttons();
-    }
-
-    public function render_login_buttons_below_form() {
-        $settings = array_merge(self::get_default_settings(), get_option('aoauth_settings', array()));
-        if (($settings['login_button_position'] ?? 'below_form') !== 'below_form') {
-            return;
-        }
-
         $this->render_login_buttons();
     }
 
@@ -443,10 +433,16 @@ class AOAUTH_Core {
         }
         
         $theme = isset($settings['login_button_theme']) ? $settings['login_button_theme'] : 'modern';
-        $layout = isset($settings['login_button_layout']) ? $settings['login_button_layout'] : 'vertical';
+        $layout = isset($settings['login_button_layout']) ? sanitize_key($settings['login_button_layout']) : 'vertical';
+        if ($layout === 'horizontal') {
+            $layout = 'wrap-centered';
+        } elseif ($layout === 'grid') {
+            $layout = 'two-column';
+        }
+        $position = ($settings['login_button_position'] ?? 'below_form') === 'inside_form' ? 'inside-form' : 'below-form';
         $redirect_to = isset($_REQUEST['redirect_to']) ? sanitize_url($_REQUEST['redirect_to']) : admin_url();
         
-        echo '<div class="aoauth-login-buttons aoauth-theme-' . esc_attr($theme) . ' aoauth-layout-' . esc_attr($layout) . '">';
+        echo '<div class="aoauth-login-buttons aoauth-theme-' . esc_attr($theme) . ' aoauth-layout-' . esc_attr($layout) . ' aoauth-position-' . esc_attr($position) . '">';
         echo '<div class="aoauth-login-divider"><span>' . esc_html__('Or login with', 'aoauth-client-sso') . '</span></div>';
         echo '<div class="aoauth-providers-grid">';
         

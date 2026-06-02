@@ -85,7 +85,7 @@ $bot_provider = !empty($settings['bot_protection_provider']) ? $settings['bot_pr
                 <div class="aoauth-setting-row turnstile-fields <?php echo $bot_provider !== 'turnstile' ? 'aoauth-is-hidden' : ''; ?>">
                     <div class="aoauth-setting-label">
                         <label for="turnstile_display_mode"><?php esc_html_e('Turnstile Display Mode', 'aoauth-client-sso'); ?></label>
-                        <p class="aoauth-setting-help"><?php esc_html_e('Use Managed Visible in Overlay when invisible verification times out for visitors.', 'aoauth-client-sso'); ?></p>
+                        <p class="aoauth-setting-help"><?php esc_html_e('The overlay is the screen cover. This controls where the Cloudflare widget itself appears inside that overlay. Use Managed Visible in Overlay when invisible verification times out for visitors.', 'aoauth-client-sso'); ?></p>
                     </div>
                     <div class="aoauth-setting-control">
                         <select id="turnstile_display_mode" name="turnstile_display_mode" class="aoauth-form-control">

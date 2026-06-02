@@ -1,8 +1,17 @@
 <?php if (!defined('ABSPATH')) exit;
 $current_theme = $settings['login_button_theme'] ?? 'modern';
 $current_overlay_variant = $settings['bot_overlay_variant'] ?? 'spotlight';
-if (!in_array($current_overlay_variant, array('spotlight', 'hyperspace', 'constellation', 'signal-grid', 'minimal'), true)) {
+if (!in_array($current_overlay_variant, array('spotlight', 'constellation', 'minimal'), true)) {
     $current_overlay_variant = 'spotlight';
+}
+$current_layout = $settings['login_button_layout'] ?? 'vertical';
+if ($current_layout === 'horizontal') {
+    $current_layout = 'wrap-centered';
+} elseif ($current_layout === 'grid') {
+    $current_layout = 'two-column';
+}
+if (!in_array($current_layout, array('vertical', 'wrap-centered', 'two-column', 'compact'), true)) {
+    $current_layout = 'vertical';
 }
 ?>
 <div class="aoauth-settings-column">
@@ -89,10 +98,10 @@ if (!in_array($current_overlay_variant, array('spotlight', 'hyperspace', 'conste
                             </div>
                             <div class="aoauth-setting-control">
                                 <select id="login_button_layout" name="login_button_layout" class="aoauth-form-control">
-                                    <option value="vertical" <?php selected($settings['login_button_layout'] ?? 'vertical', 'vertical'); ?>><?php esc_html_e('Vertical', 'aoauth-client-sso'); ?></option>
-                                    <option value="horizontal" <?php selected($settings['login_button_layout'] ?? 'vertical', 'horizontal'); ?>><?php esc_html_e('Horizontal', 'aoauth-client-sso'); ?></option>
-                                    <option value="wrap-centered" <?php selected($settings['login_button_layout'] ?? 'vertical', 'wrap-centered'); ?>><?php esc_html_e('Wrap Centered', 'aoauth-client-sso'); ?></option>
-                                    <option value="grid" <?php selected($settings['login_button_layout'] ?? 'vertical', 'grid'); ?>><?php esc_html_e('Grid', 'aoauth-client-sso'); ?></option>
+                                    <option value="vertical" <?php selected($current_layout, 'vertical'); ?>><?php esc_html_e('Full Width Stack', 'aoauth-client-sso'); ?></option>
+                                    <option value="wrap-centered" <?php selected($current_layout, 'wrap-centered'); ?>><?php esc_html_e('Wrap Centered', 'aoauth-client-sso'); ?></option>
+                                    <option value="two-column" <?php selected($current_layout, 'two-column'); ?>><?php esc_html_e('Two Columns', 'aoauth-client-sso'); ?></option>
+                                    <option value="compact" <?php selected($current_layout, 'compact'); ?>><?php esc_html_e('Compact Row', 'aoauth-client-sso'); ?></option>
                                 </select>
                             </div>
                         </div>
@@ -141,9 +150,7 @@ if (!in_array($current_overlay_variant, array('spotlight', 'hyperspace', 'conste
                             <div class="aoauth-setting-control">
                                 <select id="bot_overlay_variant" name="bot_overlay_variant" class="aoauth-form-control">
                                     <option value="spotlight" <?php selected($current_overlay_variant, 'spotlight'); ?>><?php esc_html_e('Spotlight', 'aoauth-client-sso'); ?></option>
-                                    <option value="hyperspace" <?php selected($current_overlay_variant, 'hyperspace'); ?>><?php esc_html_e('Hyperspace', 'aoauth-client-sso'); ?></option>
                                     <option value="constellation" <?php selected($current_overlay_variant, 'constellation'); ?>><?php esc_html_e('Constellation', 'aoauth-client-sso'); ?></option>
-                                    <option value="signal-grid" <?php selected($current_overlay_variant, 'signal-grid'); ?>><?php esc_html_e('Signal Grid', 'aoauth-client-sso'); ?></option>
                                     <option value="minimal" <?php selected($current_overlay_variant, 'minimal'); ?>><?php esc_html_e('Minimal', 'aoauth-client-sso'); ?></option>
                                 </select>
                             </div>

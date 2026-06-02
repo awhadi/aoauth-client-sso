@@ -1229,6 +1229,11 @@ class AOAUTH_SSO_Handler {
         $linked_providers = AOAUTH_Core::get_user_linked_providers(get_current_user_id());
         $theme = isset($settings['login_button_theme']) ? sanitize_key($settings['login_button_theme']) : 'modern';
         $layout = isset($settings['login_button_layout']) ? sanitize_key($settings['login_button_layout']) : 'vertical';
+        if ($layout === 'horizontal') {
+            $layout = 'wrap-centered';
+        } elseif ($layout === 'grid') {
+            $layout = 'two-column';
+        }
 
         ob_start();
         ?>

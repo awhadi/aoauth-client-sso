@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.4.1] - 2026-06-02
+
+### Changed
+- Adjusted Inside Login Form placement so SSO buttons appear inside the WordPress login form after the Login button.
+- Kept Below Login Form as a separate outside-form placement option.
+- Reduced Bot Verification Overlay choices to Spotlight, Constellation, and Minimal.
+- Removed the moving line effect from Constellation while keeping the star animation.
+- Simplified login button layouts by replacing duplicate Horizontal/Grid choices with Full Width Stack, Wrap Centered, Two Columns, and Compact Row.
+- Updated the overlay preview so Spotlight is visible and overlay colors follow the selected theme.
+- Clarified Turnstile Display Mode and Full Login Ban help text.
+
+### Fixed
+- Fixed Full Login Ban application after repeated failed account-linking password checks by reading the configured ban duration before setting the ban transient.
+- Normalized legacy saved overlay/layout values to current supported options.
+
 ## [2.4.0] - 2026-06-02
 
 ### Added

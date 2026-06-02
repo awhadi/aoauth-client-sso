@@ -119,7 +119,7 @@ $role_redirects = isset($settings['role_redirects']) && is_array($settings['role
                 <div class="aoauth-setting-row">
                     <div class="aoauth-setting-label">
                         <label for="linking_login_ban_minutes"><?php esc_html_e('Full Login Ban', 'aoauth-client-sso'); ?></label>
-                        <p class="aoauth-setting-help"><?php esc_html_e('Blocks SSO and WordPress password login for this user during the ban period.', 'aoauth-client-sso'); ?></p>
+                        <p class="aoauth-setting-help"><?php esc_html_e('After repeated failed account-linking password checks, block both SSO and WordPress password login for this user for the selected number of minutes. Use 0 to disable the full login ban.', 'aoauth-client-sso'); ?></p>
                     </div>
                     <div class="aoauth-setting-control">
                         <input type="number" id="linking_login_ban_minutes" name="linking_login_ban_minutes" class="aoauth-form-control aoauth-number-input" value="<?php echo esc_attr($settings['linking_login_ban_minutes'] ?? 15); ?>" min="0" max="1440">

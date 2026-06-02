@@ -238,6 +238,7 @@ class AOAUTH_Security {
         $max_attempts = intval($settings['linking_max_attempts'] ?? 5);
         $lockout_minutes = intval($settings['linking_lockout_minutes'] ?? 15);
         $login_ban_minutes = intval($settings['linking_login_ban_minutes'] ?? 15);
+        $login_ban_minutes = intval($settings['linking_login_ban_minutes'] ?? 15);
         
         $transient_key = 'aoauth_linking_lock_' . md5($user_id . '_' . $linking_key);
         $lockout_until = get_transient($transient_key);

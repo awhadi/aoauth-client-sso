@@ -1152,7 +1152,12 @@ class AOAUTH_Admin {
         }
 
         $login_button_layout = sanitize_key($settings['login_button_layout'] ?? 'vertical');
-        if (!in_array($login_button_layout, array('vertical', 'horizontal', 'grid', 'wrap-centered'), true)) {
+        if ($login_button_layout === 'horizontal') {
+            $login_button_layout = 'wrap-centered';
+        } elseif ($login_button_layout === 'grid') {
+            $login_button_layout = 'two-column';
+        }
+        if (!in_array($login_button_layout, array('vertical', 'wrap-centered', 'two-column', 'compact'), true)) {
             $login_button_layout = $defaults['login_button_layout'];
         }
 
@@ -1162,7 +1167,7 @@ class AOAUTH_Admin {
         }
 
         $overlay_variant = sanitize_key($settings['bot_overlay_variant'] ?? 'spotlight');
-        if (!in_array($overlay_variant, array('spotlight', 'minimal', 'hyperspace', 'constellation', 'signal-grid'), true)) {
+        if (!in_array($overlay_variant, array('spotlight', 'minimal', 'constellation'), true)) {
             $overlay_variant = 'spotlight';
         }
 

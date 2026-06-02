@@ -58,6 +58,22 @@
             }
         });
     }
+
+    function placeInsideLoginForm() {
+        var $insideBlock = $('.aoauth-login-buttons.aoauth-position-inside-form').first();
+        var $loginForm = $('#loginform');
+
+        if (!$insideBlock.length || !$loginForm.length || $insideBlock.closest('#loginform').length) {
+            return;
+        }
+
+        var $submitRow = $loginForm.find('.submit').last();
+        if ($submitRow.length) {
+            $insideBlock.insertAfter($submitRow);
+        } else {
+            $insideBlock.appendTo($loginForm);
+        }
+    }
     
     function handleSSOClick(e) {
         e.preventDefault();
@@ -519,6 +535,7 @@
     }
     
     $(document).ready(function() {
+        placeInsideLoginForm();
         $(document).off('click.aoauth').on('click.aoauth', '.aoauth-button', handleSSOClick);
     });
 })(jQuery);

@@ -1,9 +1,9 @@
-Version: 2.4.0
+Version: 2.4.1
 Date: 2026-06-02
 Author: Awhadi / Codex
 
 Summary:
-Sign-In Experience, bot verification, tools maintenance, shortcodes, and Users table SSO management were optimized without changing the core OAuth provider flow. SSO buttons now default below the WordPress login form, overlay controls are cleaner and more professional, Turnstile can be rendered visibly inside the overlay, log cleanup status is visible in Tools, and users can clear their own temporary bot verification records when troubleshooting.
+This patch refines the v2.4.0 sign-in and bot-verification UX without changing provider configuration or OAuth callback behavior. Inside Login Form now places SSO buttons after the WordPress Login button, overlay choices are narrowed to Spotlight, Constellation, and Minimal, duplicate layout choices are replaced with clearer useful layouts, overlay previews inherit theme colors, and Full Login Ban now reads its configured duration before setting a ban.
 
 Files changed:
 - aoauth-client-sso.php
@@ -11,40 +11,30 @@ Files changed:
 - review.txt
 - admin/class-admin.php
 - admin/css/admin-style.css
-- admin/js/admin-dashboard.js
 - admin/views/security-settings.php
 - admin/views/sign-in-experience-settings.php
-- admin/views/tools-settings.php
 - includes/class-core.php
+- includes/class-security.php
 - includes/class-sso-handler.php
-- includes/class-user-manager.php
 - public/css/login-single-sign-on.css
-- public/css/themes/icon-aurora.css
-- public/css/themes/icon-neon.css
-- public/css/themes/icon-only.css
-- public/css/themes/icon-sunset.css
-- public/css/themes/outline.css
-- public/js/account-unlink.js
 - public/js/login-single-sign-on.js
 
 Security/UX notes:
-- SSO buttons default below the WordPress login form to reduce accidental provider clicks after password entry.
-- Bot verification clearing for users is scoped to the current request/IP data and requires a logged-in user nonce.
-- Global bot verification clearing remains administrator-only.
-- Managed Turnstile mode renders inside the overlay so timeout/retry states are clearer for visitors.
-- Users table SSO actions are merged into the provider column while keeping the existing unlink nonce and administrator safeguards.
-- Inline image fallback handlers were removed and replaced with external JavaScript handlers.
+- Inside Login Form now means username/password, Remember Me, Login button, then "Or login with" and SSO buttons.
+- Below Login Form remains available for sites that prefer SSO outside the WordPress form.
+- Only Spotlight, Constellation, and Minimal are selectable for bot verification overlays.
+- Full Login Ban is now applied using the configured duration after repeated failed account-linking password checks.
+- Turnstile Display Mode help text explains that the overlay is the screen cover while the mode controls how the Cloudflare widget appears inside it.
 
 Performance notes:
-- Log cleanup remains native WP-Cron; Tools now shows next/last cleanup status and manual cleanup controls.
-- No new frontend JavaScript or CSS bundles were added.
-- Theme icon tinting is CSS-only.
-- Existing login, account linking, and unlink scripts are reused for new UI behavior.
+- No new frontend bundles were added.
+- Existing login CSS/JS files were reused for placement and overlay behavior.
+- Legacy saved layout/overlay values are normalized without extra database work.
 
 Rollback plan:
-Restore v2.3.0 if needed. If Turnstile managed mode causes provider-specific issues, switch Turnstile Display Mode back to Invisible before rolling back.
+Restore v2.4.0 if needed. If a site depends on the old selectable overlay styles, save the Sign-In Experience settings again after rollback.
 
 Verification:
 - Full plugin PHP syntax check passed.
-- JavaScript syntax checks passed for admin/js/admin-dashboard.js, public/js/login-single-sign-on.js, and public/js/account-unlink.js.
+- JavaScript syntax checks passed for admin/js/admin-dashboard.js and public/js/login-single-sign-on.js.
 - `git diff --check` passed.
