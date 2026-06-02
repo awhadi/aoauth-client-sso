@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.4.2] - 2026-06-02
+
+### Changed
+- Improved Inside Login Form SSO spacing so the divider and provider buttons sit cleanly after the WordPress Login button.
+- Applied the configured Bot Verification Overlay opacity consistently to supported selected overlay styles.
+
+### Fixed
+- Fixed the account-linking lockout path so the configured full-login ban duration is available when repeated password confirmation failures trigger a lockout.
+- Removed a stale implementation comment from the plugin bootstrap.
+
 ## [2.4.1] - 2026-06-02
 
 ### Changed

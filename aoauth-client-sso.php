@@ -3,7 +3,7 @@
  * Plugin Name: aOAUTH Client SSO
  * Plugin URI: https://awhadi.online
  * Description: Professional OAuth 2.0 and OpenID Connect Single Sign-On client for WordPress. Supports multiple providers with secure authentication.
- * Version: 2.4.1
+ * Version: 2.4.2
  * Author: Awhadi
  * Author URI: https://awhadi.online
  * License: GPL v2 or later
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('AOAUTH_VERSION', '2.4.1');
+define('AOAUTH_VERSION', '2.4.2');
 define('AOAUTH_PLUGIN_FILE', __FILE__);
 define('AOAUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AOAUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -28,7 +28,7 @@ define('AOAUTH_MINIMUM_PHP_VERSION', '7.4');
 require_once AOAUTH_PLUGIN_DIR . 'includes/class-core.php';
 require_once AOAUTH_PLUGIN_DIR . 'includes/class-security.php';
 require_once AOAUTH_PLUGIN_DIR . 'includes/class-logger.php';
-require_once AOAUTH_PLUGIN_DIR . 'includes/class-debug.php';  // ADD THIS LINE
+require_once AOAUTH_PLUGIN_DIR . 'includes/class-debug.php';
 require_once AOAUTH_PLUGIN_DIR . 'includes/class-oauth-client.php';
 require_once AOAUTH_PLUGIN_DIR . 'includes/class-sso-handler.php';
 require_once AOAUTH_PLUGIN_DIR . 'includes/class-user-mapping.php';

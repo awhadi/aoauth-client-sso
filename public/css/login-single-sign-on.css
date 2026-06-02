@@ -39,6 +39,28 @@
     background: #dcdcde;
 }
 
+#loginform .aoauth-login-buttons.aoauth-position-inside-form {
+    clear: both;
+    margin: 18px 0 0;
+}
+
+#loginform .aoauth-position-inside-form .aoauth-login-divider {
+    margin: 18px 0 14px;
+}
+
+#loginform .aoauth-position-inside-form .aoauth-login-divider span {
+    background: #fff;
+}
+
+#loginform .aoauth-position-inside-form .aoauth-providers-grid {
+    margin-top: 0;
+}
+
+#loginform .aoauth-position-inside-form .aoauth-button {
+    box-sizing: border-box;
+    width: 100%;
+}
+
 .aoauth-providers-grid {
     display: flex;
     flex-direction: column;
@@ -580,7 +602,7 @@
     height: 100%;
     border-radius: 0;
     transform: translate(-50%, -50%) scale(1);
-    opacity: 0.72;
+    opacity: var(--aoauth-overlay-opacity);
     animation: none;
 }
 
@@ -891,7 +913,7 @@
     }
     100% {
         transform: translate(-50%, -50%) scale(34);
-        opacity: 1;
+        opacity: var(--aoauth-overlay-opacity);
     }
 }
 
