@@ -1,31 +1,27 @@
-Version: 2.4.2
+Version: 2.4.3
 Date: 2026-06-02
 Author: Awhadi / Codex
 
 Summary:
-This patch tightens the WordPress login SSO layout, fixes an account-linking lockout variable bug, and makes configured bot verification overlay opacity apply consistently to the supported selected overlay styles. Provider configuration, OAuth callbacks, and bot verification token validation behavior are unchanged.
+This patch prevents the Inside Login Form SSO block from appearing on non-login WordPress auth screens such as Lost Password/Forgot Password. The SSO divider and provider buttons still appear on the primary WordPress login form and the OAuth flow is unchanged.
 
 Files changed:
 - aoauth-client-sso.php
 - CHANGELOG.md
 - review.txt
-- includes/class-security.php
-- public/css/login-single-sign-on.css
+- includes/class-core.php
 
 Security/UX notes:
-- Inside Login Form now means username/password, Remember Me, Login button, then "Or login with" and SSO buttons.
-- Full Login Ban now has the configured duration available when repeated failed account-linking password checks trigger a lockout.
-- Overlay opacity now controls Spotlight animation end state and Minimal overlay opacity instead of being overwritten by fixed CSS values.
+- Inside Login Form now means primary login screen only; Lost Password no longer shows "Or login with" or SSO buttons for that position.
+- Below Login Form behavior is unchanged.
 
 Performance notes:
 - No new frontend bundles were added.
-- Existing public login CSS was reused for layout and overlay changes.
-- The PHP fix adds no database work or new runtime dependencies.
+- Passing the already-loaded settings into the render method avoids one duplicate settings read on login-footer rendering.
 
 Rollback plan:
-Restore v2.4.1 if needed. Re-save Security and Sign-In Experience settings only if the site needs to reapply prior visual preferences.
+Restore v2.4.2 if needed. Re-save Sign-In Experience settings only if the site needs to reapply prior visual preferences.
 
 Verification:
 - Full plugin PHP syntax check passed.
-- JavaScript syntax check passed for public/js/login-single-sign-on.js.
 - `git diff --check` passed.

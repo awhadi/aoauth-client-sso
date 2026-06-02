@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.4.3] - 2026-06-02
+
+### Fixed
+- Prevented Inside Login Form SSO buttons and the "Or login with" divider from appearing on non-login WordPress auth screens such as Lost Password.
+
 ## [2.4.2] - 2026-06-02
 
 ### Changed

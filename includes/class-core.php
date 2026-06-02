@@ -408,13 +408,31 @@ class AOAUTH_Core {
     
     public function render_login_buttons_for_selected_position() {
         $settings = array_merge(self::get_default_settings(), get_option('aoauth_settings', array()));
-        $this->render_login_buttons();
+        if (($settings['login_button_position'] ?? 'below_form') === 'inside_form' && !$this->is_primary_login_screen()) {
+            $this->debug->debug('Inside-form login buttons skipped outside primary login screen');
+            return;
+        }
+
+        $this->render_login_buttons($settings);
     }
 
-    public function render_login_buttons() {
+    private function is_primary_login_screen() {
+        global $action;
+
+        $login_action = isset($action) ? sanitize_key($action) : '';
+        if ($login_action === '' && isset($_REQUEST['action'])) {
+            $login_action = sanitize_key(wp_unslash($_REQUEST['action']));
+        }
+
+        return $login_action === '' || $login_action === 'login';
+    }
+
+    public function render_login_buttons($settings = null) {
         $this->debug->log_start('AOAUTH_Core::render_login_buttons');
         
-        $settings = array_merge(self::get_default_settings(), get_option('aoauth_settings', array()));
+        $settings = is_array($settings)
+            ? array_merge(self::get_default_settings(), $settings)
+            : array_merge(self::get_default_settings(), get_option('aoauth_settings', array()));
         if (empty($settings['enable_login_buttons'])) {
             $this->debug->debug('Login buttons disabled, skipping render');
             $this->debug->log_end('AOAUTH_Core::render_login_buttons');
