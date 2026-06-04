@@ -4,7 +4,7 @@ Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 2.4.6
+Stable tag: 2.4.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,26 +16,15 @@ aOAUTH Client SSO provides OAuth 2.0 and OpenID Connect login support for WordPr
 
 == Developer Summary ==
 
-Version: 2.4.6
+Version: 2.4.7
 Date: 2026-06-04
 Author: Awhadi
 
 Summary:
-This release separates theme styling from layout behavior. Themes keep responsibility for button shape, color, login overlay color, and account-linking styling, while layout settings control only arrangement. Wrap Centered now works for all current and future themes as a centered wrapping block, Compact Row wraps instead of overlapping when many providers are enabled, and additional front-end/admin JavaScript labels and helper states are localized.
+This release completes the shipped gettext catalogs for German, Dari (Afghanistan), French, Russian, Turkish, Chinese, and Japanese. Admin tabs, settings labels, helper text, front-end messages, and JavaScript strings now have populated translations in the bundled `.po` files and regenerated `.mo` files.
 
 Files changed:
 - aoauth-client-sso.php
-- admin/class-admin.php
-- admin/css/admin-style.css
-- admin/js/admin-dashboard.js
-- includes/class-core.php
-- public/css/login-single-sign-on.css
-- public/css/themes/icon-only.css
-- public/css/themes/icon-aurora.css
-- public/css/themes/icon-sunset.css
-- public/css/themes/icon-neon.css
-- public/js/login-single-sign-on.js
-- languages/aoauth-client-sso.pot
 - languages/aoauth-client-sso-de_DE.po
 - languages/aoauth-client-sso-de_DE.mo
 - languages/aoauth-client-sso-fa_AF.po
@@ -54,15 +43,17 @@ Files changed:
 - readme.txt
 
 Security/UX notes:
-- Full Width Stack and Two Columns intentionally stretch buttons because those layout modes require full column width.
-- Wrap Centered and Compact Row preserve theme-defined button dimensions and only control wrapping/alignment.
-- Compact Row now wraps onto additional rows when provider count exceeds available width, avoiding overlap.
-- The plugin loads the aoauth-client-sso text domain from /languages, and the gettext template/compiled locale files were regenerated.
+- This release changes localization resources only and does not change authentication, debug logging, provider configuration, login layout, or theme behavior.
+- The plugin loads the aoauth-client-sso text domain from /languages, and every shipped locale was compiled after translation updates.
 
 Rollback plan:
-Restore version 2.4.5 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. If layout behavior needs immediate rollback, restore public/css/login-single-sign-on.css and admin/css/admin-style.css from the 2.4.5 tag.
+Restore version 2.4.6 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. If only localization needs rollback, restore the files in languages/ from the 2.4.6 tag.
 
 == Changelog ==
+
+= 2.4.7 =
+* Completed bundled translations for German, Dari (Afghanistan), French, Russian, Turkish, Chinese, and Japanese.
+* Regenerated compiled gettext files for all supported locales.
 
 = 2.4.6 =
 * Made login layout rules theme-agnostic.

@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.4.7] - 2026-06-04
+
+### Fixed
+- Completed shipped gettext catalogs for German, Dari (Afghanistan), French, Russian, Turkish, Chinese, and Japanese so admin tabs, settings labels, helper text, and JavaScript messages no longer fall back to empty translations.
+- Regenerated compiled `.mo` files for every supported locale from the current gettext template.
+
 ## [2.4.6] - 2026-06-04
 
 ### Changed
