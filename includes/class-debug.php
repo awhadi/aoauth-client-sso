@@ -64,7 +64,7 @@ class AOAUTH_Debug {
         
         $htaccess_file = $this->log_dir . '.htaccess';
         if (!file_exists($htaccess_file)) {
-            $htaccess_content = "Order Deny,Allow\nDeny from all\n";
+            $htaccess_content = "<IfModule mod_authz_core.c>\nRequire all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\nOrder Deny,Allow\nDeny from all\n</IfModule>\n<FilesMatch \"\\.(log|txt|json)$\">\nRequire all denied\n</FilesMatch>\n";
             file_put_contents($htaccess_file, $htaccess_content);
         }
         

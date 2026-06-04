@@ -289,11 +289,23 @@
         $('.aoauth-settings-form').on('submit', function(e) {
             e.preventDefault();
             
-            var formData = $(this).serialize();
+            var $form = $(this);
+            var $debugToggle = $form.find('#aoauth-deep-debug-toggle');
+            var formData = $form.serialize();
             formData += '&action=aoauth_save_settings&nonce=' + aoauth_admin.nonce;
             
             $.post(aoauth_admin.ajaxurl, formData, function(response) {
                 if (response.success) {
+                    if ($debugToggle.length && hasDeepDebugChange($debugToggle)) {
+                        saveDeepDebugSetting($debugToggle, function() {
+                            aoauthShowToast(response.data.message, 'success');
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1500);
+                        });
+                        return;
+                    }
+
                     aoauthShowToast(response.data.message, 'success');
                     setTimeout(function() {
                         location.reload();
@@ -604,29 +616,29 @@
             });
         });
 
-        $('.aoauth-clear-current-bot-verification').on('click', function() {
-            var $button = $(this);
-            var originalText = $button.text();
+        function hasDeepDebugChange($toggle) {
+            return ($toggle.is(':checked') ? '1' : '0') !== String($toggle.data('current-state'));
+        }
 
-            $button.prop('disabled', true).text('Working...');
-            $.post(aoauth_admin.ajaxurl, {
-                action: 'aoauth_clear_current_bot_verifications',
-                nonce: $button.data('nonce')
-            }, function(response) {
-                if (response.success) {
-                    aoauthShowToast(response.data.message, 'success');
-                } else {
-                    aoauthShowToast(response.data.message || 'Could not clear bot verification data.', 'error');
-                }
-            }).fail(function() {
-                aoauthShowToast('Could not clear bot verification data.', 'error');
-            }).always(function() {
-                $button.prop('disabled', false).text(originalText);
-            });
-        });
+        function updateDeepDebugPendingState($toggle) {
+            var enabled = $toggle.is(':checked') ? 1 : 0;
+            var $status = $('#aoauth-deep-debug-status');
 
-        $('#aoauth-deep-debug-toggle').on('change', function() {
-            var $toggle = $(this);
+            if (!hasDeepDebugChange($toggle)) {
+                $status
+                    .removeClass('aoauth-status-success aoauth-status-info aoauth-status-warning')
+                    .addClass(enabled ? 'aoauth-status-success' : 'aoauth-status-info')
+                    .text(enabled ? 'Enabled' : 'Off');
+                return;
+            }
+
+            $status
+                .removeClass('aoauth-status-success aoauth-status-info')
+                .addClass('aoauth-status-warning')
+                .text(enabled ? 'Enable on save' : 'Disable on save');
+        }
+
+        function saveDeepDebugSetting($toggle, done) {
             var enabled = $toggle.is(':checked') ? 1 : 0;
             var $status = $('#aoauth-deep-debug-status');
 
@@ -638,20 +650,30 @@
             }, function(response) {
                 if (response.success) {
                     $status
-                        .removeClass('aoauth-status-success aoauth-status-info')
+                        .removeClass('aoauth-status-success aoauth-status-info aoauth-status-warning')
                         .addClass(enabled ? 'aoauth-status-success' : 'aoauth-status-info')
                         .text(enabled ? 'Enabled' : 'Off');
+                    $toggle.data('current-state', enabled ? '1' : '0');
                     aoauthShowToast(response.data.message, 'success');
+                    if (typeof done === 'function') {
+                        done();
+                    }
                 } else {
                     $toggle.prop('checked', !enabled);
+                    updateDeepDebugPendingState($toggle);
                     aoauthShowToast((response.data && response.data.message) || 'Could not update wp-config.php.', 'error');
                 }
             }).fail(function() {
                 $toggle.prop('checked', !enabled);
+                updateDeepDebugPendingState($toggle);
                 aoauthShowToast('Could not update wp-config.php.', 'error');
             }).always(function() {
                 $toggle.prop('disabled', false);
             });
+        }
+
+        $('#aoauth-deep-debug-toggle').on('change', function() {
+            updateDeepDebugPendingState($(this));
         });
         
         // ============================================
@@ -789,6 +811,8 @@
         // ============================================
         function updateLinkingPreview() {
             var selectedTheme = $('input[name="login_button_theme"]:checked').val() || 'modern';
+            var selectedLayout = $('#login_button_layout').val() || 'vertical';
+            var selectedPosition = $('#login_button_position').val() || 'below_form';
             var title = $('#linking_page_title').val() || 'Link Your Account';
             var overlayVariant = $('#bot_overlay_variant').val() || 'spotlight';
             var showBranding = $('#bot_overlay_branding_enabled').is(':checked');
@@ -797,6 +821,8 @@
 
             $previewWrap
                 .attr('data-preview-theme', selectedTheme)
+                .attr('data-preview-layout', selectedLayout)
+                .attr('data-preview-position', selectedPosition)
                 .attr('data-overlay-variant', overlayVariant)
                 .attr('data-overlay-opacity', overlayOpacity)
                 .toggleClass('aoauth-overlay-preview-branding-hidden', !showBranding);
@@ -814,7 +840,7 @@
             updateLinkingPreview();
         });
 
-        $('#linking_page_title, #bot_overlay_variant, #bot_overlay_branding_enabled, #bot_overlay_opacity').on('input change', updateLinkingPreview);
+        $('#login_button_layout, #login_button_position, #linking_page_title, #bot_overlay_variant, #bot_overlay_branding_enabled, #bot_overlay_opacity').on('input change', updateLinkingPreview);
         updateLinkingPreview();
     });
 })(jQuery);

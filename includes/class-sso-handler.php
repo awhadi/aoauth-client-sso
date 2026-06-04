@@ -26,7 +26,6 @@ class AOAUTH_SSO_Handler {
         add_action('user_register', array($this, 'user_register_handler'));
         $this->register_unlink_shortcode();
         $this->register_link_shortcode();
-        $this->register_clear_bot_verification_shortcode();
         
         $this->debug->info('SSO Handler initialized');
         $this->debug->log_end('AOAUTH_SSO_Handler::init');
@@ -1200,11 +1199,6 @@ class AOAUTH_SSO_Handler {
         $this->debug->debug('Link shortcode registered');
     }
 
-    public function register_clear_bot_verification_shortcode() {
-        add_shortcode('aoauth_clear_bot_verification', array($this, 'render_clear_bot_verification_shortcode'));
-        $this->debug->debug('Clear bot verification shortcode registered');
-    }
-
     public function render_link_shortcode($atts) {
         if (!is_user_logged_in()) {
             return '<div class="aoauth-frontend-unlink"><p>' . esc_html__('Please log in to link an SSO provider.', 'aoauth-client-sso') . '</p></div>';
@@ -1291,8 +1285,6 @@ class AOAUTH_SSO_Handler {
                 'unlink_error' => __('Error unlinking SSO account', 'aoauth-client-sso'),
                 'no_provider' => __('No SSO provider linked', 'aoauth-client-sso'),
                 'working' => __('Working...', 'aoauth-client-sso'),
-                'clear_bot_success' => __('Bot verification data cleared.', 'aoauth-client-sso'),
-                'clear_bot_error' => __('Could not clear bot verification data.', 'aoauth-client-sso'),
             )
         ));
         
@@ -1340,37 +1332,4 @@ class AOAUTH_SSO_Handler {
         return ob_get_clean();
     }
 
-    public function render_clear_bot_verification_shortcode($atts) {
-        if (!is_user_logged_in()) {
-            return '<div class="aoauth-frontend-tool"><p>' . esc_html__('Please log in to clear bot verification data.', 'aoauth-client-sso') . '</p></div>';
-        }
-
-        wp_enqueue_style('aoauth-account-unlink', AOAUTH_PLUGIN_URL . 'public/css/login-single-sign-on.css', array(), AOAUTH_VERSION);
-        wp_enqueue_script('aoauth-account-unlink', AOAUTH_PLUGIN_URL . 'public/js/account-unlink.js', array('jquery'), AOAUTH_VERSION, true);
-        wp_localize_script('aoauth-account-unlink', 'aoauth_account_unlink', array(
-            'ajaxurl' => admin_url('admin-ajax.php'),
-            'translations' => array(
-                'confirm_unlink' => __('Are you sure you want to disconnect your SSO account?', 'aoauth-client-sso'),
-                'unlink_success' => __('SSO account unlinked successfully', 'aoauth-client-sso'),
-                'unlink_error' => __('Error unlinking SSO account', 'aoauth-client-sso'),
-                'no_provider' => __('No SSO provider linked', 'aoauth-client-sso'),
-                'working' => __('Working...', 'aoauth-client-sso'),
-                'clear_bot_success' => __('Bot verification data cleared.', 'aoauth-client-sso'),
-                'clear_bot_error' => __('Could not clear bot verification data.', 'aoauth-client-sso'),
-            )
-        ));
-
-        ob_start();
-        ?>
-        <div class="aoauth-frontend-tool aoauth-frontend-unlink">
-            <p><?php esc_html_e('Clear temporary bot verification records for your current browser session if verification gets stuck.', 'aoauth-client-sso'); ?></p>
-            <button type="button"
-                    class="aoauth-admin-button aoauth-admin-button-secondary aoauth-clear-bot-verification-btn"
-                    data-nonce="<?php echo esc_attr(wp_create_nonce('aoauth_clear_current_bot_verification')); ?>">
-                <?php esc_html_e('Clear My Bot Verification', 'aoauth-client-sso'); ?>
-            </button>
-        </div>
-        <?php
-        return ob_get_clean();
-    }
 }

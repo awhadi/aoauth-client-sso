@@ -29,7 +29,6 @@ class AOAUTH_Admin {
         add_action('wp_ajax_aoauth_preview_theme', array($this, 'ajax_preview_theme'));
         add_action('wp_ajax_aoauth_factory_reset', array($this, 'ajax_factory_reset'));
         add_action('wp_ajax_aoauth_clear_bot_verifications', array($this, 'ajax_clear_bot_verifications'));
-        add_action('wp_ajax_aoauth_clear_current_bot_verifications', array($this, 'ajax_clear_current_bot_verifications'));
         add_action('wp_ajax_aoauth_clear_linking_lockouts', array($this, 'ajax_clear_linking_lockouts'));
         add_action('wp_ajax_aoauth_clear_oauth_temp_data', array($this, 'ajax_clear_oauth_temp_data'));
         add_action('wp_ajax_aoauth_run_log_cleanup', array($this, 'ajax_run_log_cleanup'));
@@ -470,17 +469,6 @@ class AOAUTH_Admin {
                                 <?php endif; ?>
                             </div>
                         <?php endif; ?>
-                        <?php if ($can_link_on_this_profile): ?>
-                            <div class="aoauth-profile-verification-tools">
-                                <h3><?php esc_html_e('Bot Verification Troubleshooting', 'aoauth-client-sso'); ?></h3>
-                                <p class="description"><?php esc_html_e('Clear temporary bot verification records for your current browser session if verification gets stuck.', 'aoauth-client-sso'); ?></p>
-                                <button type="button"
-                                        class="aoauth-admin-button aoauth-admin-button-secondary aoauth-clear-current-bot-verification"
-                                        data-nonce="<?php echo esc_attr(wp_create_nonce('aoauth_clear_current_bot_verification')); ?>">
-                                    <?php esc_html_e('Clear My Bot Verification', 'aoauth-client-sso'); ?>
-                                </button>
-                            </div>
-                        <?php endif; ?>
                     </td>
                 </tr>
             </table>
@@ -492,7 +480,8 @@ class AOAUTH_Admin {
      * Add unlink columns to users table
      */
     public function add_unlink_column($columns) {
-        $columns['aoauth_sso'] = __('SSO Provider', 'aoauth-client-sso');
+        $columns['aoauth_sso'] = __('SSO Providers', 'aoauth-client-sso');
+        $columns['aoauth_sso_actions'] = __('SSO Actions', 'aoauth-client-sso');
         return $columns;
     }
     
@@ -500,39 +489,45 @@ class AOAUTH_Admin {
      * Render unlink column content
      */
     public function render_unlink_column($value, $column_name, $user_id) {
-        if ($column_name === 'aoauth_sso') {
+        if ($column_name === 'aoauth_sso' || $column_name === 'aoauth_sso_actions') {
             $linked_providers = AOAUTH_Core::get_user_linked_providers($user_id);
             $applications = get_option('aoauth_applications', array());
             $current_user = wp_get_current_user();
             
             if (!empty($linked_providers)) {
-                $provider_badges = array();
+                $provider_items = array();
                 foreach (array_keys($linked_providers) as $provider) {
                     $provider_name = $applications[$provider]['provider_name'] ?? $provider;
                     $app_name = $applications[$provider]['app_name'] ?? ucfirst($provider);
+                    if ($column_name === 'aoauth_sso') {
+                        $provider_items[] = '<span class="aoauth-provider-cell">
+                                    <img src="' . esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . sanitize_key($provider_name) . '.png') . '"
+                                         class="aoauth-provider-cell-icon"
+                                         data-hide-on-error="1"
+                                         alt="' . esc_attr($app_name) . '">
+                                    <span>' . esc_html($app_name) . '</span>
+                                </span>';
+                        continue;
+                    }
+
                     $disabled = '';
                     $title = '';
                     if ($user_id === $current_user->ID && count(get_users(array('role' => 'administrator'))) === 1) {
                         $disabled = 'disabled';
                         $title = __('Cannot unlink the only administrator account', 'aoauth-client-sso');
                     }
-                    $provider_badges[] = '<span class="aoauth-provider-cell">
-                                <img src="' . esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . sanitize_key($provider_name) . '.png') . '"
-                                     class="aoauth-provider-cell-icon"
-                                     data-hide-on-error="1">
-                                <span>' . esc_html($app_name) . '</span>
-                                <button type="button"
-                                        class="aoauth-provider-cell-action aoauth-unlink-user-btn"
-                                        data-user-id="' . esc_attr($user_id) . '"
-                                        data-provider="' . esc_attr($provider) . '"
-                                        data-nonce="' . esc_attr(wp_create_nonce('aoauth_unlink_' . $user_id)) . '"
-                                        ' . $disabled . '
-                                        title="' . esc_attr($title ?: __('Unlink this SSO provider', 'aoauth-client-sso')) . '">
-                                    <span class="dashicons dashicons-unlink"></span>
-                                </button>
-                            </span>';
+                    $provider_items[] = '<button type="button"
+                                class="aoauth-provider-cell-action aoauth-unlink-user-btn"
+                                data-user-id="' . esc_attr($user_id) . '"
+                                data-provider="' . esc_attr($provider) . '"
+                                data-nonce="' . esc_attr(wp_create_nonce('aoauth_unlink_' . $user_id)) . '"
+                                ' . $disabled . '
+                                title="' . esc_attr($title ?: sprintf(__('Unlink %s', 'aoauth-client-sso'), $app_name)) . '">
+                            <span class="dashicons dashicons-unlink"></span>
+                            <span>' . esc_html(sprintf(__('Unlink %s', 'aoauth-client-sso'), $app_name)) . '</span>
+                        </button>';
                 }
-                return implode(' ', $provider_badges);
+                return implode(' ', $provider_items);
             }
             return '<span class="aoauth-no-provider">—</span>';
         }
@@ -1644,22 +1639,6 @@ class AOAUTH_Admin {
         wp_send_json_success(array('message' => sprintf(__('Cleared %d bot verification record(s).', 'aoauth-client-sso'), $deleted)));
     }
 
-    public function ajax_clear_current_bot_verifications() {
-        check_ajax_referer('aoauth_clear_current_bot_verification', 'nonce');
-
-        if (!is_user_logged_in()) {
-            wp_send_json_error(array('message' => __('Please log in before clearing bot verification data.', 'aoauth-client-sso')));
-        }
-
-        $deleted = $this->delete_current_request_bot_verifications();
-        $this->logger->log('current_bot_verifications_cleared', array(
-            'deleted' => $deleted,
-            'ip_scope' => sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? '')
-        ), get_current_user_id(), null, 'info');
-
-        wp_send_json_success(array('message' => sprintf(__('Cleared %d temporary bot verification record(s) for your current session.', 'aoauth-client-sso'), $deleted)));
-    }
-
     public function ajax_run_log_cleanup() {
         check_ajax_referer('aoauth_admin_nonce', 'nonce');
 
@@ -1821,110 +1800,66 @@ class AOAUTH_Admin {
         return $deleted;
     }
 
-    private function delete_current_request_bot_verifications() {
-        global $wpdb;
-
-        $current_ip = sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? '');
-        if ($current_ip === '') {
-            return 0;
-        }
-
-        $deleted = 0;
-        $transient_like = $wpdb->esc_like('_transient_aoauth_bot_') . '%';
-        $option_names = $wpdb->get_col($wpdb->prepare(
-            "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
-            $transient_like
-        ));
-
-        foreach ($option_names as $option_name) {
-            $transient_name = substr($option_name, strlen('_transient_'));
-            $verification_data = get_transient($transient_name);
-            if (is_array($verification_data) && isset($verification_data['ip']) && $verification_data['ip'] === $current_ip) {
-                if (delete_transient($transient_name)) {
-                    $deleted++;
-                }
-            }
-        }
-
-        return $deleted;
-    }
-    
     /**
      * AJAX handler for unlinking a single account
      */
-    /**
- * AJAX handler for unlinking a single account
- */
-public function ajax_unlink_account() {
-    $nonce = sanitize_text_field($_POST['nonce'] ?? '');
-    $user_id = intval($_POST['user_id'] ?? 0);
-    $provider = sanitize_text_field($_POST['provider'] ?? '');
-    
-    if (!wp_verify_nonce($nonce, 'aoauth_unlink_' . $user_id)) {
-        wp_send_json_error(array('message' => __('Security check failed. Please refresh the page and try again.', 'aoauth-client-sso')));
-    }
-    
-    if (!$user_id || !$provider) {
-        wp_send_json_error(array('message' => __('Invalid request parameters.', 'aoauth-client-sso')));
-    }
-    
-    // Check if user can edit this user (admin or self)
-    if (!current_user_can('edit_user', $user_id)) {
-        wp_send_json_error(array('message' => __('You do not have permission to unlink this account.', 'aoauth-client-sso')));
-    }
-    
-    $current_user_id = get_current_user_id();
-    $target_user = get_userdata($user_id);
-    
-    if (!$target_user) {
-        wp_send_json_error(array('message' => __('User not found.', 'aoauth-client-sso')));
-    }
-    
-    // Check if target user is an administrator
-    $is_target_admin = in_array('administrator', (array) $target_user->roles);
-    
-    // Only apply the "only admin" restriction if the target user is actually an admin
-    if ($is_target_admin) {
-        $admin_count = count(get_users(array('role' => 'administrator')));
-        
-        // Prevent unlinking the only administrator account
-        if ($admin_count === 1) {
-            wp_send_json_error(array('message' => __('Cannot unlink the only administrator account. Please create another admin account first.', 'aoauth-client-sso')));
+    public function ajax_unlink_account() {
+        $nonce = sanitize_text_field($_POST['nonce'] ?? '');
+        $user_id = intval($_POST['user_id'] ?? 0);
+        $provider = sanitize_text_field($_POST['provider'] ?? '');
+
+        if (!wp_verify_nonce($nonce, 'aoauth_unlink_' . $user_id)) {
+            wp_send_json_error(array('message' => __('Security check failed. Please refresh the page and try again.', 'aoauth-client-sso')));
         }
-    }
-    
-    // If user is unlinking themselves (not an admin action), check if they have a password
-    if ($user_id === $current_user_id) {
-        // Check if user has a WordPress password set
-        if (empty($target_user->user_pass)) {
+
+        if (!$user_id || !$provider) {
+            wp_send_json_error(array('message' => __('Invalid request parameters.', 'aoauth-client-sso')));
+        }
+
+        if (!current_user_can('edit_user', $user_id)) {
+            wp_send_json_error(array('message' => __('You do not have permission to unlink this account.', 'aoauth-client-sso')));
+        }
+
+        $current_user_id = get_current_user_id();
+        $target_user = get_userdata($user_id);
+
+        if (!$target_user) {
+            wp_send_json_error(array('message' => __('User not found.', 'aoauth-client-sso')));
+        }
+
+        $is_target_admin = in_array('administrator', (array) $target_user->roles);
+        if ($is_target_admin) {
+            $admin_count = count(get_users(array('role' => 'administrator')));
+
+            if ($admin_count === 1) {
+                wp_send_json_error(array('message' => __('Cannot unlink the only administrator account. Please create another admin account first.', 'aoauth-client-sso')));
+            }
+        }
+
+        if ($user_id === $current_user_id && empty($target_user->user_pass)) {
             wp_send_json_error(array(
                 'message' => __('You cannot unlink your SSO account because you have no WordPress password set. Please set a password first via "Lost your password?" on the login page.', 'aoauth-client-sso')
             ));
         }
-    }
-    
-    // Verify the user actually has this provider linked
-    $linked_providers = AOAUTH_Core::get_user_linked_providers($user_id);
-    
-    if (!isset($linked_providers[$provider])) {
-        wp_send_json_error(array('message' => __('Provider mismatch or account not linked.', 'aoauth-client-sso')));
-    }
-    
-    // Perform unlinking
-    $deleted = AOAUTH_Core::unlink_user_provider($user_id, $provider);
-    
-    if ($deleted) {
-        $this->logger->log('account_unlinked', array(
-            'user_id' => $user_id,
-            'provider' => $provider,
-            'action_by' => $current_user_id
-        ), $user_id, $provider, 'info');
-        
-        wp_send_json_success(array('message' => __('SSO account unlinked successfully.', 'aoauth-client-sso')));
-    } else {
+
+        $linked_providers = AOAUTH_Core::get_user_linked_providers($user_id);
+        if (!isset($linked_providers[$provider])) {
+            wp_send_json_error(array('message' => __('Provider mismatch or account not linked.', 'aoauth-client-sso')));
+        }
+
+        $deleted = AOAUTH_Core::unlink_user_provider($user_id, $provider);
+        if ($deleted) {
+            $this->logger->log('account_unlinked', array(
+                'user_id' => $user_id,
+                'provider' => $provider,
+                'action_by' => $current_user_id
+            ), $user_id, $provider, 'info');
+
+            wp_send_json_success(array('message' => __('SSO account unlinked successfully.', 'aoauth-client-sso')));
+        }
+
         wp_send_json_error(array('message' => __('Failed to unlink account. Please try again.', 'aoauth-client-sso')));
     }
-}
     
     /**
      * AJAX handler for bulk unlinking accounts

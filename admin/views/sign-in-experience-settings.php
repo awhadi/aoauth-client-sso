@@ -13,6 +13,18 @@ if ($current_layout === 'horizontal') {
 if (!in_array($current_layout, array('vertical', 'wrap-centered', 'two-column', 'compact'), true)) {
     $current_layout = 'vertical';
 }
+$current_position = ($settings['login_button_position'] ?? 'below_form') === 'inside_form' ? 'inside_form' : 'below_form';
+$preview_applications = array_filter(get_option('aoauth_applications', array()), function($application) {
+    return !empty($application['enabled']);
+});
+if (empty($preview_applications)) {
+    $preview_applications = array(
+        'google' => array('provider_name' => 'google', 'app_name' => 'Google'),
+        'microsoft' => array('provider_name' => 'microsoft', 'app_name' => 'Microsoft'),
+        'github' => array('provider_name' => 'github', 'app_name' => 'GitHub'),
+    );
+}
+$preview_applications = array_slice($preview_applications, 0, 4, true);
 ?>
 <div class="aoauth-settings-column">
     <form class="aoauth-settings-form">
@@ -184,8 +196,28 @@ if (!in_array($current_layout, array('vertical', 'wrap-centered', 'two-column', 
                 </div>
 
                 <div class="aoauth-signin-preview">
-                    <div class="aoauth-linking-preview-wrap" data-preview-theme="<?php echo esc_attr($current_theme); ?>" data-overlay-variant="<?php echo esc_attr($current_overlay_variant); ?>" data-overlay-opacity="<?php echo esc_attr($settings['bot_overlay_opacity'] ?? 86); ?>">
+                    <div class="aoauth-signin-preview-heading">
+                        <h4><?php esc_html_e('Theme Preview', 'aoauth-client-sso'); ?></h4>
+                        <p><?php esc_html_e('Shows the WordPress login buttons, account-linking prompt, and verification overlay using the current Sign-In Experience settings.', 'aoauth-client-sso'); ?></p>
+                    </div>
+                    <div class="aoauth-linking-preview-wrap" data-preview-theme="<?php echo esc_attr($current_theme); ?>" data-preview-layout="<?php echo esc_attr($current_layout); ?>" data-preview-position="<?php echo esc_attr($current_position); ?>" data-overlay-variant="<?php echo esc_attr($current_overlay_variant); ?>" data-overlay-opacity="<?php echo esc_attr($settings['bot_overlay_opacity'] ?? 86); ?>">
                         <div class="aoauth-linking-preview-screen">
+                            <div class="aoauth-login-preview-card">
+                                <span class="aoauth-login-preview-title"><?php esc_html_e('wp-login.php', 'aoauth-client-sso'); ?></span>
+                                <span class="aoauth-login-preview-input"></span>
+                                <span class="aoauth-login-preview-input aoauth-login-preview-input-short"></span>
+                                <span class="aoauth-login-preview-submit"><?php esc_html_e('Log In', 'aoauth-client-sso'); ?></span>
+                                <div class="aoauth-login-preview-divider"><span><?php esc_html_e('Or login with', 'aoauth-client-sso'); ?></span></div>
+                                <div class="aoauth-preview-provider-buttons">
+                                    <?php foreach ($preview_applications as $app_id => $app): ?>
+                                        <?php $provider_name = sanitize_key($app['provider_name'] ?? $app_id); ?>
+                                        <span class="aoauth-preview-login-button">
+                                            <span class="aoauth-preview-login-icon"><img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . $provider_name . '.png'); ?>" alt="<?php echo esc_attr($app['app_name'] ?? ucfirst($provider_name)); ?>" data-fallback-src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png'); ?>"></span>
+                                            <span class="aoauth-preview-login-text"><?php echo esc_html($app['app_name'] ?? ucfirst($provider_name)); ?></span>
+                                        </span>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
                             <div class="aoauth-linking-preview-card">
                                 <div class="aoauth-linking-preview-icon">
                                     <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/google.png'); ?>" alt="Google">

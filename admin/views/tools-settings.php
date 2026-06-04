@@ -79,11 +79,11 @@ $last_cleanup = get_option('aoauth_last_retention_run', '');
                 <div class="aoauth-setting-row">
                     <div class="aoauth-setting-label">
                         <label><?php esc_html_e('Deep Debug Mode', 'aoauth-client-sso'); ?></label>
-                        <p class="aoauth-setting-help"><?php esc_html_e('Toggles the wp-config.php constant when WordPress can write to that file. Debug files are stored under uploads/aoauth-debug/.', 'aoauth-client-sso'); ?></p>
+                        <p class="aoauth-setting-help"><?php esc_html_e('Applies the wp-config.php constant only after Save Tools Settings is clicked. Debug files are stored under uploads/aoauth-debug/.', 'aoauth-client-sso'); ?></p>
                     </div>
                     <div class="aoauth-setting-control">
                         <label class="aoauth-toggle">
-                            <input type="checkbox" id="aoauth-deep-debug-toggle" value="1" <?php checked($debug_enabled); ?>>
+                            <input type="checkbox" id="aoauth-deep-debug-toggle" value="1" data-current-state="<?php echo $debug_enabled ? '1' : '0'; ?>" <?php checked($debug_enabled); ?>>
                             <span class="aoauth-toggle-slider"></span>
                         </label>
                         <span id="aoauth-deep-debug-status" class="aoauth-status-badge aoauth-status-<?php echo $debug_enabled ? 'success' : 'info'; ?>"><?php echo $debug_enabled ? esc_html__('Enabled', 'aoauth-client-sso') : esc_html__('Off', 'aoauth-client-sso'); ?></span>
@@ -93,6 +93,8 @@ $last_cleanup = get_option('aoauth_last_retention_run', '');
                 <div class="aoauth-code-reference">
                     <code><?php echo esc_html($debug_constant); ?></code>
                     <p class="aoauth-setting-help"><?php esc_html_e('If automatic toggling fails, place this above the "stop editing" line in wp-config.php. Remove it after troubleshooting.', 'aoauth-client-sso'); ?></p>
+                    <p class="aoauth-setting-help"><?php esc_html_e('Deep Debug is also active when AOAUTH_DEBUG is defined as true in wp-config.php. Disabling from this screen removes supported aOAUTH debug constants when WordPress can write to wp-config.php.', 'aoauth-client-sso'); ?></p>
+                    <p class="aoauth-setting-help"><?php esc_html_e('Apache and LiteSpeed use the generated .htaccess protection in uploads/aoauth-debug/. Nginx ignores .htaccess, so block direct access to /wp-content/uploads/aoauth-debug/ in the server block.', 'aoauth-client-sso'); ?></p>
                 </div>
             </div>
         </div>
@@ -109,9 +111,18 @@ $last_cleanup = get_option('aoauth_last_retention_run', '');
                 </div>
 
                 <div class="aoauth-maintenance-actions">
-                    <button type="button" class="aoauth-admin-button aoauth-admin-button-secondary aoauth-maintenance-action" data-action="aoauth_clear_bot_verifications"><?php esc_html_e('Clear All Bot Verification Tokens', 'aoauth-client-sso'); ?></button>
-                    <button type="button" class="aoauth-admin-button aoauth-admin-button-secondary aoauth-maintenance-action" data-action="aoauth_clear_linking_lockouts"><?php esc_html_e('Clear Linking Lockouts', 'aoauth-client-sso'); ?></button>
-                    <button type="button" class="aoauth-admin-button aoauth-admin-button-secondary aoauth-maintenance-action" data-action="aoauth_clear_oauth_temp_data"><?php esc_html_e('Clear Expired OAuth Temp Data', 'aoauth-client-sso'); ?></button>
+                    <div class="aoauth-maintenance-item">
+                        <button type="button" class="aoauth-admin-button aoauth-admin-button-secondary aoauth-maintenance-action" data-action="aoauth_clear_bot_verifications"><?php esc_html_e('Clear All Bot Verification Tokens', 'aoauth-client-sso'); ?></button>
+                        <p class="aoauth-setting-help"><?php esc_html_e('Removes temporary Turnstile/reCAPTCHA approvals. Example: use this after changing bot protection keys or when users report repeated verification prompts.', 'aoauth-client-sso'); ?></p>
+                    </div>
+                    <div class="aoauth-maintenance-item">
+                        <button type="button" class="aoauth-admin-button aoauth-admin-button-secondary aoauth-maintenance-action" data-action="aoauth_clear_linking_lockouts"><?php esc_html_e('Clear Linking Lockouts', 'aoauth-client-sso'); ?></button>
+                        <p class="aoauth-setting-help"><?php esc_html_e('Clears temporary password-failure lockouts for account linking. Example: use this after confirming a legitimate user was blocked while linking Google or Microsoft.', 'aoauth-client-sso'); ?></p>
+                    </div>
+                    <div class="aoauth-maintenance-item">
+                        <button type="button" class="aoauth-admin-button aoauth-admin-button-secondary aoauth-maintenance-action" data-action="aoauth_clear_oauth_temp_data"><?php esc_html_e('Clear Expired OAuth Temp Data', 'aoauth-client-sso'); ?></button>
+                        <p class="aoauth-setting-help"><?php esc_html_e('Deletes expired OAuth state, nonce, and account-linking records. Example: run this after interrupted sign-in tests or before handing a staging site to another admin.', 'aoauth-client-sso'); ?></p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -160,10 +171,6 @@ $last_cleanup = get_option('aoauth_last_retention_run', '');
             <div>
                 <code>[aoauth_unlink_account]</code>
                 <p><?php esc_html_e('Shows the logged-in user their connected SSO providers and lets them disconnect a provider after confirmation.', 'aoauth-client-sso'); ?></p>
-            </div>
-            <div>
-                <code>[aoauth_clear_bot_verification]</code>
-                <p><?php esc_html_e('Shows logged-in users a button to clear temporary bot verification records for their current session when verification gets stuck.', 'aoauth-client-sso'); ?></p>
             </div>
         </div>
     </div>

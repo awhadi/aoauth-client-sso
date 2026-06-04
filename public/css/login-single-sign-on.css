@@ -399,6 +399,10 @@
     flex: 0 1 auto;
 }
 
+#loginform .aoauth-position-inside-form.aoauth-layout-wrap-centered .aoauth-button {
+    width: auto;
+}
+
 .aoauth-layout-grid .aoauth-providers-grid,
 .aoauth-layout-two-column .aoauth-providers-grid {
     display: grid;

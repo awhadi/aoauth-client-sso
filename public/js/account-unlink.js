@@ -61,28 +61,4 @@
         });
     });
 
-    $(document).on('click', '.aoauth-clear-bot-verification-btn', function(e) {
-        e.preventDefault();
-
-        var $button = $(this);
-        var settings = window.aoauth_account_unlink || {};
-        var translations = settings.translations || {};
-        var originalText = $button.text();
-
-        $button.prop('disabled', true).text(translations.working || 'Working...');
-        $.post(settings.ajaxurl, {
-            action: 'aoauth_clear_current_bot_verifications',
-            nonce: $button.data('nonce')
-        }, function(response) {
-            if (response && response.success) {
-                showMessage(response.data.message || translations.clear_bot_success || 'Bot verification data cleared.', false, $button.closest('.aoauth-frontend-tool'));
-            } else {
-                showMessage((response && response.data && response.data.message) || translations.clear_bot_error || 'Could not clear bot verification data.', true, $button.closest('.aoauth-frontend-tool'));
-            }
-        }).fail(function() {
-            showMessage(translations.clear_bot_error || 'Could not clear bot verification data.', true, $button.closest('.aoauth-frontend-tool'));
-        }).always(function() {
-            $button.prop('disabled', false).text(originalText);
-        });
-    });
 })(jQuery);

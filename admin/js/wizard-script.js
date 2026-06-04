@@ -251,7 +251,6 @@
                         <div class="test-success-icon">✓</div>
                         <div class="test-success-message">${escapeHtml(response.data.message)}</div>
                     `).show();
-                    aoauthShowToast(response.data.message, 'success');
                 } else {
                     testPassed = false;
                     $finishBtn.prop('disabled', false); // Still allow saving even if test fails
@@ -260,7 +259,6 @@
                         <div class="test-error-message">${escapeHtml(response.data.message)}</div>
                         <div class="test-error-help">You can still save this configuration, but please verify your settings.</div>
                     `).show();
-                    aoauthShowToast(response.data.message + ' You can still save the configuration.', 'warning');
                 }
             },
             error: function(xhr, status, error) {

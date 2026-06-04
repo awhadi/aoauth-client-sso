@@ -2,6 +2,22 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.4.4] - 2026-06-04
+
+### Removed
+- Removed the current-user bot verification clearing shortcode and related profile/front-end UI.
+
+### Changed
+- Added clearer Session Management helper text for bot verification tokens, account-linking lockouts, and expired OAuth temporary data.
+- Deep Debug changes are now staged until Save Tools Settings is clicked instead of applying immediately when the toggle changes.
+- Restored a dedicated SSO Actions column on the WordPress Users screen with explicit unlink buttons beside SSO provider information.
+- Expanded the Sign-In Experience preview to show login buttons, the account-linking prompt, and the verification overlay.
+- Kept provider wizard Test Connection feedback to one inline result instead of showing the same message in a toast.
+
+### Fixed
+- Fixed Wrap Centered login button layout inside wp-login.php so icon themes keep natural button sizing instead of stretching full width.
+- Hardened generated debug log directory access rules for Apache 2.4 while retaining older Apache/LiteSpeed denial support and documenting Nginx requirements.
+
 ## [2.4.3] - 2026-06-02
 
 ### Fixed
