@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.4.5] - 2026-06-04
+
+### Added
+- Added gettext language template and compiled locale files for German, Dari (Afghanistan), French, Russian, Turkish, Chinese, and Japanese.
+
+### Fixed
+- Fixed Icon Only, Icon Aurora, Icon Sunset, and Icon Neon button sizing on wp-login.php when Wrap Centered layout is selected, preserving each theme's intended shape.
+
 ## [2.4.4] - 2026-06-04
 
 ### Removed

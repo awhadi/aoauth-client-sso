@@ -399,8 +399,24 @@
     flex: 0 1 auto;
 }
 
-#loginform .aoauth-position-inside-form.aoauth-layout-wrap-centered .aoauth-button {
+#loginform .aoauth-position-inside-form.aoauth-layout-wrap-centered.aoauth-theme-simple .aoauth-button,
+#loginform .aoauth-position-inside-form.aoauth-layout-wrap-centered.aoauth-theme-modern .aoauth-button,
+#loginform .aoauth-position-inside-form.aoauth-layout-wrap-centered.aoauth-theme-rounded .aoauth-button,
+#loginform .aoauth-position-inside-form.aoauth-layout-wrap-centered.aoauth-theme-gradient .aoauth-button,
+#loginform .aoauth-position-inside-form.aoauth-layout-wrap-centered.aoauth-theme-outline .aoauth-button {
     width: auto;
+}
+
+#loginform .aoauth-position-inside-form.aoauth-layout-wrap-centered.aoauth-theme-icon-only .aoauth-button {
+    width: 54px;
+    height: 54px;
+}
+
+#loginform .aoauth-position-inside-form.aoauth-layout-wrap-centered.aoauth-theme-icon-aurora .aoauth-button,
+#loginform .aoauth-position-inside-form.aoauth-layout-wrap-centered.aoauth-theme-icon-sunset .aoauth-button,
+#loginform .aoauth-position-inside-form.aoauth-layout-wrap-centered.aoauth-theme-icon-neon .aoauth-button {
+    width: 58px;
+    height: 58px;
 }
 
 .aoauth-layout-grid .aoauth-providers-grid,
