@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.4.6] - 2026-06-04
+
+### Changed
+- Made login button layout rules theme-agnostic so themes control visual style while layouts control arrangement.
+- Updated Compact Row to wrap when many providers are enabled instead of forcing one overflowing row.
+- Localized additional front-end and admin JavaScript labels, helper states, and verification messages through existing WordPress translation loading.
+- Regenerated gettext templates and compiled locale files for shipped languages.
+
+### Fixed
+- Fixed Wrap Centered so all current and future themes keep their selected button style while wrapping as a centered block.
+- Fixed inside-form layout overrides so only Full Width Stack and Two Columns intentionally stretch buttons.
+
 ## [2.4.5] - 2026-06-04
 
 ### Added

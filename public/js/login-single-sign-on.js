@@ -3,6 +3,18 @@
     var activeRequests = {};
     var turnstileTimeouts = {};
 
+    function translate(key, fallback) {
+        if (typeof aoauth_public !== 'undefined' && aoauth_public.translations && aoauth_public.translations[key]) {
+            return aoauth_public.translations[key];
+        }
+        return fallback;
+    }
+
+    function escapeHtml(text) {
+        return $('<div>').text(text || '').html();
+    }
+
+
     $(document).on('error', 'img[data-fallback-src], img[data-hide-on-error]', function() {
         var $image = $(this);
         var fallbackSrc = $image.data('fallback-src');
@@ -110,7 +122,7 @@
                         provider: provider
                     });
                     hideBeautifulLoader($btn);
-                    alert('Bot protection not loaded. Please refresh the page.');
+                    alert(translate('bot_protection_not_loaded', 'Bot protection not loaded. Please refresh the page.'));
                     return false;
                 }
                 
@@ -166,7 +178,7 @@
                             });
                             clearTimeout(turnstileTimeouts[buttonId]);
                             hideBeautifulLoader($btn);
-                            updateVerificationMessage('Verification expired. Please try again.');
+                            updateVerificationMessage(translate('verification_expired', 'Verification expired. Please try again.'));
                             showVerificationRetry($btn);
                             cleanupTurnstile(containerId, buttonId);
                         },
@@ -177,7 +189,7 @@
                             });
                             clearTimeout(turnstileTimeouts[buttonId]);
                             hideBeautifulLoader($btn);
-                            updateVerificationMessage('Verification timed out. Please try again.');
+                            updateVerificationMessage(translate('verification_timed_out', 'Verification timed out. Please try again.'));
                             showVerificationRetry($btn);
                             cleanupTurnstile(containerId, buttonId);
                         }
@@ -195,7 +207,7 @@
                                 turnstile.reset(turnstileWidgetIds[buttonId]);
                             } catch(e) {}
                             hideBeautifulLoader($btn);
-                            updateVerificationMessage('Verification is taking too long. Please try again.');
+                            updateVerificationMessage(translate('verification_too_long', 'Verification is taking too long. Please try again.'));
                             showVerificationRetry($btn);
                             cleanupTurnstile(containerId, buttonId);
                         }
@@ -209,7 +221,7 @@
                     });
                     clearTimeout(turnstileTimeouts[buttonId]);
                     hideBeautifulLoader($btn);
-                    updateVerificationMessage('Bot verification error. Please try again.');
+                    updateVerificationMessage(translate('bot_verification_error', 'Bot verification error. Please try again.'));
                     showVerificationRetry($btn);
                     cleanupTurnstile(containerId, buttonId);
                 }
@@ -222,7 +234,7 @@
                     });
                     hideBeautifulLoader($btn);
                     hideBotOverlay();
-                    alert('Bot protection not loaded. Please refresh the page.');
+                    alert(translate('bot_protection_not_loaded', 'Bot protection not loaded. Please refresh the page.'));
                     return false;
                 }
                 
@@ -238,7 +250,7 @@
                             });
                             hideBeautifulLoader($btn);
                             hideBotOverlay();
-                            alert('Verification error. Please try again.');
+                            alert(translate('verification_error', 'Verification error. Please try again.'));
                         });
                     });
                 }, 100);
@@ -271,7 +283,7 @@
                 '<circle class="aoauth-loader-circle" cx="12" cy="12" r="10" fill="none" stroke-width="3"/>' +
                 '<path class="aoauth-loader-path" d="M12,2 A10,10 0 0,1 22,12" fill="none" stroke-width="3"/>' +
             '</svg>' +
-            '<span class="aoauth-loader-text">Authenticating...</span>' +
+            '<span class="aoauth-loader-text">' + escapeHtml(translate('authenticating', 'Authenticating...')) + '</span>' +
         '</span>';
         
         $buttonText.html(spinnerHtml);
@@ -280,7 +292,7 @@
     function hideBeautifulLoader($btn) {
         $btn.removeClass('aoauth-button-loading');
         
-        var originalText = $btn.data('original-text') || 'Sign in';
+        var originalText = $btn.data('original-text') || translate('sign_in', 'Sign in');
         $btn.find('.aoauth-button-text').html(originalText);
     }
 
@@ -295,7 +307,7 @@
             return;
         }
 
-        showVerificationOverlay(aoauth_public.bot_protection.overlay_message || 'Verifying secure sign-in...', $btn);
+        showVerificationOverlay(aoauth_public.bot_protection.overlay_message || translate('verifying_secure_sign_in', 'Verifying secure sign-in...'), $btn);
     }
 
     function showRedirectOverlay() {
@@ -303,7 +315,7 @@
             return;
         }
 
-        showVerificationOverlay(aoauth_public.redirect_overlay_message || 'Redirecting to secure sign-in...');
+        showVerificationOverlay(aoauth_public.redirect_overlay_message || translate('redirecting_secure_sign_in', 'Redirecting to secure sign-in...'));
     }
 
     function showVerificationOverlay(message, $origin) {
@@ -324,7 +336,7 @@
                     $('<button>', {
                         type: 'button',
                         class: 'aoauth-verification-retry',
-                        text: 'Try again'
+                        text: translate('try_again', 'Try again')
                     })
                 ),
                 $('<div>', { class: 'aoauth-verification-branding', 'aria-hidden': 'true' }).append(
@@ -413,10 +425,10 @@
 
     function updateVerificationBranding($overlay, overlayConfig) {
         var providerLabels = {
-            turnstile: 'Verified by Cloudflare Turnstile',
-            recaptcha: 'Verified by Google reCAPTCHA'
+            turnstile: translate('verified_turnstile', 'Verified by Cloudflare Turnstile'),
+            recaptcha: translate('verified_recaptcha', 'Verified by Google reCAPTCHA')
         };
-        var providerLabel = providerLabels[overlayConfig.type] || 'Bot verification active';
+        var providerLabel = providerLabels[overlayConfig.type] || translate('bot_verification_active', 'Bot verification active');
         var pluginLogo = overlayConfig.plugin_logo_url || '';
 
         $overlay.find('.aoauth-verification-provider-mark').text(providerLabel);
@@ -428,7 +440,7 @@
             }).appendTo($powered);
         }
         $('<span>', {
-            text: 'Protected with aOAUTH Client SSO'
+            text: translate('protected_with', 'Protected with aOAUTH Client SSO')
         }).appendTo($powered);
     }
 
@@ -440,14 +452,14 @@
     
     function getTurnstileErrorMessage(errorCode) {
         var messages = {
-            'bad-request': 'Invalid request. Please try again.',
-            'invalid-input-response': 'Invalid verification token. Please refresh and try again.',
-            'invalid-input-secret': 'Configuration error. Please contact site administrator.',
-            'invalid-input-sitekey': 'Site configuration error.',
-            'timeout-or-duplicate': 'Verification timed out. Please refresh the page and try again.',
-            'internal-error': 'Internal error. Please try again.'
+            'bad-request': translate('invalid_request', 'Invalid request. Please try again.'),
+            'invalid-input-response': translate('invalid_verification_token', 'Invalid verification token. Please refresh and try again.'),
+            'invalid-input-secret': translate('configuration_error', 'Configuration error. Please contact site administrator.'),
+            'invalid-input-sitekey': translate('site_configuration_error', 'Site configuration error.'),
+            'timeout-or-duplicate': translate('verification_timeout_duplicate', 'Verification timed out. Please refresh the page and try again.'),
+            'internal-error': translate('internal_error', 'Internal error. Please try again.')
         };
-        return messages[errorCode] || 'Verification failed. Please try again.';
+        return messages[errorCode] || translate('verification_failed', 'Verification failed. Please try again.');
     }
     
     function verifyToken(token, type, loginUrl, $btn, containerId, buttonId, flowId, provider) {
@@ -487,7 +499,7 @@
                     }, 200);
                 } else {
                     hideBeautifulLoader($btn);
-                    updateVerificationMessage(response.data.message || 'Verification failed. Please try again.');
+                    updateVerificationMessage(response.data.message || translate('verification_failed', 'Verification failed. Please try again.'));
                     showVerificationRetry($btn);
                     if (containerId) cleanupTurnstile(containerId, buttonId);
                 }
@@ -503,7 +515,7 @@
                     response_status: xhr.status
                 });
                 hideBeautifulLoader($btn);
-                updateVerificationMessage('Verification error. Please try again.');
+                updateVerificationMessage(translate('verification_error', 'Verification error. Please try again.'));
                 showVerificationRetry($btn);
                 if (containerId) cleanupTurnstile(containerId, buttonId);
             }

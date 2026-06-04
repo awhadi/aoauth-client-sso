@@ -1049,6 +1049,7 @@
 .aoauth-linking-preview-wrap[data-preview-layout="wrap-centered"] .aoauth-preview-login-button,
 .aoauth-linking-preview-wrap[data-preview-layout="compact"] .aoauth-preview-login-button {
     flex: 0 0 auto;
+    max-width: 100%;
 }
 
 .aoauth-linking-preview-wrap[data-preview-layout="two-column"] .aoauth-preview-provider-buttons {
@@ -1057,14 +1058,22 @@
 }
 
 .aoauth-linking-preview-wrap[data-preview-layout="compact"] .aoauth-preview-provider-buttons {
-    flex-flow: row nowrap;
+    flex-flow: row wrap;
     justify-content: center;
+    align-items: center;
     gap: 6px;
 }
 
 .aoauth-linking-preview-wrap[data-preview-layout="compact"] .aoauth-preview-login-button {
+    flex: 0 1 auto;
     min-width: 0;
+    max-width: 100%;
     padding: 7px 9px;
+}
+
+.aoauth-linking-preview-wrap[data-preview-layout="compact"] .aoauth-preview-login-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .aoauth-linking-preview-wrap[data-preview-theme="simple"] .aoauth-preview-login-button {

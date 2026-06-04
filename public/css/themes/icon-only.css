@@ -1,9 +1,3 @@
-.aoauth-login-buttons .aoauth-providers-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-}
 .aoauth-login-buttons .aoauth-button {
     background: #111827;
     border: 1px solid #374151;

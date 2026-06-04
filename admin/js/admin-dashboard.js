@@ -1,4 +1,8 @@
 (function($) {
+    function adminText(key, fallback) {
+        return (aoauth_admin.translations && aoauth_admin.translations[key]) || fallback;
+    }
+
     $(document).on('error', 'img[data-fallback-src], img[data-hide-on-error]', function() {
         var $image = $(this);
         var fallbackSrc = $image.data('fallback-src');
@@ -69,7 +73,7 @@
      */
     function aoauthPerformUnlink(userId, provider, nonce, $button) {
         var originalHtml = $button.html();
-        $button.prop('disabled', true).html('<span class="spinner is-active aoauth-inline-spinner"></span> Processing...');
+        $button.prop('disabled', true).html('<span class="spinner is-active aoauth-inline-spinner"></span> ' + escapeHtml(adminText('processing', 'Processing...')));
         
         $.post(aoauth_admin.ajaxurl, {
             action: 'aoauth_unlink_account',
@@ -139,7 +143,7 @@
         var $btn = $(this);
         
         if ($btn.prop('disabled')) {
-            aoauthShowToast($btn.attr('title') || 'Action not allowed', 'error');
+            aoauthShowToast($btn.attr('title') || adminText('action_not_allowed', 'Action not allowed'), 'error');
             return;
         }
         
@@ -150,10 +154,10 @@
         
         aoauthShowUnlinkModal({
             title: aoauth_admin.translations.confirm_unlink,
-            message: 'Are you sure you want to disconnect SSO for ' + userName + '?',
-            warning: 'This user will no longer be able to log in using their SSO provider.',
-            confirmText: 'Yes, Disconnect',
-            cancelText: 'Cancel',
+            message: adminText('confirm_disconnect_user', 'Are you sure you want to disconnect SSO for %s?').replace('%s', userName),
+            warning: aoauth_admin.translations.unlink_warning,
+            confirmText: adminText('yes_disconnect', 'Yes, Disconnect'),
+            cancelText: adminText('cancel', 'Cancel'),
             onConfirm: function() {
                 aoauthPerformUnlink(userId, provider, nonce, $btn);
             }
@@ -176,20 +180,20 @@
         });
         
         if (selectedUsers.length === 0) {
-            aoauthShowToast('Please select users to disconnect.', 'error');
+            aoauthShowToast(adminText('select_users_disconnect', 'Please select users to disconnect.'), 'error');
             return false;
         }
         
         aoauthShowUnlinkModal({
-            title: 'Disconnect SSO Accounts',
-            message: 'Are you sure you want to disconnect SSO for ' + selectedUsers.length + ' selected user(s)?',
-            warning: 'These users will no longer be able to log in using their SSO providers.',
-            confirmText: 'Yes, Disconnect',
-            cancelText: 'Cancel',
+            title: adminText('disconnect_sso_accounts', 'Disconnect SSO Accounts'),
+            message: adminText('confirm_disconnect_selected', 'Are you sure you want to disconnect SSO for %d selected user(s)?').replace('%d', selectedUsers.length),
+            warning: adminText('selected_users_sso_warning', 'These users will no longer be able to log in using their SSO providers.'),
+            confirmText: adminText('yes_disconnect', 'Yes, Disconnect'),
+            cancelText: adminText('cancel', 'Cancel'),
             onConfirm: function() {
                 // Show loading state
                 var $submitBtn = $(this);
-                $submitBtn.prop('disabled', true).html('<span class="spinner is-active"></span> Processing...');
+                $submitBtn.prop('disabled', true).html('<span class="spinner is-active"></span> ' + escapeHtml(adminText('processing', 'Processing...')));
                 
                 $.post(aoauth_admin.ajaxurl, {
                     action: 'aoauth_bulk_unlink_accounts',
@@ -203,11 +207,11 @@
                         }, 2000);
                     } else {
                         aoauthShowToast(response.data.message, 'error');
-                        $submitBtn.prop('disabled', false).html('Apply');
+                        $submitBtn.prop('disabled', false).text(adminText('apply', 'Apply'));
                     }
                 }).fail(function() {
-                    aoauthShowToast('Error processing bulk unlink request.', 'error');
-                    $submitBtn.prop('disabled', false).html('Apply');
+                    aoauthShowToast(adminText('bulk_unlink_error', 'Error processing bulk unlink request.'), 'error');
+                    $submitBtn.prop('disabled', false).text(adminText('apply', 'Apply'));
                 });
             }
         });
@@ -222,10 +226,10 @@
         var failed = urlParams.get('aoauth_bulk_failed');
         
         if (unlinked && parseInt(unlinked) > 0) {
-            aoauthShowToast('Successfully disconnected ' + unlinked + ' account(s).', 'success');
+            aoauthShowToast(adminText('bulk_unlink_success', 'Successfully disconnected %d account(s).').replace('%d', unlinked), 'success');
         }
         if (failed && parseInt(failed) > 0) {
-            aoauthShowToast('Failed to disconnect ' + failed + ' account(s).', 'error');
+            aoauthShowToast(adminText('bulk_unlink_failed', 'Failed to disconnect %d account(s).').replace('%d', failed), 'error');
         }
         
         // Clean URL
