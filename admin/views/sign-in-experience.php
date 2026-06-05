@@ -53,6 +53,20 @@ $preview_applications = array_slice($preview_applications, 0, 4, true);
 
                 <div class="aoauth-setting-row">
                     <div class="aoauth-setting-label">
+                        <label for="enable_provider_auto_login"><?php esc_html_e('Auto-login users already authenticated with SSO provider', 'aoauth-client-sso'); ?></label>
+                        <p class="aoauth-setting-help"><?php esc_html_e('When visitors reach wp-login.php, automatically try the first enabled SSO provider once. If their browser already has a provider session, WordPress signs them in without clicking a button.', 'aoauth-client-sso'); ?></p>
+                    </div>
+                    <div class="aoauth-setting-control">
+                        <label class="aoauth-toggle">
+                            <input type="hidden" name="enable_provider_auto_login" value="0">
+                            <input type="checkbox" id="enable_provider_auto_login" name="enable_provider_auto_login" value="1" <?php checked(!empty($settings['enable_provider_auto_login'])); ?>>
+                            <span class="aoauth-toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="aoauth-setting-row">
+                    <div class="aoauth-setting-label">
                         <label for="enable_brand_badge"><?php esc_html_e('Show Brand Badge', 'aoauth-client-sso'); ?></label>
                         <p class="aoauth-setting-help"><?php esc_html_e('Show the aOAUTH badge on front-end pages for users who signed in with SSO.', 'aoauth-client-sso'); ?></p>
                     </div>

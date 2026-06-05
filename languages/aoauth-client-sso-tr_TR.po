@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: aOAUTH Client SSO 2.4.8\n"
+"Project-Id-Version: aOAUTH Client SSO 2.4.9\n"
 "Report-Msgid-Bugs-To: https://awhadi.online\n"
-"POT-Creation-Date: 2026-06-05 18:30+0200\n"
+"POT-Creation-Date: 2026-06-05 18:54+0200\n"
 "PO-Revision-Date: 2026-06-04 00:00+0000\n"
 "Last-Translator: Awhadi\n"
 "Language-Team: tr_TR\n"
@@ -54,7 +54,7 @@ msgid "Tools"
 msgstr "Araçlar"
 
 #: admin/class-admin.php:125 admin/class-admin.php:126
-#: admin/class-admin.php:2113
+#: admin/class-admin.php:2114
 msgid "Settings"
 msgstr "Ayarlar"
 
@@ -117,11 +117,11 @@ msgstr "Yapılandırma başarıyla içe aktarıldı"
 msgid "Failed to import configuration"
 msgstr "Başarısız: import configuration"
 
-#: admin/class-admin.php:231 admin/class-admin.php:1761
+#: admin/class-admin.php:231 admin/class-admin.php:1762
 msgid "Deep Debug enabled in wp-config.php."
 msgstr "Derin hata ayıklama wp-config.php içinde etkinleştirildi."
 
-#: admin/class-admin.php:232 admin/class-admin.php:1761
+#: admin/class-admin.php:232 admin/class-admin.php:1762
 msgid "Deep Debug disabled in wp-config.php."
 msgstr "Derin hata ayıklama wp-config.php içinde devre dışı bırakıldı."
 
@@ -160,11 +160,11 @@ msgstr "Evet, bağlantıyı kes"
 msgid "Cancel"
 msgstr "Cancel"
 
-#: admin/class-admin.php:242 includes/class-sso-handler.php:1284
+#: admin/class-admin.php:242 includes/class-sso-handler.php:1386
 msgid "SSO account unlinked successfully"
 msgstr "SSO account unlinked başarıyla"
 
-#: admin/class-admin.php:243 includes/class-sso-handler.php:1285
+#: admin/class-admin.php:243 includes/class-sso-handler.php:1387
 msgid "Error unlinking SSO account"
 msgstr "Hata unlinking SSO account"
 
@@ -176,7 +176,7 @@ msgstr ""
 "Bağlantı kaldırıldıktan sonra bu kullanıcı bu SSO sağlayıcısıyla giriş "
 "yapamayacak."
 
-#: admin/class-admin.php:245 includes/class-sso-handler.php:1286
+#: admin/class-admin.php:245 includes/class-sso-handler.php:1388
 msgid "No SSO provider linked"
 msgstr "No SSO provider linked"
 
@@ -239,7 +239,7 @@ msgstr "Factory reset failed"
 msgid "Maintenance action failed."
 msgstr "Maintenance action failed."
 
-#: admin/class-admin.php:261 includes/class-sso-handler.php:1287
+#: admin/class-admin.php:261 includes/class-sso-handler.php:1389
 msgid "Working..."
 msgstr "Working..."
 
@@ -275,7 +275,7 @@ msgstr "Could not update wp-config.php."
 msgid "Error loading logs"
 msgstr "Hata loading logs"
 
-#: admin/class-admin.php:270 admin/class-admin.php:1855
+#: admin/class-admin.php:270 admin/class-admin.php:1856
 msgid "Security check failed. Please refresh the page and try again."
 msgstr "Security check failed. Please refresh the page and try again."
 
@@ -447,7 +447,7 @@ msgstr "SSO hesaplarının bağlantısını kaldır"
 msgid "You do not have permission to perform this action."
 msgstr "You do not have permission to perform this action."
 
-#: admin/class-admin.php:664 admin/class-admin.php:1297
+#: admin/class-admin.php:664 admin/class-admin.php:1298
 msgid "Invalid application data"
 msgstr "Invalid application data"
 
@@ -534,7 +534,7 @@ msgstr ""
 "Configuration imported başarıyla. Providers without Client IDs and Secrets "
 "remain disabled."
 
-#: admin/class-admin.php:1118 includes/class-sso-handler.php:916
+#: admin/class-admin.php:1118 includes/class-sso-handler.php:1014
 #: includes/class-user-manager.php:136
 msgid "Security check failed."
 msgstr "Security check failed."
@@ -543,11 +543,11 @@ msgstr "Security check failed."
 msgid "Permission denied."
 msgstr "İzin reddedildi."
 
-#: admin/class-admin.php:1291
+#: admin/class-admin.php:1292
 msgid "Permission denied"
 msgstr "İzin reddedildi"
 
-#: admin/class-admin.php:1356
+#: admin/class-admin.php:1357
 msgid ""
 "Client secret validation requires a real OAuth callback and cannot be proven "
 "by a safe endpoint probe."
@@ -555,7 +555,7 @@ msgstr ""
 "Client secret validation requires a real OAuth callback and cannot be proven "
 "by a safe endpoint probe."
 
-#: admin/class-admin.php:1376
+#: admin/class-admin.php:1377
 msgid ""
 "Connection checks passed. Required endpoints responded and the authorization "
 "request shape is valid."
@@ -563,77 +563,77 @@ msgstr ""
 "Connection checks passed. Required endpoints responded and the authorization "
 "request shape is valid."
 
-#: admin/class-admin.php:1378
+#: admin/class-admin.php:1379
 #, php-format
 msgid "Warnings: %s"
 msgstr "Warnings: %s"
 
-#: admin/class-admin.php:1399
+#: admin/class-admin.php:1400
 msgid "Client ID is required."
 msgstr "İstemci kimliği zorunludur."
 
-#: admin/class-admin.php:1403
+#: admin/class-admin.php:1404
 msgid "Client Secret is required."
 msgstr "İstemci sırrı zorunludur."
 
-#: admin/class-admin.php:1407
+#: admin/class-admin.php:1408
 msgid "Authorization Endpoint is required."
 msgstr "Yetkilendirme uç noktası zorunludur."
 
-#: admin/class-admin.php:1409
+#: admin/class-admin.php:1410
 msgid "Authorization Endpoint must be a valid HTTP or HTTPS URL."
 msgstr "Yetkilendirme uç noktası geçerli bir HTTP veya HTTPS URL’si olmalıdır."
 
-#: admin/class-admin.php:1413
+#: admin/class-admin.php:1414
 msgid "Token Endpoint is required."
 msgstr "Token uç noktası zorunludur."
 
-#: admin/class-admin.php:1415
+#: admin/class-admin.php:1416
 msgid "Token Endpoint must be a valid HTTP or HTTPS URL."
 msgstr "Token uç noktası geçerli bir HTTP veya HTTPS URL’si olmalıdır."
 
-#: admin/class-admin.php:1419
+#: admin/class-admin.php:1420
 msgid "Redirect URI is required."
 msgstr "Yönlendirme URI’si zorunludur."
 
-#: admin/class-admin.php:1421
+#: admin/class-admin.php:1422
 msgid "Redirect URI must be a valid HTTP or HTTPS URL."
 msgstr "Yönlendirme URI’si geçerli bir HTTP veya HTTPS URL’si olmalıdır."
 
-#: admin/class-admin.php:1426
+#: admin/class-admin.php:1427
 #, php-format
 msgid "%s must be a valid HTTP or HTTPS URL."
 msgstr "%s geçerli bir HTTP veya HTTPS URL’si olmalıdır."
 
-#: admin/class-admin.php:1460
+#: admin/class-admin.php:1461
 #, php-format
 msgid "Authorization endpoint is unreachable: %s."
 msgstr "Authorization endpoint is unreachable: %s."
 
-#: admin/class-admin.php:1468
+#: admin/class-admin.php:1469
 msgid "Authorization endpoint returned 404. Verify the URL."
 msgstr "Authorization endpoint returned 404. Verify the URL."
 
-#: admin/class-admin.php:1472
+#: admin/class-admin.php:1473
 #, php-format
 msgid "Authorization endpoint returned HTTP %d."
 msgstr "Authorization endpoint returned HTTP %d."
 
-#: admin/class-admin.php:1478
+#: admin/class-admin.php:1479
 #, php-format
 msgid "Authorization endpoint rejected the request: %s."
 msgstr "Authorization endpoint rejected the request: %s."
 
-#: admin/class-admin.php:1505
+#: admin/class-admin.php:1506
 #, php-format
 msgid "Token endpoint is unreachable: %s."
 msgstr "Token endpoint is unreachable: %s."
 
-#: admin/class-admin.php:1513
+#: admin/class-admin.php:1514
 msgid "Token endpoint returned 404. Verify the URL."
 msgstr "Token endpoint returned 404. Verify the URL."
 
-#: admin/class-admin.php:1517
+#: admin/class-admin.php:1518
 msgid ""
 "Token endpoint rejected POST requests. OAuth token endpoints must accept "
 "POST."
@@ -641,12 +641,12 @@ msgstr ""
 "Token endpoint rejected POST requests. OAuth token endpoints must accept "
 "POST."
 
-#: admin/class-admin.php:1521
+#: admin/class-admin.php:1522
 #, php-format
 msgid "Token endpoint returned HTTP %d."
 msgstr "Token endpoint returned HTTP %d."
 
-#: admin/class-admin.php:1527
+#: admin/class-admin.php:1528
 #, php-format
 msgid ""
 "Token endpoint responded, but the client was not accepted during the probe: "
@@ -655,31 +655,31 @@ msgstr ""
 "Token endpoint responded, but the client was not accepted during the probe: "
 "%s."
 
-#: admin/class-admin.php:1546
+#: admin/class-admin.php:1547
 #, php-format
 msgid "%1$s could not be reached: %2$s."
 msgstr "%1$s could not be reached: %2$s."
 
-#: admin/class-admin.php:1552
+#: admin/class-admin.php:1553
 #, php-format
 msgid "%s returned 404. Verify the URL."
 msgstr "%s returned 404. Verify the URL."
 
-#: admin/class-admin.php:1556
+#: admin/class-admin.php:1557
 #, php-format
 msgid "%1$s returned HTTP %2$d."
 msgstr "%1$s returned HTTP %2$d."
 
-#: admin/class-admin.php:1578
+#: admin/class-admin.php:1579
 #, php-format
 msgid "JWKS endpoint could not be reached: %s."
 msgstr "JWKS endpoint could not be reached: %s."
 
-#: admin/class-admin.php:1583
+#: admin/class-admin.php:1584
 msgid "JWKS endpoint responded but did not include a keys array."
 msgstr "JWKS endpoint responded but did not include a keys array."
 
-#: admin/class-admin.php:1670
+#: admin/class-admin.php:1671
 msgid ""
 "Factory reset completed. All settings restored to defaults and all providers "
 "removed."
@@ -687,34 +687,34 @@ msgstr ""
 "Factory reset completed. All settings restored to defaults and all providers "
 "removed."
 
-#: admin/class-admin.php:1682
+#: admin/class-admin.php:1683
 #, php-format
 msgid "Cleared %d bot verification record(s)."
 msgstr "Cleared %d bot verification record(s)."
 
-#: admin/class-admin.php:1697
+#: admin/class-admin.php:1698
 msgid "Log cleanup completed."
 msgstr "Log cleanup completed."
 
-#: admin/class-admin.php:1712
+#: admin/class-admin.php:1713
 msgid "Log cleanup schedule refreshed."
 msgstr "Log cleanup schedule refreshed."
 
-#: admin/class-admin.php:1712
+#: admin/class-admin.php:1713
 msgid "Log cleanup is not scheduled because activity logs are disabled."
 msgstr "Log cleanup is not scheduled because activity logs are disabled."
 
-#: admin/class-admin.php:1725
+#: admin/class-admin.php:1726
 #, php-format
 msgid "Cleared %d account-linking lockout record(s)."
 msgstr "Cleared %d account-linking lockout record(s)."
 
-#: admin/class-admin.php:1737
+#: admin/class-admin.php:1738
 #, php-format
 msgid "Cleared %d expired OAuth temporary record(s)."
 msgstr "Cleared %d expired OAuth temporary record(s)."
 
-#: admin/class-admin.php:1769
+#: admin/class-admin.php:1770
 msgid ""
 "Could not find a readable wp-config.php file. Update it manually with the "
 "displayed constant."
@@ -722,7 +722,7 @@ msgstr ""
 "Could not find a readable wp-config.php file. Update it manually with the "
 "displayed constant."
 
-#: admin/class-admin.php:1773
+#: admin/class-admin.php:1774
 msgid ""
 "wp-config.php is not writable by WordPress. Update it manually with the "
 "displayed constant."
@@ -730,13 +730,13 @@ msgstr ""
 "wp-config.php is not writable by WordPress. Update it manually with the "
 "displayed constant."
 
-#: admin/class-admin.php:1778
+#: admin/class-admin.php:1779
 msgid ""
 "Could not read wp-config.php. Update it manually with the displayed constant."
 msgstr ""
 "Could not read wp-config.php. Update it manually with the displayed constant."
 
-#: admin/class-admin.php:1795
+#: admin/class-admin.php:1796
 msgid ""
 "Could not write wp-config.php. Update it manually with the displayed "
 "constant."
@@ -744,19 +744,19 @@ msgstr ""
 "Could not write wp-config.php. Update it manually with the displayed "
 "constant."
 
-#: admin/class-admin.php:1859
+#: admin/class-admin.php:1860
 msgid "Invalid request parameters."
 msgstr "Invalid request parameters."
 
-#: admin/class-admin.php:1863
+#: admin/class-admin.php:1864
 msgid "You do not have permission to unlink this account."
 msgstr "You do not have permission to unlink this account."
 
-#: admin/class-admin.php:1870 includes/class-user-manager.php:276
+#: admin/class-admin.php:1871 includes/class-user-manager.php:276
 msgid "User not found."
 msgstr "User not found."
 
-#: admin/class-admin.php:1878
+#: admin/class-admin.php:1879
 msgid ""
 "Cannot unlink the only administrator account. Please create another admin "
 "account first."
@@ -764,7 +764,7 @@ msgstr ""
 "Cannot unlink the only administrator account. Please create another admin "
 "account first."
 
-#: admin/class-admin.php:1884
+#: admin/class-admin.php:1885
 msgid ""
 "You cannot unlink your SSO account because you have no WordPress password "
 "set. Please set a password first via \"Lost your password?\" on the login "
@@ -774,49 +774,49 @@ msgstr ""
 "set. Please set a password first via \"Lost your password?\" on the login "
 "page."
 
-#: admin/class-admin.php:1890
+#: admin/class-admin.php:1891
 msgid "Provider mismatch or account not linked."
 msgstr "Provider mismatch or account not linked."
 
-#: admin/class-admin.php:1901
+#: admin/class-admin.php:1902
 msgid "SSO account unlinked successfully."
 msgstr "SSO account unlinked başarıyla."
 
-#: admin/class-admin.php:1904
+#: admin/class-admin.php:1905
 msgid "Failed to unlink account. Please try again."
 msgstr "Başarısız: unlink account. Please try again."
 
-#: admin/class-admin.php:1914
+#: admin/class-admin.php:1915
 msgid "You do not have permission to perform bulk unlinking."
 msgstr "You do not have permission to perform bulk unlinking."
 
-#: admin/class-admin.php:1920
+#: admin/class-admin.php:1921
 msgid "No users selected."
 msgstr "No users selected."
 
-#: admin/class-admin.php:1960
+#: admin/class-admin.php:1961
 #, php-format
 msgid "Unlinked %d accounts. Failed: %d"
 msgstr "Unlinked %d accounts. Failed: %d"
 
-#: admin/class-admin.php:1988 admin/class-admin.php:2050
+#: admin/class-admin.php:1989 admin/class-admin.php:2051
 msgid "Missing verification data."
 msgstr "Missing verification data."
 
-#: admin/class-admin.php:2006 admin/class-admin.php:2068
+#: admin/class-admin.php:2007 admin/class-admin.php:2069
 msgid "Verification service unavailable."
 msgstr "Verification service unavailable."
 
-#: admin/class-admin.php:2026
+#: admin/class-admin.php:2027
 msgid "Bot challenge failed. Please try again."
 msgstr "Bot challenge failed. Please try again."
 
-#: admin/class-admin.php:2090
+#: admin/class-admin.php:2091
 #, php-format
 msgid "Bot verification failed. Score %s is below threshold of %s."
 msgstr "Bot verification failed. Score %s is below threshold of %s."
 
-#: admin/class-admin.php:2112
+#: admin/class-admin.php:2113
 msgid "Add Provider"
 msgstr "Sağlayıcı ekle"
 
@@ -926,7 +926,10 @@ msgid ""
 "High enforces state, nonce, PKCE, redirect validation, and stricter identity "
 "token checks where supported. Medium keeps compatibility for older providers "
 "but is less protective."
-msgstr "Yüksek seviye desteklendiğinde state, nonce, PKCE, yönlendirme doğrulaması ve daha sıkı kimlik token kontrollerini zorunlu kılar. Orta seviye eski sağlayıcılarla uyumluluğu korur ancak daha az koruyucudur."
+msgstr ""
+"Yüksek seviye desteklendiğinde state, nonce, PKCE, yönlendirme doğrulaması "
+"ve daha sıkı kimlik token kontrollerini zorunlu kılar. Orta seviye eski "
+"sağlayıcılarla uyumluluğu korur ancak daha az koruyucudur."
 
 #: admin/views/security.php:18
 msgid "High (Recommended)"
@@ -954,7 +957,8 @@ msgstr "Bot korumasını etkinleştir"
 
 #: admin/views/security.php:51
 msgid "Require one browser verification before starting the provider redirect."
-msgstr "Sağlayıcı yönlendirmesi başlamadan önce bir tarayıcı doğrulaması ister."
+msgstr ""
+"Sağlayıcı yönlendirmesi başlamadan önce bir tarayıcı doğrulaması ister."
 
 #: admin/views/security.php:65
 msgid "Verification Provider"
@@ -985,7 +989,10 @@ msgid ""
 "The overlay is the screen cover. This controls where the Cloudflare widget "
 "itself appears inside that overlay. Use Managed Visible in Overlay when "
 "invisible verification times out for visitors."
-msgstr "Katman ekran kaplamasıdır. Bu seçenek Cloudflare bileşeninin katman içinde nerede görüneceğini belirler. Ziyaretçilerde görünmez doğrulama zaman aşımına uğrarsa katmanda yönetilen görünür modu kullanın."
+msgstr ""
+"Katman ekran kaplamasıdır. Bu seçenek Cloudflare bileşeninin katman içinde "
+"nerede görüneceğini belirler. Ziyaretçilerde görünmez doğrulama zaman "
+"aşımına uğrarsa katmanda yönetilen görünür modu kullanın."
 
 #: admin/views/security.php:92
 msgid "Invisible"
@@ -1038,22 +1045,37 @@ msgstr "Giriş sayfası SSO düğmelerini etkinleştir"
 #: admin/views/sign-in-experience.php:43
 msgid ""
 "Display SSO login buttons on the WordPress login page for enabled providers."
-msgstr "Etkin sağlayıcılar için SSO giriş düğmelerini WordPress giriş sayfasında gösterir."
+msgstr ""
+"Etkin sağlayıcılar için SSO giriş düğmelerini WordPress giriş sayfasında "
+"gösterir."
 
 #: admin/views/sign-in-experience.php:56
-msgid "Show Brand Badge"
-msgstr "Marka rozetini göster"
+msgid "Auto-login users already authenticated with SSO provider"
+msgstr "SSO sağlayıcısında zaten kimliği doğrulanmış kullanıcıları otomatik oturum açtır"
 
 #: admin/views/sign-in-experience.php:57
 msgid ""
-"Show the aOAUTH badge on front-end pages for users who signed in with SSO."
-msgstr "SSO ile giriş yapan kullanıcılar için ön uç sayfalarda aOAUTH rozetini gösterir."
+"When visitors reach wp-login.php, automatically try the first enabled SSO "
+"provider once. If their browser already has a provider session, WordPress "
+"signs them in without clicking a button."
+msgstr "Ziyaretçiler wp-login.php sayfasına geldiğinde, ilk etkin SSO sağlayıcısı otomatik olarak bir kez denenir. Tarayıcılarında zaten sağlayıcı oturumu varsa WordPress düğmeye tıklatmadan oturum açtırır."
 
-#: admin/views/sign-in-experience.php:73
+#: admin/views/sign-in-experience.php:70
+msgid "Show Brand Badge"
+msgstr "Marka rozetini göster"
+
+#: admin/views/sign-in-experience.php:71
+msgid ""
+"Show the aOAUTH badge on front-end pages for users who signed in with SSO."
+msgstr ""
+"SSO ile giriş yapan kullanıcılar için ön uç sayfalarda aOAUTH rozetini "
+"gösterir."
+
+#: admin/views/sign-in-experience.php:87
 msgid "Button Appearance"
 msgstr "Düğme görünümü"
 
-#: admin/views/sign-in-experience.php:74
+#: admin/views/sign-in-experience.php:88
 msgid ""
 "The theme applies to login buttons, account-linking pages, and verification "
 "overlays."
@@ -1061,43 +1083,43 @@ msgstr ""
 "Tema giriş düğmelerine, hesap bağlama sayfalarına ve doğrulama katmanlarına "
 "uygulanır."
 
-#: admin/views/sign-in-experience.php:79
+#: admin/views/sign-in-experience.php:93
 msgid "Single Sign-On Theme"
 msgstr "Tek oturum açma teması"
 
-#: admin/views/sign-in-experience.php:92 includes/class-core.php:368
+#: admin/views/sign-in-experience.php:106 includes/class-core.php:369
 msgid "Sign in"
 msgstr "Giriş yap"
 
-#: admin/views/sign-in-experience.php:108
+#: admin/views/sign-in-experience.php:122
 msgid "Login Button Layout"
 msgstr "Giriş düğmesi düzeni"
 
-#: admin/views/sign-in-experience.php:109
+#: admin/views/sign-in-experience.php:123
 msgid "Choose how providers are arranged on the login screen."
 msgstr "Sağlayıcıların giriş ekranında nasıl yerleşeceğini seçin."
 
-#: admin/views/sign-in-experience.php:113
+#: admin/views/sign-in-experience.php:127
 msgid "Full Width Stack"
 msgstr "Tam genişlik yığını"
 
-#: admin/views/sign-in-experience.php:114
+#: admin/views/sign-in-experience.php:128
 msgid "Wrap Centered"
 msgstr "Ortalanmış sarma"
 
-#: admin/views/sign-in-experience.php:115
+#: admin/views/sign-in-experience.php:129
 msgid "Two Columns"
 msgstr "İki sütun"
 
-#: admin/views/sign-in-experience.php:116
+#: admin/views/sign-in-experience.php:130
 msgid "Compact Row"
 msgstr "Kompakt satır"
 
-#: admin/views/sign-in-experience.php:123
+#: admin/views/sign-in-experience.php:137
 msgid "SSO Button Position"
 msgstr "SSO düğmesi konumu"
 
-#: admin/views/sign-in-experience.php:124
+#: admin/views/sign-in-experience.php:138
 msgid ""
 "Place SSO buttons below the WordPress login button to reduce accidental "
 "provider clicks."
@@ -1105,19 +1127,19 @@ msgstr ""
 "Yanlışlıkla sağlayıcıya tıklamayı azaltmak için SSO düğmelerini WordPress "
 "giriş düğmesinin altına yerleştirin."
 
-#: admin/views/sign-in-experience.php:128
+#: admin/views/sign-in-experience.php:142
 msgid "Below Login Form"
 msgstr "Giriş formunun altında"
 
-#: admin/views/sign-in-experience.php:129
+#: admin/views/sign-in-experience.php:143
 msgid "Inside Login Form"
 msgstr "Giriş formunun içinde"
 
-#: admin/views/sign-in-experience.php:137 admin/views/user-management.php:68
+#: admin/views/sign-in-experience.php:151 admin/views/user-management.php:68
 msgid "Account Linking"
 msgstr "Hesap bağlama"
 
-#: admin/views/sign-in-experience.php:138
+#: admin/views/sign-in-experience.php:152
 msgid ""
 "Front-end pages can show linking controls with the shortcode "
 "[aoauth_link_account]."
@@ -1125,11 +1147,11 @@ msgstr ""
 "Ön uç sayfalar [aoauth_link_account] kısa koduyla bağlama kontrollerini "
 "gösterebilir."
 
-#: admin/views/sign-in-experience.php:143
+#: admin/views/sign-in-experience.php:157
 msgid "Linking Page Title"
 msgstr "Bağlama sayfası başlığı"
 
-#: admin/views/sign-in-experience.php:144
+#: admin/views/sign-in-experience.php:158
 msgid ""
 "Shown above the password confirmation form when users link an existing "
 "account."
@@ -1137,44 +1159,44 @@ msgstr ""
 "Kullanıcılar mevcut bir hesabı bağlarken parola onay formunun üstünde "
 "gösterilir."
 
-#: admin/views/sign-in-experience.php:154
+#: admin/views/sign-in-experience.php:168
 msgid "Bot Verification Overlay"
 msgstr "Bot doğrulama katmanı"
 
-#: admin/views/sign-in-experience.php:155
+#: admin/views/sign-in-experience.php:169
 msgid "Used when full-screen verification overlay is enabled in Security."
 msgstr ""
 "Güvenlik bölümünde tam ekran doğrulama katmanı etkin olduğunda kullanılır."
 
-#: admin/views/sign-in-experience.php:160
+#: admin/views/sign-in-experience.php:174
 msgid "Bot Verification Overlay Style"
 msgstr "Bot doğrulama katmanı stili"
 
-#: admin/views/sign-in-experience.php:164
+#: admin/views/sign-in-experience.php:178
 msgid "Spotlight"
 msgstr "Spot ışığı"
 
-#: admin/views/sign-in-experience.php:165
+#: admin/views/sign-in-experience.php:179
 msgid "Constellation"
 msgstr "Takımyıldız"
 
-#: admin/views/sign-in-experience.php:166
+#: admin/views/sign-in-experience.php:180
 msgid "Minimal"
 msgstr "Minimal"
 
-#: admin/views/sign-in-experience.php:173
+#: admin/views/sign-in-experience.php:187
 msgid "Overlay Opacity"
 msgstr "Katman opaklığı"
 
-#: admin/views/sign-in-experience.php:174
+#: admin/views/sign-in-experience.php:188
 msgid "Controls the strength of the bot verification screen cover."
 msgstr "Bot doğrulama ekran kaplamasının yoğunluğunu belirler."
 
-#: admin/views/sign-in-experience.php:184
+#: admin/views/sign-in-experience.php:198
 msgid "Show Verification Branding"
 msgstr "Doğrulama markasını göster"
 
-#: admin/views/sign-in-experience.php:185
+#: admin/views/sign-in-experience.php:199
 msgid ""
 "Show a compact verification provider and aOAUTH Client SSO trust mark in the "
 "overlay corner."
@@ -1182,11 +1204,11 @@ msgstr ""
 "Katman köşesinde kompakt doğrulama sağlayıcısını ve aOAUTH Client SSO güven "
 "işaretini gösterir."
 
-#: admin/views/sign-in-experience.php:200
+#: admin/views/sign-in-experience.php:214
 msgid "Theme Preview"
 msgstr "Tema önizlemesi"
 
-#: admin/views/sign-in-experience.php:201
+#: admin/views/sign-in-experience.php:215
 msgid ""
 "Shows the WordPress login buttons, account-linking prompt, and verification "
 "overlay using the current Sign-In Experience settings."
@@ -1194,41 +1216,43 @@ msgstr ""
 "Geçerli oturum açma deneyimi ayarlarıyla WordPress giriş düğmelerini, hesap "
 "bağlama istemini ve doğrulama katmanını gösterir."
 
-#: admin/views/sign-in-experience.php:206
+#: admin/views/sign-in-experience.php:220
 msgid "wp-login.php"
 msgstr "wp-login.php"
 
-#: admin/views/sign-in-experience.php:209
+#: admin/views/sign-in-experience.php:223
 msgid "Log In"
 msgstr "Giriş yap"
 
-#: admin/views/sign-in-experience.php:210 includes/class-core.php:488
+#: admin/views/sign-in-experience.php:224 includes/class-core.php:489
 msgid "Or login with"
 msgstr "Veya şununla giriş yap"
 
-#: admin/views/sign-in-experience.php:226
+#: admin/views/sign-in-experience.php:240
 msgid "Confirm your WordPress password to link Google for secure SSO login."
-msgstr "Güvenli SSO girişi için Google bağlantısını kurmak üzere WordPress parolanızı onaylayın."
+msgstr ""
+"Güvenli SSO girişi için Google bağlantısını kurmak üzere WordPress "
+"parolanızı onaylayın."
 
-#: admin/views/sign-in-experience.php:228 includes/class-user-manager.php:227
+#: admin/views/sign-in-experience.php:242 includes/class-user-manager.php:227
 msgid "Confirm & Link Account"
 msgstr "Onayla ve hesabı bağla"
 
-#: admin/views/sign-in-experience.php:234 includes/class-core.php:130
-#: includes/class-core.php:378 includes/class-core.php:397
-#: includes/class-core.php:411
+#: admin/views/sign-in-experience.php:248 includes/class-core.php:131
+#: includes/class-core.php:379 includes/class-core.php:398
+#: includes/class-core.php:412
 msgid "Verifying secure sign-in..."
 msgstr "Güvenli giriş doğrulanıyor..."
 
-#: admin/views/sign-in-experience.php:237 includes/class-core.php:379
+#: admin/views/sign-in-experience.php:251 includes/class-core.php:380
 msgid "Verified by Cloudflare Turnstile"
 msgstr "Verified by Cloudflare Turnstile"
 
-#: admin/views/sign-in-experience.php:238 includes/class-core.php:382
+#: admin/views/sign-in-experience.php:252 includes/class-core.php:383
 msgid "Protected with aOAUTH Client SSO"
 msgstr "Protected with aOAUTH Client SSO"
 
-#: admin/views/sign-in-experience.php:247
+#: admin/views/sign-in-experience.php:261
 msgid "Save Sign-In Experience"
 msgstr "Oturum açma deneyimini kaydet"
 
@@ -1328,7 +1352,9 @@ msgstr ""
 msgid ""
 "If automatic toggling fails, place this above the \"stop editing\" line in "
 "wp-config.php. Remove it after troubleshooting."
-msgstr "Otomatik değiştirme başarısız olursa bunu wp-config.php içindeki \"stop editing\" satırının üstüne yerleştirin. Sorun giderme sonrasında kaldırın."
+msgstr ""
+"Otomatik değiştirme başarısız olursa bunu wp-config.php içindeki \"stop "
+"editing\" satırının üstüne yerleştirin. Sorun giderme sonrasında kaldırın."
 
 #: admin/views/tools.php:96
 msgid ""
@@ -1424,13 +1450,17 @@ msgstr "Yedekleme ve geri yükleme"
 
 #: admin/views/tools.php:153
 msgid "Export settings and providers, or restore a saved JSON backup."
-msgstr "Ayarları ve sağlayıcıları dışa aktarır veya kaydedilmiş bir JSON yedeğini geri yükler."
+msgstr ""
+"Ayarları ve sağlayıcıları dışa aktarır veya kaydedilmiş bir JSON yedeğini "
+"geri yükler."
 
 #: admin/views/tools.php:154
 msgid ""
 "Leave the backup password blank to exclude credentials. Enter a password to "
 "include encrypted secrets."
-msgstr "Kimlik bilgilerini hariç tutmak için yedek parolasını boş bırakın. Şifrelenmiş gizli bilgileri dahil etmek için parola girin."
+msgstr ""
+"Kimlik bilgilerini hariç tutmak için yedek parolasını boş bırakın. "
+"Şifrelenmiş gizli bilgileri dahil etmek için parola girin."
 
 #: admin/views/tools.php:156
 msgid "Download Settings"
@@ -1449,13 +1479,18 @@ msgid ""
 "Shows enabled providers that the logged-in user can link to their own "
 "WordPress account. Requires account linking and self-service linking to be "
 "enabled."
-msgstr "Oturum açmış kullanıcının kendi WordPress hesabına bağlayabileceği etkin sağlayıcıları gösterir. Hesap bağlama ve kendi kendine bağlamanın etkin olmasını gerektirir."
+msgstr ""
+"Oturum açmış kullanıcının kendi WordPress hesabına bağlayabileceği etkin "
+"sağlayıcıları gösterir. Hesap bağlama ve kendi kendine bağlamanın etkin "
+"olmasını gerektirir."
 
 #: admin/views/tools.php:173
 msgid ""
 "Shows the logged-in user their connected SSO providers and lets them "
 "disconnect a provider after confirmation."
-msgstr "Oturum açmış kullanıcıya bağlı SSO sağlayıcılarını gösterir ve onaydan sonra bir sağlayıcının bağlantısını kesmesine izin verir."
+msgstr ""
+"Oturum açmış kullanıcıya bağlı SSO sağlayıcılarını gösterir ve onaydan sonra "
+"bir sağlayıcının bağlantısını kesmesine izin verir."
 
 #: admin/views/tools.php:179
 msgid "Danger Zone"
@@ -1465,7 +1500,9 @@ msgstr "Tehlikeli bölge"
 msgid ""
 "Reset settings, remove providers, and delete logs. This action cannot be "
 "undone."
-msgstr "Ayarları sıfırlar, sağlayıcıları kaldırır ve günlükleri siler. Bu işlem geri alınamaz."
+msgstr ""
+"Ayarları sıfırlar, sağlayıcıları kaldırır ve günlükleri siler. Bu işlem geri "
+"alınamaz."
 
 #: admin/views/tools.php:181 admin/views/tools.php:187
 msgid "Factory Reset"
@@ -1493,7 +1530,9 @@ msgstr "Kullanıcı oluşturma"
 
 #: admin/views/user-management.php:12
 msgid "Controls how new WordPress users are created after successful SSO."
-msgstr "Başarılı SSO sonrasında yeni WordPress kullanıcılarının nasıl oluşturulacağını belirler."
+msgstr ""
+"Başarılı SSO sonrasında yeni WordPress kullanıcılarının nasıl "
+"oluşturulacağını belirler."
 
 #: admin/views/user-management.php:17
 msgid "Auto-Create Users"
@@ -1509,7 +1548,9 @@ msgstr "Varsayılan kullanıcı rolü"
 
 #: admin/views/user-management.php:32
 msgid "Applied to new SSO users unless provider role mapping overrides it."
-msgstr "Sağlayıcı rol eşlemesi geçersiz kılmadıkça yeni SSO kullanıcılarına uygulanır."
+msgstr ""
+"Sağlayıcı rol eşlemesi geçersiz kılmadıkça yeni SSO kullanıcılarına "
+"uygulanır."
 
 #: admin/views/user-management.php:46
 msgid "Role Redirects"
@@ -1527,13 +1568,17 @@ msgstr "Rol tabanlı yönlendirmeler"
 msgid ""
 "Set a path or safe same-site URL for each role after successful "
 "authentication."
-msgstr "Başarılı kimlik doğrulamasından sonra her rol için bir yol veya güvenli aynı site URL’si belirleyin."
+msgstr ""
+"Başarılı kimlik doğrulamasından sonra her rol için bir yol veya güvenli aynı "
+"site URL’si belirleyin."
 
 #: admin/views/user-management.php:69
 msgid ""
 "Lets users connect one or more enabled SSO providers to the same WordPress "
 "account."
-msgstr "Kullanıcıların bir veya daha fazla etkin SSO sağlayıcısını aynı WordPress hesabına bağlamasına izin verir."
+msgstr ""
+"Kullanıcıların bir veya daha fazla etkin SSO sağlayıcısını aynı WordPress "
+"hesabına bağlamasına izin verir."
 
 #: admin/views/user-management.php:74
 msgid "Allow Account Linking"
@@ -1543,7 +1588,9 @@ msgstr "Hesap bağlamaya izin ver"
 msgid ""
 "Allow existing users to confirm their WordPress password and attach an SSO "
 "provider."
-msgstr "Mevcut kullanıcıların WordPress parolalarını onaylayıp bir SSO sağlayıcısı eklemesine izin verir."
+msgstr ""
+"Mevcut kullanıcıların WordPress parolalarını onaylayıp bir SSO sağlayıcısı "
+"eklemesine izin verir."
 
 #: admin/views/user-management.php:89
 msgid "Self-Service Account Linking"
@@ -1553,7 +1600,9 @@ msgstr "Kendi kendine hesap bağlama"
 msgid ""
 "Allow logged-in users to link an SSO provider from a front-end page using "
 "[aoauth_link_account]."
-msgstr "Oturum açmış kullanıcıların [aoauth_link_account] kullanarak ön uç sayfadan bir SSO sağlayıcısı bağlamasına izin verir."
+msgstr ""
+"Oturum açmış kullanıcıların [aoauth_link_account] kullanarak ön uç sayfadan "
+"bir SSO sağlayıcısı bağlamasına izin verir."
 
 #: admin/views/user-management.php:103
 msgid "Max Password Attempts"
@@ -1572,7 +1621,10 @@ msgid ""
 "After repeated failed account-linking password checks, block both SSO and "
 "WordPress password login for this user for the selected number of minutes. "
 "Use 0 to disable the full login ban."
-msgstr "Hesap bağlama parola kontrolleri tekrar tekrar başarısız olursa, bu kullanıcı için hem SSO hem WordPress parola girişini seçilen dakika kadar engeller. Tam giriş engelini devre dışı bırakmak için 0 kullanın."
+msgstr ""
+"Hesap bağlama parola kontrolleri tekrar tekrar başarısız olursa, bu "
+"kullanıcı için hem SSO hem WordPress parola girişini seçilen dakika kadar "
+"engeller. Tam giriş engelini devre dışı bırakmak için 0 kullanın."
 
 #: admin/views/user-management.php:132
 msgid "Save User Management"
@@ -1602,7 +1654,9 @@ msgstr "Kimlik sağlayıcınızı seçin"
 msgid ""
 "Choose the OAuth 2.0 or OpenID Connect provider you want to connect for "
 "Single Sign-On."
-msgstr "Tek oturum açma için bağlamak istediğiniz OAuth 2.0 veya OpenID Connect sağlayıcısını seçin."
+msgstr ""
+"Tek oturum açma için bağlamak istediğiniz OAuth 2.0 veya OpenID Connect "
+"sağlayıcısını seçin."
 
 #: admin/views/wizard.php:66
 msgid "Search your provider..."
@@ -1616,7 +1670,9 @@ msgstr "Sağlayıcı yapılandırması"
 msgid ""
 "Configure your OAuth 2.0 application settings. Make sure you have registered "
 "your application with the provider first."
-msgstr "OAuth 2.0 uygulama ayarlarınızı yapılandırın. Önce uygulamanızı sağlayıcıya kaydettiğinizden emin olun."
+msgstr ""
+"OAuth 2.0 uygulama ayarlarınızı yapılandırın. Önce uygulamanızı sağlayıcıya "
+"kaydettiğinizden emin olun."
 
 #: admin/views/wizard.php:96
 msgid "Application Name"
@@ -1653,7 +1709,9 @@ msgstr "Kapsam eklemek için yazın ve Enter’a basın"
 #: admin/views/wizard.php:130
 msgid ""
 "Press Enter after each scope to add it. Common scopes: openid, email, profile"
-msgstr "Her kapsamdan sonra eklemek için Enter’a basın. Yaygın kapsamlar: openid, email, profile"
+msgstr ""
+"Her kapsamdan sonra eklemek için Enter’a basın. Yaygın kapsamlar: openid, "
+"email, profile"
 
 #: admin/views/wizard.php:134
 msgid "Provider Base URL / Discovery URL"
@@ -1663,7 +1721,9 @@ msgstr "Sağlayıcı temel URL / Discovery URL"
 msgid ""
 "Enter the base URL of your OAuth server. Click Auto Discover to "
 "automatically fetch the endpoints."
-msgstr "OAuth sunucunuzun temel URL’sini girin. Uç noktaları otomatik almak için Otomatik keşfet’e tıklayın."
+msgstr ""
+"OAuth sunucunuzun temel URL’sini girin. Uç noktaları otomatik almak için "
+"Otomatik keşfet’e tıklayın."
 
 #: admin/views/wizard.php:145
 msgid "Authorization Endpoint"
@@ -1689,7 +1749,9 @@ msgstr "UserInfo uç noktası (isteğe bağlı)"
 msgid ""
 "The URL where user profile information can be retrieved. May be optional if "
 "using ID tokens."
-msgstr "Kullanıcı profil bilgilerinin alınabileceği URL. ID token kullanılıyorsa isteğe bağlı olabilir."
+msgstr ""
+"Kullanıcı profil bilgilerinin alınabileceği URL. ID token kullanılıyorsa "
+"isteğe bağlı olabilir."
 
 #: admin/views/wizard.php:165
 msgid "Enable Advanced Attribute & Role Mapping"
@@ -1703,7 +1765,9 @@ msgstr "Özellik eşleme"
 msgid ""
 "Map provider attributes to WordPress user fields. Leave empty to use default "
 "mappings."
-msgstr "Sağlayıcı özelliklerini WordPress kullanıcı alanlarıyla eşleyin. Varsayılan eşlemeleri kullanmak için boş bırakın."
+msgstr ""
+"Sağlayıcı özelliklerini WordPress kullanıcı alanlarıyla eşleyin. Varsayılan "
+"eşlemeleri kullanmak için boş bırakın."
 
 #: admin/views/wizard.php:179
 msgid "Email"
@@ -1731,7 +1795,9 @@ msgstr "Rol eşleme (isteğe bağlı)"
 
 #: admin/views/wizard.php:201
 msgid "Map provider roles to WordPress roles. Leave empty if not needed."
-msgstr "Sağlayıcı rollerini WordPress rolleriyle eşleyin. Gerekli değilse boş bırakın."
+msgstr ""
+"Sağlayıcı rollerini WordPress rolleriyle eşleyin. Gerekli değilse boş "
+"bırakın."
 
 #: admin/views/wizard.php:205
 msgid "Role Attribute Path"
@@ -1765,7 +1831,9 @@ msgstr "Yapılandırmayı test et ve kaydet"
 msgid ""
 "Review your configuration and test the connection before saving. The "
 "provider will only be enabled if the test passes."
-msgstr "Kaydetmeden önce yapılandırmanızı gözden geçirin ve bağlantıyı test edin. Sağlayıcı yalnızca test başarılı olursa etkinleştirilir."
+msgstr ""
+"Kaydetmeden önce yapılandırmanızı gözden geçirin ve bağlantıyı test edin. "
+"Sağlayıcı yalnızca test başarılı olursa etkinleştirilir."
 
 #: admin/views/wizard.php:237
 msgid "Client Credentials Transmission Method"
@@ -1783,7 +1851,9 @@ msgstr "İstemci kimlik bilgilerini gövdede gönder (POST parametreleri)"
 msgid ""
 "Header method (HTTP Basic Auth using Authorization header) is more secure "
 "and follows OAuth 2.0 best practices."
-msgstr "Başlık yöntemi (Authorization başlığı ile HTTP Basic Auth) daha güvenlidir ve OAuth 2.0 en iyi uygulamalarına uyar."
+msgstr ""
+"Başlık yöntemi (Authorization başlığı ile HTTP Basic Auth) daha güvenlidir "
+"ve OAuth 2.0 en iyi uygulamalarına uyar."
 
 #: admin/views/wizard.php:255
 msgid "Verify that your configuration works before saving."
@@ -1810,79 +1880,79 @@ msgstr "Powered by aOAUTH SSO Client"
 msgid "Close badge"
 msgstr "Close badge"
 
-#: includes/class-core.php:128 includes/class-user-manager.php:200
+#: includes/class-core.php:129 includes/class-user-manager.php:200
 msgid "Link Your Account"
 msgstr "Link Your Account"
 
-#: includes/class-core.php:367
+#: includes/class-core.php:368
 msgid "Authenticating..."
 msgstr "Authenticating..."
 
-#: includes/class-core.php:369
+#: includes/class-core.php:370
 msgid "Try again"
 msgstr "Try again"
 
-#: includes/class-core.php:370
+#: includes/class-core.php:371
 msgid "Bot protection not loaded. Please refresh the page."
 msgstr "Bot protection not loaded. Please refresh the page."
 
-#: includes/class-core.php:371
+#: includes/class-core.php:372
 msgid "Verification expired. Please try again."
 msgstr "Verification expired. Please try again."
 
-#: includes/class-core.php:372
+#: includes/class-core.php:373
 msgid "Verification timed out. Please try again."
 msgstr "Verification timed out. Please try again."
 
-#: includes/class-core.php:373
+#: includes/class-core.php:374
 msgid "Verification is taking too long. Please try again."
 msgstr "Verification is taking too long. Please try again."
 
-#: includes/class-core.php:374
+#: includes/class-core.php:375
 msgid "Bot verification error. Please try again."
 msgstr "Bot verification error. Please try again."
 
-#: includes/class-core.php:375
+#: includes/class-core.php:376
 msgid "Verification error. Please try again."
 msgstr "Verification error. Please try again."
 
-#: includes/class-core.php:376
+#: includes/class-core.php:377
 msgid "Verification failed. Please try again."
 msgstr "Verification failed. Please try again."
 
-#: includes/class-core.php:377
+#: includes/class-core.php:378
 msgid "Redirecting to secure sign-in..."
 msgstr "Redirecting to secure sign-in..."
 
-#: includes/class-core.php:380
+#: includes/class-core.php:381
 msgid "Verified by Google reCAPTCHA"
 msgstr "Verified by Google reCAPTCHA"
 
-#: includes/class-core.php:381
+#: includes/class-core.php:382
 msgid "Bot verification active"
 msgstr "Bot verification active"
 
-#: includes/class-core.php:383
+#: includes/class-core.php:384
 msgid "Invalid request. Please try again."
 msgstr "Invalid request. Please try again."
 
-#: includes/class-core.php:384
+#: includes/class-core.php:385
 msgid "Invalid verification token. Please refresh and try again."
 msgstr "Invalid verification token. Please refresh and try again."
 
-#: includes/class-core.php:385
+#: includes/class-core.php:386
 msgid "Configuration error. Please contact site administrator."
 msgstr "Configuration error. Please contact site administrator."
 
-#: includes/class-core.php:386
+#: includes/class-core.php:387
 msgid "Site configuration error."
 msgstr "Site configuration error."
 
-#: includes/class-core.php:387
+#: includes/class-core.php:388
 msgid "Verification timed out. Please refresh the page and try again."
 msgstr "Verification timed out. Please refresh the page and try again."
 
-#: includes/class-core.php:388
+#: includes/class-core.php:389
 msgid "Internal error. Please try again."
 msgstr "Internal error. Please try again."
 
@@ -1891,7 +1961,7 @@ msgstr "Internal error. Please try again."
 msgid "Too many failed attempts. Please try again in %d minutes."
 msgstr "Too many failed attempts. Please try again in %d minutes."
 
-#: includes/class-sso-handler.php:382 includes/class-user-manager.php:37
+#: includes/class-sso-handler.php:473 includes/class-user-manager.php:37
 #: includes/class-user-manager.php:57
 #, php-format
 msgid ""
@@ -1901,45 +1971,45 @@ msgstr ""
 "Too many failed account-linking attempts. Login is temporarily blocked for "
 "%d minutes."
 
-#: includes/class-sso-handler.php:906
+#: includes/class-sso-handler.php:1004
 msgid "Provider not specified."
 msgstr "Provider not specified."
 
-#: includes/class-sso-handler.php:935
+#: includes/class-sso-handler.php:1033
 msgid "Provider not found."
 msgstr "Provider not found."
 
-#: includes/class-sso-handler.php:945
+#: includes/class-sso-handler.php:1043
 msgid "Provider is not enabled."
 msgstr "Provider is not enabled."
 
-#: includes/class-sso-handler.php:959
+#: includes/class-sso-handler.php:1056
 msgid "Account linking is not available for this request."
 msgstr "Account linking is not available for this request."
 
-#: includes/class-sso-handler.php:974
+#: includes/class-sso-handler.php:1076
 msgid ""
 "Bot verification is required. Please return to the login page and try again."
 msgstr ""
 "Bot verification is required. Please return to the login page and try again."
 
-#: includes/class-sso-handler.php:1041
+#: includes/class-sso-handler.php:1143
 msgid "Account linking is disabled."
 msgstr "Account linking is disabled."
 
-#: includes/class-sso-handler.php:1045
+#: includes/class-sso-handler.php:1147
 msgid "Please log in again before linking this provider."
 msgstr "Please log in again before linking this provider."
 
-#: includes/class-sso-handler.php:1058
+#: includes/class-sso-handler.php:1160
 msgid "The provider did not return an email address for this account."
 msgstr "The provider did not return an email address for this account."
 
-#: includes/class-sso-handler.php:1067 includes/class-user-manager.php:315
+#: includes/class-sso-handler.php:1169 includes/class-user-manager.php:315
 msgid "This provider account is already linked to another WordPress user."
 msgstr "This provider account is already linked to another WordPress user."
 
-#: includes/class-sso-handler.php:1170
+#: includes/class-sso-handler.php:1272
 msgid ""
 "Single sign-on could not be completed. Please try again or contact the site "
 "administrator."
@@ -1947,49 +2017,49 @@ msgstr ""
 "Single sign-on could not be completed. Please try again or contact the site "
 "administrator."
 
-#: includes/class-sso-handler.php:1204
+#: includes/class-sso-handler.php:1306
 msgid "Please log in to link an SSO provider."
 msgstr "Please log in to link an SSO provider."
 
-#: includes/class-sso-handler.php:1209
+#: includes/class-sso-handler.php:1311
 msgid "Account linking is not enabled."
 msgstr "Account linking is not enabled."
 
-#: includes/class-sso-handler.php:1220
+#: includes/class-sso-handler.php:1322
 msgid "No SSO providers are available to link."
 msgstr "No SSO providers are available to link."
 
-#: includes/class-sso-handler.php:1236
+#: includes/class-sso-handler.php:1338
 #, php-format
 msgid "Your account is linked to %d SSO provider(s)."
 msgstr "Your account is linked to %d SSO provider(s)."
 
-#: includes/class-sso-handler.php:1256
+#: includes/class-sso-handler.php:1358
 #, php-format
 msgid "Link %s"
 msgstr "Link %s"
 
-#: includes/class-sso-handler.php:1271
+#: includes/class-sso-handler.php:1373
 msgid "Please log in to manage your SSO connections."
 msgstr "SSO bağlantılarınızı yönetmek için giriş yapın."
 
-#: includes/class-sso-handler.php:1283
+#: includes/class-sso-handler.php:1385
 msgid "Are you sure you want to disconnect your SSO account?"
 msgstr "Are you sure you want to disconnect your SSO account?"
 
-#: includes/class-sso-handler.php:1304
+#: includes/class-sso-handler.php:1406
 msgid "Connected SSO Account:"
 msgstr "Connected SSO Account:"
 
-#: includes/class-sso-handler.php:1316
+#: includes/class-sso-handler.php:1418
 msgid "Disconnect SSO Account"
 msgstr "SSO hesabının bağlantısını kes"
 
-#: includes/class-sso-handler.php:1321
+#: includes/class-sso-handler.php:1423
 msgid "No SSO account is currently connected to your WordPress account."
 msgstr "WordPress hesabınıza şu anda bağlı bir SSO hesabı yok."
 
-#: includes/class-sso-handler.php:1323
+#: includes/class-sso-handler.php:1425
 msgid ""
 "To connect an SSO account, log in using your preferred provider on the login "
 "page."

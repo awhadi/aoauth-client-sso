@@ -99,6 +99,7 @@ class AOAUTH_Core {
     public static function get_default_settings() {
         return array(
             'enable_login_buttons' => '1',
+            'enable_provider_auto_login' => '0',
             'enable_brand_badge' => '1',
             'auto_create_users' => '1',
             'default_role' => 'subscriber',

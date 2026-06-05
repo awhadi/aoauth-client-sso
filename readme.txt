@@ -4,7 +4,7 @@ Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 2.4.8
+Stable tag: 2.4.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,31 +16,19 @@ aOAUTH Client SSO provides OAuth 2.0 and OpenID Connect login support for WordPr
 
 == Developer Summary ==
 
-Version: 2.4.8
+Version: 2.4.9
 Date: 2026-06-05
 Author: Awhadi
 
 Summary:
-This release completes the visible admin localization pass for the wizard, User Management settings, Tools Backup & Restore, Shortcodes, Danger Zone, and helper text sections across all bundled locales. It also moves single-user SSO unlinking into the SSO Providers column as a text link, keeps bulk unlink available, and cleans admin view filenames by removing redundant `-settings` suffixes.
+This release adds optional auto-login from an existing browser SSO provider session and always redirects already logged-in WordPress users away from the primary login screen. Normal SSO buttons and account-linking flows continue to work when auto-login is disabled.
 
 Files changed:
 - aoauth-client-sso.php
 - admin/class-admin.php
-- admin/css/admin-style.css
-- admin/js/admin-dashboard.js
-- admin/views/logs.php
-- admin/views/providers.php
-- admin/views/settings.php
-- admin/views/security.php
 - admin/views/sign-in-experience.php
-- admin/views/tabs.php
-- admin/views/tools.php
-- admin/views/user-management.php
-- admin/views/security-settings.php
-- admin/views/sign-in-experience-settings.php
-- admin/views/shared-admin-tabs.php
-- admin/views/tools-settings.php
-- admin/views/user-management-settings.php
+- includes/class-core.php
+- includes/class-sso-handler.php
 - languages/aoauth-client-sso.pot
 - languages/aoauth-client-sso-de_DE.po
 - languages/aoauth-client-sso-de_DE.mo
@@ -60,14 +48,19 @@ Files changed:
 - readme.txt
 
 Security/UX notes:
-- The unlink AJAX and bulk unlink handlers remain unchanged; only the single-user action placement changed from a separate column to an inline text link.
-- View file renames keep tab routing intact through the settings view map.
-- The plugin loads the aoauth-client-sso text domain from /languages, and every shipped locale was compiled after translation updates.
+- Auto-login cannot read third-party provider cookies directly; it starts one normal authorization attempt with the first enabled provider. If the provider already has a browser session, the provider returns immediately and WordPress signs the user in.
+- A short browser cookie prevents repeated auto-login loops when the provider session is missing or rejected.
+- Already logged-in users are redirected away from the primary login screen and direct SSO login initiation is blocked for existing WordPress sessions, while account-linking requests remain allowed.
 
 Rollback plan:
-Restore version 2.4.7 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. If only the Users table placement needs rollback, restore admin/class-admin.php, admin/js/admin-dashboard.js, and admin/css/admin-style.css from the 2.4.7 tag.
+Restore version 2.4.8 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only the login-flow changes, restore includes/class-sso-handler.php, includes/class-core.php, admin/class-admin.php, and admin/views/sign-in-experience.php from the 2.4.8 tag.
 
 == Changelog ==
+
+= 2.4.9 =
+* Added optional auto-login from existing browser SSO provider sessions.
+* Redirected already logged-in WordPress users away from wp-login.php to prevent second login attempts in the same browser.
+* Preserved normal manual SSO buttons and account-linking behavior.
 
 = 2.4.8 =
 * Completed visible admin translations for wizard, User Management, Tools, Shortcodes, Danger Zone, and helper text sections.

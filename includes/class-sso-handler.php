@@ -19,6 +19,7 @@ class AOAUTH_SSO_Handler {
     public function init() {
         $this->debug->log_start('AOAUTH_SSO_Handler::init');
         
+        add_action('login_init', array($this, 'handle_login_page_session_state'));
         add_action('init', array($this, 'handle_callback'));
         add_action('init', array($this, 'handle_login_action'));
         add_action('init', array($this, 'handle_test_callback'));
@@ -29,6 +30,100 @@ class AOAUTH_SSO_Handler {
         
         $this->debug->info('SSO Handler initialized');
         $this->debug->log_end('AOAUTH_SSO_Handler::init');
+    }
+
+    public function handle_login_page_session_state() {
+        if (!$this->is_primary_login_action()) {
+            return;
+        }
+
+        if (is_user_logged_in()) {
+            $redirect_to = $this->get_requested_redirect_url();
+            wp_safe_redirect($redirect_to ?: admin_url());
+            exit;
+        }
+
+        if (!empty($_REQUEST['loggedout']) || !empty($_REQUEST['checkemail'])) {
+            return;
+        }
+
+        $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
+        if (empty($settings['enable_provider_auto_login']) || $this->has_attempted_provider_auto_login()) {
+            return;
+        }
+
+        $provider_slug = $this->get_first_enabled_provider_slug();
+        if (empty($provider_slug)) {
+            return;
+        }
+
+        $this->mark_provider_auto_login_attempted();
+        $redirect_to = $this->get_requested_redirect_url();
+        $login_url = add_query_arg(array(
+            'oauth' => 'login',
+            'provider' => $provider_slug,
+            'redirect_to' => $redirect_to ?: admin_url(),
+            'aoauth_auto_login' => '1',
+            '_wpnonce' => wp_create_nonce('aoauth_login_' . $provider_slug),
+        ), wp_login_url());
+
+        $this->logger->log('auto_login_started', array(
+            'provider' => $provider_slug,
+            'redirect_path' => $this->get_url_path_for_log($redirect_to)
+        ), null, $provider_slug, 'info');
+
+        wp_safe_redirect($login_url);
+        exit;
+    }
+
+    private function is_primary_login_action() {
+        $action = isset($_REQUEST['action']) ? sanitize_key(wp_unslash($_REQUEST['action'])) : '';
+        return $action === '' || $action === 'login';
+    }
+
+    private function get_requested_redirect_url() {
+        $redirect_to = isset($_REQUEST['redirect_to']) ? esc_url_raw(wp_unslash($_REQUEST['redirect_to'])) : '';
+        if (!empty($redirect_to) && $this->security->validate_redirect_url($redirect_to)) {
+            return $redirect_to;
+        }
+
+        return '';
+    }
+
+    private function get_first_enabled_provider_slug() {
+        $applications = get_option('aoauth_applications', array());
+        if (!is_array($applications)) {
+            return '';
+        }
+
+        foreach ($applications as $provider_slug => $application) {
+            if (!empty($application['enabled'])) {
+                return sanitize_key($provider_slug);
+            }
+        }
+
+        return '';
+    }
+
+    private function has_attempted_provider_auto_login() {
+        return !empty($_COOKIE['aoauth_auto_login_attempted']);
+    }
+
+    private function mark_provider_auto_login_attempted() {
+        $cookie_path = defined('COOKIEPATH') && COOKIEPATH ? COOKIEPATH : '/';
+        $cookie_domain = defined('COOKIE_DOMAIN') ? COOKIE_DOMAIN : '';
+
+        setcookie(
+            'aoauth_auto_login_attempted',
+            '1',
+            time() + 90,
+            $cookie_path,
+            $cookie_domain,
+            is_ssl(),
+            true
+        );
+
+        $_COOKIE['aoauth_auto_login_attempted'] = '1';
     }
     
     private function extract_email_from_provider($user_info, $tokens, $provider_slug) {
@@ -895,6 +990,13 @@ class AOAUTH_SSO_Handler {
         $debug->debug('Test login detected, skipping main handler');
         return;
     }
+
+    $is_account_link_request = !empty($_GET['aoauth_link_current_user']);
+    if (is_user_logged_in() && !$is_account_link_request) {
+        $redirect_to = $this->get_requested_redirect_url();
+        wp_safe_redirect($redirect_to ?: admin_url());
+        exit;
+    }
     
     $provider_slug = isset($_GET['provider']) ? sanitize_text_field(wp_unslash($_GET['provider'])) : '';
     
@@ -951,7 +1053,6 @@ class AOAUTH_SSO_Handler {
         'send_credentials_in_header' => !empty($provider['send_credentials_in_header'])
     ));
     
-    $is_account_link_request = !empty($_GET['aoauth_link_current_user']);
     $link_user_id = 0;
     if ($is_account_link_request) {
         $link_user_id = $this->validate_self_service_link_request($provider_slug);
@@ -961,9 +1062,14 @@ class AOAUTH_SSO_Handler {
     }
 
     $requested_flow_id = isset($_GET['aoauth_flow_id']) ? sanitize_text_field(wp_unslash($_GET['aoauth_flow_id'])) : '';
-    $bot_verification = $is_account_link_request
-        ? array('verified' => true, 'type' => 'authenticated_link', 'flow_id' => $this->security->generate_secure_token(18), 'provider' => $provider_slug)
-        : $this->consume_bot_protection_verification_for_login($provider_slug, $requested_flow_id);
+    $is_auto_login_request = !empty($_GET['aoauth_auto_login']);
+    if ($is_account_link_request) {
+        $bot_verification = array('verified' => true, 'type' => 'authenticated_link', 'flow_id' => $this->security->generate_secure_token(18), 'provider' => $provider_slug);
+    } elseif ($is_auto_login_request) {
+        $bot_verification = array('verified' => true, 'type' => 'auto_login', 'flow_id' => $this->security->generate_secure_token(18), 'provider' => $provider_slug);
+    } else {
+        $bot_verification = $this->consume_bot_protection_verification_for_login($provider_slug, $requested_flow_id);
+    }
     if (false === $bot_verification) {
         $debug->error('Bot protection verification missing or expired');
         $this->logger->log('bot_protection_required_failed', array(

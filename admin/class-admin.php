@@ -1223,6 +1223,7 @@ class AOAUTH_Admin {
 
         $sanitized = array(
             'enable_login_buttons' => $is_enabled('enable_login_buttons'),
+            'enable_provider_auto_login' => $is_enabled('enable_provider_auto_login'),
             'enable_brand_badge' => $is_enabled('enable_brand_badge'),
             'login_button_theme' => sanitize_text_field($settings['login_button_theme']),
             'login_button_layout' => $login_button_layout,

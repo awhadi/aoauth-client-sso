@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.4.9] - 2026-06-05
+
+### Added
+- Added an optional Sign-In Experience setting to automatically try the first enabled SSO provider when visitors reach `wp-login.php`.
+
+### Changed
+- Redirect logged-in WordPress users away from the primary login screen so another login cannot be started in the same browser session.
+- Prevent direct SSO login initiation for already logged-in users while preserving authenticated account-linking flows.
+
 ## [2.4.8] - 2026-06-05
 
 ### Changed
