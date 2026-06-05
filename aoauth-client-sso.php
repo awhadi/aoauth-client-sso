@@ -2,8 +2,8 @@
 /**
  * Plugin Name: aOAUTH Client SSO
  * Plugin URI: https://awhadi.online
- * Description: Add secure OAuth 2.0 and OpenID Connect Single Sign-On to WordPress with Google, Microsoft, GitHub, Keycloak, Auth0, Okta, and custom identity providers.
- * Version: 2.4.11
+ * Description: WordPress OAuth/OIDC Single Sign-On for Google, Microsoft, GitHub, Keycloak, Auth0, Okta, WordPress, and custom identity providers.
+ * Version: 2.5.0
  * Author: Awhadi
  * Author URI: https://awhadi.online
  * License: GPL v2 or later
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('AOAUTH_VERSION', '2.4.11');
+define('AOAUTH_VERSION', '2.5.0');
 define('AOAUTH_PLUGIN_FILE', __FILE__);
 define('AOAUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AOAUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -38,7 +38,6 @@ require_once AOAUTH_PLUGIN_DIR . 'admin/class-admin.php';
 
 register_activation_hook(__FILE__, 'aoauth_activate');
 register_deactivation_hook(__FILE__, 'aoauth_deactivate');
-register_uninstall_hook(__FILE__, 'aoauth_uninstall');
 
 function aoauth_activate() {
     if (version_compare(PHP_VERSION, AOAUTH_MINIMUM_PHP_VERSION, '<')) {
@@ -67,11 +66,6 @@ function aoauth_activate() {
 function aoauth_deactivate() {
     $core = aoauth_core();
     $core->deactivate();
-}
-
-function aoauth_uninstall() {
-    $core = aoauth_core();
-    $core->uninstall();
 }
 
 function aoauth_core() {

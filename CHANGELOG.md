@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.5.0] - 2026-06-05
+
+### Added
+- Added a Tools setting to enable or disable WordPress automatic plugin updates for this plugin when an update package is available from the configured update source.
+- Added a root `uninstall.php` file for WordPress-standard uninstall cleanup.
+- Added bundled translations for the new automatic update setting label and helper text.
+
+### Changed
+- Clarified the plugin header and WordPress readme descriptions to explain supported OAuth/OIDC provider login, standards compatibility, and how the plugin replaces password-only WordPress login with managed Single Sign-On.
+- Moved uninstall cleanup out of the main plugin runtime and into `uninstall.php`.
+
 ## [2.4.11] - 2026-06-05
 
 ### Changed

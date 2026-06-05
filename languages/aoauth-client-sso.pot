@@ -1971,3 +1971,11 @@ msgstr ""
 #: includes/class-user-manager.php:303
 msgid "Incorrect password. Please try again."
 msgstr ""
+
+#: admin/views/tools.php:134
+msgid "Enable Automatic Updates"
+msgstr ""
+
+#: admin/views/tools.php:135
+msgid "Allow WordPress to install new versions of this plugin automatically when an update package is available. Disable this if you prefer to update manually after testing."
+msgstr ""

@@ -2146,5 +2146,16 @@ msgstr ""
 msgid "Incorrect password. Please try again."
 msgstr "Falsches Passwort. Bitte versuchen Sie es erneut."
 
+#: admin/views/tools.php:134
+msgid "Enable Automatic Updates"
+msgstr "Automatische Updates aktivieren"
+
+#: admin/views/tools.php:135
+msgid "Allow WordPress to install new versions of this plugin automatically when an update package is available. Disable this if you prefer to update manually after testing."
+msgstr ""
+"Erlauben Sie WordPress, neue Versionen dieses Plugins automatisch zu "
+"installieren, wenn ein Update-Paket verfügbar ist. Deaktivieren Sie dies, "
+"wenn Sie nach dem Testen lieber manuell aktualisieren möchten."
+
 #~ msgid "SSO Actions"
 #~ msgstr "SSO-Aktionen"

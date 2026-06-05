@@ -43,9 +43,25 @@ class AOAUTH_Core {
         
         add_action('wp_enqueue_scripts', array($this, 'enqueue_brand_badge'));
         add_action('wp_footer', array($this, 'render_brand_badge'));
+        add_filter('auto_update_plugin', array($this, 'enable_plugin_auto_updates'), 10, 2);
 
         $this->debug->info('Plugin initialized');
         $this->debug->log_end('AOAUTH_Core::init');
+    }
+
+    public function enable_plugin_auto_updates($update, $item) {
+        $settings = array_merge(self::get_default_settings(), get_option('aoauth_settings', array()));
+        if (empty($settings['enable_auto_updates'])) {
+            return $update;
+        }
+
+        $plugin_file = is_object($item) && isset($item->plugin) ? $item->plugin : '';
+
+        if ($plugin_file === AOAUTH_PLUGIN_BASENAME) {
+            return true;
+        }
+
+        return $update;
     }
     
     public function render_brand_badge() {
@@ -101,6 +117,7 @@ class AOAUTH_Core {
             'enable_login_buttons' => '1',
             'enable_provider_auto_login' => '0',
             'enable_brand_badge' => '1',
+            'enable_auto_updates' => '1',
             'auto_create_users' => '1',
             'default_role' => 'subscriber',
             'allow_account_linking' => '0',
@@ -193,18 +210,6 @@ class AOAUTH_Core {
         $this->debug->log_end('AOAUTH_Core::deactivate');
     }
     
-    public function uninstall() {
-        $this->debug->log_start('AOAUTH_Core::uninstall');
-        
-        $options = get_option('aoauth_settings', array());
-        if (!empty($options['delete_data_on_uninstall'])) {
-            $this->delete_all_data();
-            $this->debug->info('All plugin data deleted during uninstall');
-        }
-        
-        $this->debug->log_end('AOAUTH_Core::uninstall');
-    }
-    
     private function create_tables() {
         $this->debug->log_start('AOAUTH_Core::create_tables');
         
@@ -255,28 +260,6 @@ class AOAUTH_Core {
         }
         
         $this->debug->log_end('AOAUTH_Core::set_default_options');
-    }
-    
-    private function delete_all_data() {
-        $this->debug->log_start('AOAUTH_Core::delete_all_data');
-        
-        global $wpdb;
-        
-        $tables = array('aoauth_logs');
-        foreach ($tables as $table) {
-            $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}{$table}");
-            $this->debug->debug('Dropped table', array('table' => $table));
-        }
-        
-        delete_option('aoauth_settings');
-        delete_option('aoauth_applications');
-        delete_option('aoauth_version');
-        delete_option('aoauth_encryption_key');
-        
-        $wpdb->query("DELETE FROM {$wpdb->usermeta} WHERE meta_key LIKE '_aoauth_%'");
-        
-        $this->debug->info('All plugin data deleted');
-        $this->debug->log_end('AOAUTH_Core::delete_all_data');
     }
     
     public function get_available_themes() {
