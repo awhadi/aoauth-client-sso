@@ -2,8 +2,8 @@
 /**
  * Plugin Name: aOAUTH Client SSO
  * Plugin URI: https://awhadi.online
- * Description: Professional OAuth 2.0 and OpenID Connect Single Sign-On client for WordPress. Supports multiple providers with secure authentication.
- * Version: 2.4.10
+ * Description: Add secure OAuth 2.0 and OpenID Connect Single Sign-On to WordPress with Google, Microsoft, GitHub, Keycloak, Auth0, Okta, and custom identity providers.
+ * Version: 2.4.11
  * Author: Awhadi
  * Author URI: https://awhadi.online
  * License: GPL v2 or later
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('AOAUTH_VERSION', '2.4.10');
+define('AOAUTH_VERSION', '2.4.11');
 define('AOAUTH_PLUGIN_FILE', __FILE__);
 define('AOAUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AOAUTH_PLUGIN_URL', plugin_dir_url(__FILE__));

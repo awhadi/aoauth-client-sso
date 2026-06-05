@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.4.11] - 2026-06-05
+
+### Changed
+- Improved the plugin header and WordPress readme descriptions to better explain supported OAuth 2.0/OpenID Connect SSO providers, standards compatibility, and core plugin features.
+
 ## [2.4.10] - 2026-06-05
 
 ### Added

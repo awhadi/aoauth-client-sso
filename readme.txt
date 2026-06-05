@@ -4,44 +4,42 @@ Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 2.4.10
+Stable tag: 2.4.11
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Professional OAuth 2.0 and OpenID Connect Single Sign-On client for WordPress.
+Secure OAuth 2.0 and OpenID Connect Single Sign-On for WordPress with Google, Microsoft, GitHub, Keycloak, Auth0, Okta, and custom identity providers.
 
 == Description ==
 
-aOAUTH Client SSO provides OAuth 2.0 and OpenID Connect login support for WordPress with configurable providers, login button themes, account linking, bot verification, logging, and administrator tools.
+aOAUTH Client SSO lets users sign in to WordPress with OAuth 2.0 and OpenID Connect identity providers such as Google, Microsoft, GitHub, Keycloak, Auth0, Okta, OneLogin, GitLab, Facebook, LinkedIn, Apple, or any compatible custom OAuth/OIDC provider.
+
+The plugin works with identity providers that follow OAuth 2.0 and OpenID Connect standards, and includes configurable provider setup, secure authorization-code login with PKCE, account linking, role mapping, role-based redirects, login button themes, bot verification, activity logs, backup and restore tools, and multilingual admin settings.
 
 == Developer Summary ==
 
-Version: 2.4.10
+Version: 2.4.11
 Date: 2026-06-05
 Author: Awhadi
 
 Summary:
-This release adds a Dari Afghanistan locale stylesheet that loads only when WordPress is using `fa_AF`. The stylesheet applies one Persian-capable font family across plugin admin screens, login buttons, shortcodes, verification overlays, and account-linking pages while preserving existing font sizes and weights.
+This release improves the WordPress plugin metadata and readme description so the plugin clearly explains its OAuth 2.0/OpenID Connect SSO purpose, supported provider examples, standards compatibility, and main security/UX features.
 
 Files changed:
 - aoauth-client-sso.php
-- admin/class-admin.php
-- includes/class-core.php
-- includes/class-sso-handler.php
-- includes/class-user-manager.php
-- public/css/locale-fa-af.css
 - CHANGELOG.md
 - readme.txt
 
 Security/UX notes:
-- The locale stylesheet is loaded only when the active locale is `fa_AF`.
-- The stylesheet changes only font family; existing layout, font sizes, weights, and theme colors remain controlled by the existing plugin CSS.
-- No external font file is bundled in this release. If a specific `.woff2` font is provided later, it can be added to the same locale stylesheet with `@font-face`.
+- This release changes plugin description copy only and does not alter authentication, provider configuration, styling, localization loading, or data handling behavior.
 
 Rollback plan:
-Restore version 2.4.9 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only the locale font change, remove public/css/locale-fa-af.css and restore admin/class-admin.php, includes/class-core.php, includes/class-sso-handler.php, and includes/class-user-manager.php from the 2.4.9 tag.
+Restore version 2.4.10 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only the description copy, restore aoauth-client-sso.php and readme.txt from the 2.4.10 tag.
 
 == Changelog ==
+
+= 2.4.11 =
+* Improved plugin header and readme descriptions for WordPress plugin listing clarity.
 
 = 2.4.10 =
 * Added a fa_AF-only locale stylesheet for consistent Dari/Persian typography across plugin UI surfaces.
