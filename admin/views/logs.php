@@ -18,7 +18,7 @@ $total_pages = $log_limit > 0 ? (int) ceil((int) $total_logs / $log_limit) : 1;
         </div>
     </div>
     
-    <?php include AOAUTH_PLUGIN_DIR . 'admin/views/shared-admin-tabs.php'; ?>
+    <?php include AOAUTH_PLUGIN_DIR . 'admin/views/tabs.php'; ?>
     
     <div class="aoauth-admin-content">
         <?php if (!empty($settings['enable_logs'])): ?>

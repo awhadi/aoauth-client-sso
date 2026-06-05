@@ -4,7 +4,7 @@ Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 2.4.7
+Stable tag: 2.4.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,15 +16,32 @@ aOAUTH Client SSO provides OAuth 2.0 and OpenID Connect login support for WordPr
 
 == Developer Summary ==
 
-Version: 2.4.7
-Date: 2026-06-04
+Version: 2.4.8
+Date: 2026-06-05
 Author: Awhadi
 
 Summary:
-This release completes the shipped gettext catalogs for German, Dari (Afghanistan), French, Russian, Turkish, Chinese, and Japanese. Admin tabs, settings labels, helper text, front-end messages, and JavaScript strings now have populated translations in the bundled `.po` files and regenerated `.mo` files.
+This release completes the visible admin localization pass for the wizard, User Management settings, Tools Backup & Restore, Shortcodes, Danger Zone, and helper text sections across all bundled locales. It also moves single-user SSO unlinking into the SSO Providers column as a text link, keeps bulk unlink available, and cleans admin view filenames by removing redundant `-settings` suffixes.
 
 Files changed:
 - aoauth-client-sso.php
+- admin/class-admin.php
+- admin/css/admin-style.css
+- admin/js/admin-dashboard.js
+- admin/views/logs.php
+- admin/views/providers.php
+- admin/views/settings.php
+- admin/views/security.php
+- admin/views/sign-in-experience.php
+- admin/views/tabs.php
+- admin/views/tools.php
+- admin/views/user-management.php
+- admin/views/security-settings.php
+- admin/views/sign-in-experience-settings.php
+- admin/views/shared-admin-tabs.php
+- admin/views/tools-settings.php
+- admin/views/user-management-settings.php
+- languages/aoauth-client-sso.pot
 - languages/aoauth-client-sso-de_DE.po
 - languages/aoauth-client-sso-de_DE.mo
 - languages/aoauth-client-sso-fa_AF.po
@@ -43,13 +60,19 @@ Files changed:
 - readme.txt
 
 Security/UX notes:
-- This release changes localization resources only and does not change authentication, debug logging, provider configuration, login layout, or theme behavior.
+- The unlink AJAX and bulk unlink handlers remain unchanged; only the single-user action placement changed from a separate column to an inline text link.
+- View file renames keep tab routing intact through the settings view map.
 - The plugin loads the aoauth-client-sso text domain from /languages, and every shipped locale was compiled after translation updates.
 
 Rollback plan:
-Restore version 2.4.6 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. If only localization needs rollback, restore the files in languages/ from the 2.4.6 tag.
+Restore version 2.4.7 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. If only the Users table placement needs rollback, restore admin/class-admin.php, admin/js/admin-dashboard.js, and admin/css/admin-style.css from the 2.4.7 tag.
 
 == Changelog ==
+
+= 2.4.8 =
+* Completed visible admin translations for wizard, User Management, Tools, Shortcodes, Danger Zone, and helper text sections.
+* Moved single-user SSO unlinking into the SSO Providers column as a text link.
+* Renamed settings tab view files to concise names and regenerated gettext files.
 
 = 2.4.7 =
 * Completed bundled translations for German, Dari (Afghanistan), French, Russian, Turkish, Chinese, and Japanese.

@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.4.8] - 2026-06-05
+
+### Changed
+- Moved the Users screen SSO unlink action into the SSO Providers column as a text link beside each provider name and removed the separate SSO Actions column.
+- Renamed settings tab view files to concise names and replaced the shared admin tabs partial with `tabs.php`.
+
+### Fixed
+- Completed visible admin translations for the wizard, User Management settings, Tools Backup & Restore, Shortcodes, Danger Zone, and helper text sections across all bundled locales.
+- Regenerated the gettext template and compiled locale files after the admin view renames.
+
 ## [2.4.7] - 2026-06-04
 
 ### Fixed

@@ -16,7 +16,7 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : '';
         </div>
     </div>
     
-    <?php include AOAUTH_PLUGIN_DIR . 'admin/views/shared-admin-tabs.php'; ?>
+    <?php include AOAUTH_PLUGIN_DIR . 'admin/views/tabs.php'; ?>
     
     <div class="aoauth-admin-content">
         <?php if (!empty($applications)): ?>

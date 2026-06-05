@@ -142,7 +142,7 @@
         e.preventDefault();
         var $btn = $(this);
         
-        if ($btn.prop('disabled')) {
+        if ($btn.prop('disabled') || $btn.attr('aria-disabled') === 'true' || $btn.data('disabled')) {
             aoauthShowToast($btn.attr('title') || adminText('action_not_allowed', 'Action not allowed'), 'error');
             return;
         }

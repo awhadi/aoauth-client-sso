@@ -2,10 +2,10 @@
 $current_page = isset($_GET['page']) ? sanitize_key($_GET['page']) : '';
 $settings_view = isset($settings_view) ? $settings_view : 'sign-in-experience';
 $view_files = array(
-    'sign-in-experience' => 'sign-in-experience-settings.php',
-    'user-management' => 'user-management-settings.php',
-    'security' => 'security-settings.php',
-    'tools' => 'tools-settings.php',
+    'sign-in-experience' => 'sign-in-experience.php',
+    'user-management' => 'user-management.php',
+    'security' => 'security.php',
+    'tools' => 'tools.php',
 );
 ?>
 <div class="aoauth-admin-wrap">
@@ -23,7 +23,7 @@ $view_files = array(
         </div>
     </div>
 
-    <?php include AOAUTH_PLUGIN_DIR . 'admin/views/shared-admin-tabs.php'; ?>
+    <?php include AOAUTH_PLUGIN_DIR . 'admin/views/tabs.php'; ?>
 
     <div class="aoauth-admin-content <?php echo $settings_view === 'tools' ? 'two-column-layout' : ''; ?>">
         <?php include AOAUTH_PLUGIN_DIR . 'admin/views/' . $view_files[$settings_view]; ?>

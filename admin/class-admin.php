@@ -527,19 +527,18 @@ class AOAUTH_Admin {
     }
     
     /**
-     * Add unlink columns to users table
+     * Add SSO provider column to users table
      */
     public function add_unlink_column($columns) {
         $columns['aoauth_sso'] = __('SSO Providers', 'aoauth-client-sso');
-        $columns['aoauth_sso_actions'] = __('SSO Actions', 'aoauth-client-sso');
         return $columns;
     }
     
     /**
-     * Render unlink column content
+     * Render SSO provider column content
      */
     public function render_unlink_column($value, $column_name, $user_id) {
-        if ($column_name === 'aoauth_sso' || $column_name === 'aoauth_sso_actions') {
+        if ($column_name === 'aoauth_sso') {
             $linked_providers = AOAUTH_Core::get_user_linked_providers($user_id);
             $applications = get_option('aoauth_applications', array());
             $current_user = wp_get_current_user();
@@ -549,33 +548,27 @@ class AOAUTH_Admin {
                 foreach (array_keys($linked_providers) as $provider) {
                     $provider_name = $applications[$provider]['provider_name'] ?? $provider;
                     $app_name = $applications[$provider]['app_name'] ?? ucfirst($provider);
-                    if ($column_name === 'aoauth_sso') {
-                        $provider_items[] = '<span class="aoauth-provider-cell">
-                                    <img src="' . esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . sanitize_key($provider_name) . '.png') . '"
-                                         class="aoauth-provider-cell-icon"
-                                         data-hide-on-error="1"
-                                         alt="' . esc_attr($app_name) . '">
-                                    <span>' . esc_html($app_name) . '</span>
-                                </span>';
-                        continue;
-                    }
-
-                    $disabled = '';
+                    $disabled_attributes = '';
                     $title = '';
                     if ($user_id === $current_user->ID && count(get_users(array('role' => 'administrator'))) === 1) {
-                        $disabled = 'disabled';
+                        $disabled_attributes = ' aria-disabled="true" data-disabled="1"';
                         $title = __('Cannot unlink the only administrator account', 'aoauth-client-sso');
                     }
-                    $provider_items[] = '<button type="button"
+
+                    $provider_items[] = '<span class="aoauth-provider-cell">
+                                <img src="' . esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . sanitize_key($provider_name) . '.png') . '"
+                                     class="aoauth-provider-cell-icon"
+                                     data-hide-on-error="1"
+                                     alt="' . esc_attr($app_name) . '">
+                                <span class="aoauth-provider-cell-name">' . esc_html($app_name) . '</span>
+                                <a href="#"
                                 class="aoauth-provider-cell-action aoauth-unlink-user-btn"
                                 data-user-id="' . esc_attr($user_id) . '"
                                 data-provider="' . esc_attr($provider) . '"
                                 data-nonce="' . esc_attr(wp_create_nonce('aoauth_unlink_' . $user_id)) . '"
-                                ' . $disabled . '
-                                title="' . esc_attr($title ?: sprintf(__('Unlink %s', 'aoauth-client-sso'), $app_name)) . '">
-                            <span class="dashicons dashicons-unlink"></span>
-                            <span>' . esc_html(sprintf(__('Unlink %s', 'aoauth-client-sso'), $app_name)) . '</span>
-                        </button>';
+                                ' . $disabled_attributes . '
+                                title="' . esc_attr($title ?: sprintf(__('Unlink %s', 'aoauth-client-sso'), $app_name)) . '">' . esc_html__('Unlink', 'aoauth-client-sso') . '</a>
+                            </span>';
                 }
                 return implode(' ', $provider_items);
             }

@@ -2178,20 +2178,26 @@
     cursor: not-allowed;
 }
 
-/* Users Table Unlink Button */
+/* Users Table Unlink Link */
 .aoauth-unlink-user-btn {
-    min-height: 28px;
-    padding: 4px 8px;
+    color: #b91c1c;
     font-size: 13px;
+    text-decoration: none;
 }
 
-.aoauth-unlink-user-btn:disabled {
+.aoauth-unlink-user-btn:hover,
+.aoauth-unlink-user-btn:focus {
+    color: #7f1d1d;
+    text-decoration: underline;
+}
+
+.aoauth-unlink-user-btn[aria-disabled="true"] {
     color: #9ca3af;
+    cursor: not-allowed;
+    text-decoration: none;
 }
 
 .aoauth-provider-cell .aoauth-unlink-user-btn {
-    min-height: 24px;
-    padding: 0;
     font-size: 13px;
 }
 
