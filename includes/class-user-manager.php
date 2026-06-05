@@ -169,6 +169,9 @@ class AOAUTH_User_Manager {
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title><?php esc_html_e('Account Temporarily Locked', 'aoauth-client-sso'); ?></title>
             <link rel="stylesheet" href="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'public/css/account-linking-page.css?ver=' . AOAUTH_VERSION); ?>">
+            <?php if (AOAUTH_Core::is_dari_locale()): ?>
+                <link rel="stylesheet" href="<?php echo esc_url(AOAUTH_Core::get_dari_locale_stylesheet_url()); ?>">
+            <?php endif; ?>
         </head>
         <body class="aoauth-account-linking-page aoauth-link-theme-<?php echo esc_attr($theme); ?>">
             <div class="aoauth-lockdown-container">
@@ -207,6 +210,9 @@ class AOAUTH_User_Manager {
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title><?php esc_html_e('Confirm Account Linking', 'aoauth-client-sso'); ?></title>
             <link rel="stylesheet" href="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'public/css/account-linking-page.css?ver=' . AOAUTH_VERSION); ?>">
+            <?php if (AOAUTH_Core::is_dari_locale()): ?>
+                <link rel="stylesheet" href="<?php echo esc_url(AOAUTH_Core::get_dari_locale_stylesheet_url()); ?>">
+            <?php endif; ?>
         </head>
         <body class="aoauth-account-linking-page aoauth-link-theme-<?php echo esc_attr($theme); ?>">
             <div class="aoauth-link-container">

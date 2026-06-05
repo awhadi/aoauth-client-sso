@@ -4,7 +4,7 @@ Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 2.4.9
+Stable tag: 2.4.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,46 +16,35 @@ aOAUTH Client SSO provides OAuth 2.0 and OpenID Connect login support for WordPr
 
 == Developer Summary ==
 
-Version: 2.4.9
+Version: 2.4.10
 Date: 2026-06-05
 Author: Awhadi
 
 Summary:
-This release adds optional auto-login from an existing browser SSO provider session and always redirects already logged-in WordPress users away from the primary login screen. Normal SSO buttons and account-linking flows continue to work when auto-login is disabled.
+This release adds a Dari Afghanistan locale stylesheet that loads only when WordPress is using `fa_AF`. The stylesheet applies one Persian-capable font family across plugin admin screens, login buttons, shortcodes, verification overlays, and account-linking pages while preserving existing font sizes and weights.
 
 Files changed:
 - aoauth-client-sso.php
 - admin/class-admin.php
-- admin/views/sign-in-experience.php
 - includes/class-core.php
 - includes/class-sso-handler.php
-- languages/aoauth-client-sso.pot
-- languages/aoauth-client-sso-de_DE.po
-- languages/aoauth-client-sso-de_DE.mo
-- languages/aoauth-client-sso-fa_AF.po
-- languages/aoauth-client-sso-fa_AF.mo
-- languages/aoauth-client-sso-fr_FR.po
-- languages/aoauth-client-sso-fr_FR.mo
-- languages/aoauth-client-sso-ru_RU.po
-- languages/aoauth-client-sso-ru_RU.mo
-- languages/aoauth-client-sso-tr_TR.po
-- languages/aoauth-client-sso-tr_TR.mo
-- languages/aoauth-client-sso-zh_CN.po
-- languages/aoauth-client-sso-zh_CN.mo
-- languages/aoauth-client-sso-ja.po
-- languages/aoauth-client-sso-ja.mo
+- includes/class-user-manager.php
+- public/css/locale-fa-af.css
 - CHANGELOG.md
 - readme.txt
 
 Security/UX notes:
-- Auto-login cannot read third-party provider cookies directly; it starts one normal authorization attempt with the first enabled provider. If the provider already has a browser session, the provider returns immediately and WordPress signs the user in.
-- A short browser cookie prevents repeated auto-login loops when the provider session is missing or rejected.
-- Already logged-in users are redirected away from the primary login screen and direct SSO login initiation is blocked for existing WordPress sessions, while account-linking requests remain allowed.
+- The locale stylesheet is loaded only when the active locale is `fa_AF`.
+- The stylesheet changes only font family; existing layout, font sizes, weights, and theme colors remain controlled by the existing plugin CSS.
+- No external font file is bundled in this release. If a specific `.woff2` font is provided later, it can be added to the same locale stylesheet with `@font-face`.
 
 Rollback plan:
-Restore version 2.4.8 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only the login-flow changes, restore includes/class-sso-handler.php, includes/class-core.php, admin/class-admin.php, and admin/views/sign-in-experience.php from the 2.4.8 tag.
+Restore version 2.4.9 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only the locale font change, remove public/css/locale-fa-af.css and restore admin/class-admin.php, includes/class-core.php, includes/class-sso-handler.php, and includes/class-user-manager.php from the 2.4.9 tag.
 
 == Changelog ==
+
+= 2.4.10 =
+* Added a fa_AF-only locale stylesheet for consistent Dari/Persian typography across plugin UI surfaces.
 
 = 2.4.9 =
 * Added optional auto-login from existing browser SSO provider sessions.

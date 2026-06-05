@@ -180,6 +180,8 @@ class AOAUTH_Admin {
             AOAUTH_VERSION
         );
 
+        AOAUTH_Core::enqueue_dari_locale_style('aoauth-admin');
+
         wp_enqueue_script(
             'aoauth-toast-notices',
             AOAUTH_PLUGIN_URL . 'admin/js/toast-notices.js',

@@ -1321,6 +1321,7 @@ class AOAUTH_SSO_Handler {
         });
 
         wp_enqueue_style('aoauth-account-linking-shortcode', AOAUTH_PLUGIN_URL . 'public/css/login-single-sign-on.css', array(), AOAUTH_VERSION);
+        AOAUTH_Core::enqueue_dari_locale_style('aoauth-account-linking-shortcode');
 
         if (empty($enabled_apps)) {
             return '<div class="aoauth-frontend-unlink"><p>' . esc_html__('No SSO providers are available to link.', 'aoauth-client-sso') . '</p></div>';
@@ -1382,6 +1383,7 @@ class AOAUTH_SSO_Handler {
         $applications = get_option('aoauth_applications', array());
         
         wp_enqueue_style('aoauth-account-unlink', AOAUTH_PLUGIN_URL . 'public/css/login-single-sign-on.css', array(), AOAUTH_VERSION);
+        AOAUTH_Core::enqueue_dari_locale_style('aoauth-account-unlink');
         wp_enqueue_script('aoauth-account-unlink', AOAUTH_PLUGIN_URL . 'public/js/account-unlink.js', array('jquery'), AOAUTH_VERSION, true);
         wp_localize_script('aoauth-account-unlink', 'aoauth_account_unlink', array(
             'ajaxurl' => admin_url('admin-ajax.php'),

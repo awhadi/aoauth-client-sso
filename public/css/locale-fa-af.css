@@ -1,0 +1,27 @@
+html[lang="fa-AF"] .aoauth-admin-wrap,
+html[lang="fa-AF"] .aoauth-admin-wrap *,
+html[lang="fa-AF"] .aoauth-login-buttons,
+html[lang="fa-AF"] .aoauth-login-buttons *,
+html[lang="fa-AF"] .aoauth-frontend-unlink,
+html[lang="fa-AF"] .aoauth-frontend-unlink *,
+html[lang="fa-AF"] .aoauth-account-linking-page,
+html[lang="fa-AF"] .aoauth-account-linking-page *,
+html[lang="fa-AF"] .aoauth-toast-container,
+html[lang="fa-AF"] .aoauth-toast-container *,
+html[lang="fa-AF"] #aoauth-unlink-modal,
+html[lang="fa-AF"] #aoauth-unlink-modal *,
+html[lang="fa-AF"] .aoauth-verification-overlay,
+html[lang="fa-AF"] .aoauth-verification-overlay * {
+    font-family: Vazirmatn, "Vazir", "IRANSans", "Noto Naskh Arabic", "Noto Sans Arabic", Tahoma, Arial, sans-serif;
+}
+
+html[lang="fa-AF"] .aoauth-admin-wrap input,
+html[lang="fa-AF"] .aoauth-admin-wrap select,
+html[lang="fa-AF"] .aoauth-admin-wrap textarea,
+html[lang="fa-AF"] .aoauth-admin-wrap button,
+html[lang="fa-AF"] .aoauth-login-buttons button,
+html[lang="fa-AF"] .aoauth-login-buttons input,
+html[lang="fa-AF"] .aoauth-account-linking-page input,
+html[lang="fa-AF"] .aoauth-account-linking-page button {
+    font-family: inherit;
+}

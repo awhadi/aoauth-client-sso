@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.4.10] - 2026-06-05
+
+### Added
+- Added a Dari Afghanistan locale stylesheet loaded only for `fa_AF` to apply one Persian-capable font family across plugin admin, login, shortcode, overlay, and account-linking surfaces.
+
 ## [2.4.9] - 2026-06-05
 
 ### Added

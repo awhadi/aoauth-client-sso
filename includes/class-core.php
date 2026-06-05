@@ -160,6 +160,28 @@ class AOAUTH_Core {
 
         return $redirects;
     }
+
+    public static function is_dari_locale() {
+        $locale = function_exists('determine_locale') ? determine_locale() : get_locale();
+        return $locale === 'fa_AF';
+    }
+
+    public static function enqueue_dari_locale_style($dependency = '') {
+        if (!self::is_dari_locale()) {
+            return;
+        }
+
+        wp_enqueue_style(
+            'aoauth-locale-fa-af',
+            AOAUTH_PLUGIN_URL . 'public/css/locale-fa-af.css',
+            $dependency ? array($dependency) : array(),
+            AOAUTH_VERSION
+        );
+    }
+
+    public static function get_dari_locale_stylesheet_url() {
+        return AOAUTH_PLUGIN_URL . 'public/css/locale-fa-af.css?ver=' . rawurlencode(AOAUTH_VERSION);
+    }
     
     public function deactivate() {
         $this->debug->log_start('AOAUTH_Core::deactivate');
@@ -307,6 +329,8 @@ class AOAUTH_Core {
             array(),
             AOAUTH_VERSION
         );
+
+        self::enqueue_dari_locale_style('aoauth-public');
         
         $theme = isset($settings['login_button_theme']) ? $settings['login_button_theme'] : 'modern';
         $theme_css_path = AOAUTH_PLUGIN_DIR . 'public/css/themes/' . $theme . '.css';
