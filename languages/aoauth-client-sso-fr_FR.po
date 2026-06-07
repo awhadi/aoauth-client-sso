@@ -471,7 +471,7 @@ msgstr "Provider not found"
 
 #: admin/class-admin.php:756
 msgid "Discovery URL is required"
-msgstr "Discovery URL is required"
+msgstr "L’URL de découverte est obligatoire"
 
 #: admin/class-admin.php:800
 msgid "enabled"
@@ -2153,3 +2153,18 @@ msgstr ""
 
 #~ msgid "SSO Actions"
 #~ msgstr "Actions SSO"
+
+msgid "Discovery URL"
+msgstr "URL de découverte"
+
+msgid "UserInfo Endpoint"
+msgstr "Point de terminaison UserInfo"
+
+msgid "JWKS URI"
+msgstr "URI JWKS"
+
+msgid "%s must be a public HTTPS URL. Private, local, and plain HTTP endpoints are blocked by default."
+msgstr "%s doit être une URL HTTPS publique. Les points de terminaison privés, locaux et en HTTP simple sont bloqués par défaut."
+
+msgid "Identity token signing keys are not configured."
+msgstr "Les clés de signature du jeton d’identité ne sont pas configurées."

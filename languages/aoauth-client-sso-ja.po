@@ -465,7 +465,7 @@ msgstr "Provider not found"
 
 #: admin/class-admin.php:756
 msgid "Discovery URL is required"
-msgstr "Discovery URL is required"
+msgstr "検出 URL は必須です"
 
 #: admin/class-admin.php:800
 msgid "enabled"
@@ -2124,3 +2124,18 @@ msgstr ""
 
 #~ msgid "SSO Actions"
 #~ msgstr "SSO 操作"
+
+msgid "Discovery URL"
+msgstr "検出 URL"
+
+msgid "UserInfo Endpoint"
+msgstr "UserInfo エンドポイント"
+
+msgid "JWKS URI"
+msgstr "JWKS URI"
+
+msgid "%s must be a public HTTPS URL. Private, local, and plain HTTP endpoints are blocked by default."
+msgstr "%s は公開 HTTPS URL である必要があります。プライベート、ローカル、プレーン HTTP のエンドポイントは既定でブロックされます。"
+
+msgid "Identity token signing keys are not configured."
+msgstr "ID トークンの署名キーが設定されていません。"

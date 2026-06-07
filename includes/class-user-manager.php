@@ -315,7 +315,7 @@ class AOAUTH_User_Manager {
         }
         
         $provider_user_data = isset($linking_data['user_data']) && is_array($linking_data['user_data']) ? $linking_data['user_data'] : array();
-        $provider_subject = $this->get_provider_subject($provider_user_data);
+        $provider_subject = AOAUTH_Core::get_provider_subject_from_user_info($provider_user_data);
         $provider_email = isset($provider_user_data['email']) ? sanitize_email($provider_user_data['email']) : '';
         if (AOAUTH_Core::provider_identity_belongs_to_other_user($user->ID, $linking_data['provider_slug'], $provider_email, $provider_subject)) {
             return new WP_Error('account_linking_identity_in_use', __('This provider account is already linked to another WordPress user.', 'aoauth-client-sso'));
@@ -340,7 +340,7 @@ class AOAUTH_User_Manager {
             return new WP_Error('login_blocked', 'Login blocked by administrator.');
         }
         
-        $provider_subject = $this->get_provider_subject($user_info);
+        $provider_subject = AOAUTH_Core::get_provider_subject_from_user_info($user_info);
         AOAUTH_Core::link_user_provider($user->ID, $provider_slug, $user_info['email'] ?? '', $provider_subject);
         
         update_user_meta($user->ID, '_aoauth_last_login', time());
@@ -411,7 +411,7 @@ class AOAUTH_User_Manager {
             return new WP_Error('user_creation_failed', 'Failed to create user account. Please try again.');
         }
         
-        AOAUTH_Core::link_user_provider($user_id, $provider_slug, $user_info['email'] ?? '', $this->get_provider_subject($user_info));
+        AOAUTH_Core::link_user_provider($user_id, $provider_slug, $user_info['email'] ?? '', AOAUTH_Core::get_provider_subject_from_user_info($user_info));
         update_user_meta($user_id, '_aoauth_created', time());
         
         do_action('aoauth_user_created', $user_id, $user_info, $provider);
@@ -419,16 +419,6 @@ class AOAUTH_User_Manager {
         return $user_id;
     }
 
-    private function get_provider_subject($user_info) {
-        foreach (array('subject', 'sub', 'id', 'user_id') as $subject_key) {
-            if (!empty($user_info[$subject_key])) {
-                return sanitize_text_field((string) $user_info[$subject_key]);
-            }
-        }
-
-        return '';
-    }
-    
     private function generate_unique_username($username) {
         $username = sanitize_user($username, true);
         

@@ -65,7 +65,7 @@ class AOAUTH_Admin {
         // Main menu with plugin name
         add_menu_page(
             __('aOAUTH Client SSO', 'aoauth-client-sso'),
-            __('aOAUTH SSO', 'aoauth-client-sso'),
+            'OAUTH SSO',
             'manage_options',
             'aoauth-providers',
             array($this, 'render_connect_page'),
@@ -356,7 +356,7 @@ class AOAUTH_Admin {
         $roles = get_editable_roles();
         $available_themes = aoauth_core()->get_available_themes();
         
-        include AOAUTH_PLUGIN_DIR . 'admin/views/settings.php';
+        $this->render_settings_view($settings_view, compact('settings', 'roles', 'available_themes'));
     }
 
     public function render_user_management_page() {
@@ -365,7 +365,7 @@ class AOAUTH_Admin {
         $roles = get_editable_roles();
         $available_themes = aoauth_core()->get_available_themes();
 
-        include AOAUTH_PLUGIN_DIR . 'admin/views/settings.php';
+        $this->render_settings_view($settings_view, compact('settings', 'roles', 'available_themes'));
     }
 
     public function render_security_page() {
@@ -376,7 +376,7 @@ class AOAUTH_Admin {
         $roles = get_editable_roles();
         $available_themes = aoauth_core()->get_available_themes();
 
-        include AOAUTH_PLUGIN_DIR . 'admin/views/settings.php';
+        $this->render_settings_view($settings_view, compact('settings', 'roles', 'available_themes'));
     }
 
     public function render_tools_page() {
@@ -389,7 +389,7 @@ class AOAUTH_Admin {
             'fields' => 'ID'
         ));
 
-        include AOAUTH_PLUGIN_DIR . 'admin/views/settings.php';
+        $this->render_settings_view($settings_view, compact('settings', 'roles', 'available_themes', 'sso_users'));
     }
     
     public function render_logs_page() {
@@ -406,6 +406,65 @@ class AOAUTH_Admin {
         $providers = aoauth_core()->get_providers_manager()->get_providers_list();
         
         include AOAUTH_PLUGIN_DIR . 'admin/views/wizard.php';
+    }
+
+    private function render_settings_view($settings_view, $view_data = array()) {
+        $current_page = isset($_GET['page']) ? sanitize_key($_GET['page']) : '';
+        $view_files = array(
+            'sign-in-experience' => 'sign-in-experience.php',
+            'user-management' => 'user-management.php',
+            'security' => 'security.php',
+            'tools' => 'tools.php',
+        );
+
+        if (empty($view_files[$settings_view])) {
+            return;
+        }
+
+        extract($view_data, EXTR_SKIP);
+        ?>
+        <div class="aoauth-admin-wrap">
+            <div class="aoauth-admin-header">
+                <div class="aoauth-header-brand">
+                    <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/logo.png'); ?>" alt="aOAUTH Client SSO" class="aoauth-header-logo">
+                    <div>
+                        <h1 class="aoauth-header-title"><?php esc_html_e('aOAUTH Client SSO', 'aoauth-client-sso'); ?></h1>
+                        <p class="aoauth-header-tagline"><?php esc_html_e('Secure OAuth 2.0 / OpenID Connect Single Sign-On', 'aoauth-client-sso'); ?></p>
+                    </div>
+                </div>
+                <div class="aoauth-header-actions">
+                    <span class="aoauth-version">v<?php echo esc_html(AOAUTH_VERSION); ?></span>
+                    <a href="https://plugins.awhadi.com/aoauth-client-sso" target="_blank" class="aoauth-feature-btn"><?php esc_html_e('Feature Details', 'aoauth-client-sso'); ?></a>
+                </div>
+            </div>
+
+            <?php $this->render_admin_tabs($current_page); ?>
+
+            <div class="aoauth-admin-content <?php echo $settings_view === 'tools' ? 'two-column-layout' : ''; ?>">
+                <?php include AOAUTH_PLUGIN_DIR . 'admin/views/' . $view_files[$settings_view]; ?>
+            </div>
+        </div>
+        <?php
+    }
+
+    private function render_admin_tabs($current_page = '') {
+        $current_page = $current_page ? sanitize_key($current_page) : (isset($_GET['page']) ? sanitize_key($_GET['page']) : '');
+        $tabs = array(
+            'aoauth-providers' => __('Providers', 'aoauth-client-sso'),
+            'aoauth-sign-in-experience' => __('Sign-In Experience', 'aoauth-client-sso'),
+            'aoauth-user-management' => __('User Management', 'aoauth-client-sso'),
+            'aoauth-security' => __('Security', 'aoauth-client-sso'),
+            'aoauth-tools' => __('Tools', 'aoauth-client-sso'),
+            'aoauth-logs' => __('Logs', 'aoauth-client-sso'),
+        );
+        ?>
+        <div class="aoauth-admin-tabs">
+            <?php foreach ($tabs as $page_slug => $label): ?>
+                <?php $is_active = $current_page === $page_slug || ($current_page === 'aoauth-settings' && $page_slug === 'aoauth-sign-in-experience'); ?>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=' . $page_slug)); ?>" class="aoauth-tab <?php echo $is_active ? 'active' : ''; ?>"><?php echo esc_html($label); ?></a>
+            <?php endforeach; ?>
+        </div>
+        <?php
     }
     
     /**
@@ -757,6 +816,10 @@ class AOAUTH_Admin {
         
         if (empty($url)) {
             wp_send_json_error(array('message' => __('Discovery URL is required', 'aoauth-client-sso')));
+        }
+
+        if (!$this->is_valid_oauth_endpoint_url($url)) {
+            wp_send_json_error(array('message' => $this->get_oauth_endpoint_validation_message(__('Discovery URL', 'aoauth-client-sso'))));
         }
         
         try {
@@ -1409,14 +1472,14 @@ class AOAUTH_Admin {
 
         if (empty($config['authorization_endpoint'])) {
             $errors[] = __('Authorization Endpoint is required.', 'aoauth-client-sso');
-        } elseif (!$this->is_valid_http_url($config['authorization_endpoint'])) {
-            $errors[] = __('Authorization Endpoint must be a valid HTTP or HTTPS URL.', 'aoauth-client-sso');
+        } elseif (!$this->is_valid_oauth_endpoint_url($config['authorization_endpoint'])) {
+            $errors[] = $this->get_oauth_endpoint_validation_message(__('Authorization Endpoint', 'aoauth-client-sso'));
         }
 
         if (empty($config['token_endpoint'])) {
             $errors[] = __('Token Endpoint is required.', 'aoauth-client-sso');
-        } elseif (!$this->is_valid_http_url($config['token_endpoint'])) {
-            $errors[] = __('Token Endpoint must be a valid HTTP or HTTPS URL.', 'aoauth-client-sso');
+        } elseif (!$this->is_valid_oauth_endpoint_url($config['token_endpoint'])) {
+            $errors[] = $this->get_oauth_endpoint_validation_message(__('Token Endpoint', 'aoauth-client-sso'));
         }
 
         if (empty($config['redirect_uri'])) {
@@ -1425,9 +1488,14 @@ class AOAUTH_Admin {
             $errors[] = __('Redirect URI must be a valid HTTP or HTTPS URL.', 'aoauth-client-sso');
         }
 
-        foreach (array('userinfo_endpoint', 'jwks_uri') as $optional_url_key) {
-            if (!empty($config[$optional_url_key]) && !$this->is_valid_http_url($config[$optional_url_key])) {
-                $errors[] = sprintf(__('%s must be a valid HTTP or HTTPS URL.', 'aoauth-client-sso'), $optional_url_key);
+        $optional_endpoint_labels = array(
+            'userinfo_endpoint' => __('UserInfo Endpoint', 'aoauth-client-sso'),
+            'jwks_uri' => __('JWKS URI', 'aoauth-client-sso'),
+        );
+
+        foreach ($optional_endpoint_labels as $optional_url_key => $optional_url_label) {
+            if (!empty($config[$optional_url_key]) && !$this->is_valid_oauth_endpoint_url($config[$optional_url_key])) {
+                $errors[] = $this->get_oauth_endpoint_validation_message($optional_url_label);
             }
         }
 
@@ -1441,6 +1509,17 @@ class AOAUTH_Admin {
         }
 
         return in_array(strtolower($parsed['scheme']), array('http', 'https'), true);
+    }
+
+    private function is_valid_oauth_endpoint_url($url) {
+        return aoauth_core()->get_security()->validate_oauth_endpoint_url($url);
+    }
+
+    private function get_oauth_endpoint_validation_message($endpoint_label) {
+        return sprintf(
+            __('%s must be a public HTTPS URL. Private, local, and plain HTTP endpoints are blocked by default.', 'aoauth-client-sso'),
+            $endpoint_label
+        );
     }
 
     private function probe_authorization_endpoint($config) {

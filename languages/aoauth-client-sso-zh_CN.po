@@ -464,7 +464,7 @@ msgstr "Provider not found"
 
 #: admin/class-admin.php:756
 msgid "Discovery URL is required"
-msgstr "Discovery URL is required"
+msgstr "必须填写发现 URL"
 
 #: admin/class-admin.php:800
 msgid "enabled"
@@ -2055,3 +2055,18 @@ msgstr ""
 
 #~ msgid "SSO Actions"
 #~ msgstr "SSO 操作"
+
+msgid "Discovery URL"
+msgstr "发现 URL"
+
+msgid "UserInfo Endpoint"
+msgstr "UserInfo 端点"
+
+msgid "JWKS URI"
+msgstr "JWKS URI"
+
+msgid "%s must be a public HTTPS URL. Private, local, and plain HTTP endpoints are blocked by default."
+msgstr "%s 必须是公共 HTTPS URL。默认会阻止私有、本地和纯 HTTP 端点。"
+
+msgid "Identity token signing keys are not configured."
+msgstr "未配置身份令牌签名密钥。"

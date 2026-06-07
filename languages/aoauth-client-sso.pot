@@ -1979,3 +1979,18 @@ msgstr ""
 #: admin/views/tools.php:135
 msgid "Allow WordPress to install new versions of this plugin automatically when an update package is available. Disable this if you prefer to update manually after testing."
 msgstr ""
+
+msgid "Discovery URL"
+msgstr ""
+
+msgid "UserInfo Endpoint"
+msgstr ""
+
+msgid "JWKS URI"
+msgstr ""
+
+msgid "%s must be a public HTTPS URL. Private, local, and plain HTTP endpoints are blocked by default."
+msgstr ""
+
+msgid "Identity token signing keys are not configured."
+msgstr ""

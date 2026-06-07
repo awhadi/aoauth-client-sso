@@ -660,6 +660,16 @@ class AOAUTH_Core {
         $linked_user_id = self::find_linked_user_by_provider_identity($provider_slug, $provider_email, $provider_subject);
         return $linked_user_id && (int) $linked_user_id !== (int) $user_id;
     }
+
+    public static function get_provider_subject_from_user_info($user_info) {
+        foreach (array('subject', 'sub', 'id', 'user_id') as $subject_key) {
+            if (!empty($user_info[$subject_key])) {
+                return sanitize_text_field((string) $user_info[$subject_key]);
+            }
+        }
+
+        return '';
+    }
     
     public function get_security() {
         return $this->security;

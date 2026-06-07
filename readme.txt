@@ -4,7 +4,7 @@ Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 2.5.1
+Stable tag: 2.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,31 +20,51 @@ Automatic plugin updates can be enabled or disabled from the WordPress Plugins s
 
 == Developer Summary ==
 
-Version: 2.5.1
+Version: 2.6.0
 Date: 2026-06-07
 Author: Awhadi
 
 Summary:
-This release moves automatic update management to the native WordPress Plugins screen so administrators can use the standard Enable auto-updates and Disable auto-updates links. It also updates the admin menu icon to a small color-inheriting "a" that follows the active WordPress admin color scheme.
+This release hardens OAuth/OIDC endpoint handling before WordPress.org release review. It blocks unsafe OAuth endpoint URLs by default, requires ID token signature verification in High security mode, consolidates provider subject extraction, removes release junk files, removes tiny unused view wrappers, removes the unused SVG admin menu asset, and keeps the WordPress admin left-menu label as OAUTH SSO.
 
 Files changed:
+- .gitignore
 - admin/class-admin.php
-- admin/css/admin-menu-icon.css
-- admin/views/tools.php
+- admin/images/menu-icon.svg
+- admin/views/logs.php
+- admin/views/providers.php
+- admin/views/settings.php
+- admin/views/tabs.php
 - aoauth-client-sso.php
 - includes/class-core.php
+- includes/class-oauth-client.php
+- includes/class-security.php
+- includes/class-sso-handler.php
+- includes/class-user-manager.php
 - CHANGELOG.md
 - readme.txt
 
 Security/UX notes:
-- Authentication, provider configuration, localization loading, uninstall behavior, and data handling remain unchanged.
-- Auto-update management now uses WordPress's native Plugins screen state in the auto_update_plugins site option.
-- The admin menu icon uses existing external CSS and currentColor so WordPress admin themes can recolor it.
+- OAuth authorization, token, userinfo, JWKS, and discovery endpoints must be public HTTPS URLs by default.
+- Private, local, and plain HTTP OAuth endpoints are blocked unless explicitly allowed with AOAUTH_ALLOW_PRIVATE_OAUTH_ENDPOINTS for controlled development environments.
+- High security mode now rejects ID tokens when signing keys are missing, instead of accepting unverifiable claims.
+- The menu label is intentionally fixed as OAUTH SSO so the left WordPress admin navigation displays the requested brand text in every site language.
+- The tiny settings and tab view wrappers were merged into admin render helpers without changing the individual tab views.
+- .DS_Store files were removed from the release tree and ignored going forward.
 
 Rollback plan:
-Restore version 2.5.0 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this patch, restore admin/class-admin.php, admin/css/admin-menu-icon.css, admin/views/tools.php, includes/class-core.php, aoauth-client-sso.php, readme.txt, and CHANGELOG.md from the 2.5.0 tag.
+Restore version 2.5.1 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this hardening patch, restore .gitignore, admin/class-admin.php, admin/images/menu-icon.svg, admin/views/logs.php, admin/views/providers.php, admin/views/settings.php, admin/views/tabs.php, aoauth-client-sso.php, includes/class-core.php, includes/class-oauth-client.php, includes/class-security.php, includes/class-sso-handler.php, includes/class-user-manager.php, readme.txt, and CHANGELOG.md from the 2.5.1 tag.
 
 == Changelog ==
+
+= 2.6.0 =
+* Hardened OAuth/OIDC endpoint validation to require public HTTPS endpoints by default.
+* Required ID token signing keys in High security mode before accepting ID token claims.
+* Consolidated provider subject extraction into a shared helper.
+* Merged tiny settings and tab view wrappers into admin render helpers.
+* Removed release junk files and ignored .DS_Store files.
+* Removed the unused SVG admin menu icon asset.
+* Changed the WordPress admin left-menu label from aOAUTH SSO to OAUTH SSO.
 
 = 2.5.1 =
 * Moved auto-update management to the native WordPress Plugins screen Enable/Disable auto-updates link.

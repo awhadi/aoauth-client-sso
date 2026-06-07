@@ -367,6 +367,17 @@ class AOAUTH_SSO_Handler {
     }
     
     $provider['redirect_uri'] = $this->get_callback_url();
+    $endpoint_validation = $this->validate_provider_oauth_endpoints($provider);
+    if (is_wp_error($endpoint_validation)) {
+        $debug->error('Provider endpoint validation failed', array('error' => $endpoint_validation->get_error_message()));
+        $this->logger->log('sso_callback_failed', array(
+            'flow_id' => $flow_id,
+            'provider' => $provider_slug,
+            'reason' => 'provider_endpoint_validation_failed'
+        ), null, $provider_slug, 'error');
+        $this->redirect_with_error($endpoint_validation->get_error_message());
+        return;
+    }
     
     try {
         $debug->debug('Exchanging code for tokens');
@@ -466,7 +477,7 @@ class AOAUTH_SSO_Handler {
             exit;
         }
 
-        $provider_subject = $this->get_provider_subject($user_info);
+        $provider_subject = AOAUTH_Core::get_provider_subject_from_user_info($user_info);
         $linked_user_id = AOAUTH_Core::find_linked_user_by_provider_identity($provider_slug, $user_info['email'], $provider_subject);
         if ($linked_user_id) {
             $ban_until = aoauth_core()->get_security()->get_user_login_ban($linked_user_id);
@@ -762,6 +773,11 @@ class AOAUTH_SSO_Handler {
                 return $signature_valid;
             }
         } else {
+            $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
+            if (($settings['security_level'] ?? 'high') === 'high') {
+                return new WP_Error('missing_jwks_uri', __('Identity token signing keys are not configured.', 'aoauth-client-sso'));
+            }
+
             $this->debug->warning('JWKS URI missing; ID token signature could not be verified', array(
                 'provider' => $provider['provider_name'] ?? 'unknown'
             ));
@@ -1100,6 +1116,16 @@ class AOAUTH_SSO_Handler {
     $debug->debug('State transient created', array('state_key' => substr($state, 0, 10) . '...'));
     
     $provider['redirect_uri'] = $this->get_callback_url();
+    $endpoint_validation = $this->validate_provider_oauth_endpoints($provider);
+    if (is_wp_error($endpoint_validation)) {
+        $debug->error('Provider endpoint validation failed', array('provider' => $provider_slug, 'error' => $endpoint_validation->get_error_message()));
+        $this->logger->log('login_initiation_failed', array(
+            'provider' => $provider_slug,
+            'reason' => 'provider_endpoint_validation_failed',
+            'redirect_path' => $this->get_url_path_for_log($redirect_to)
+        ), null, $provider_slug, 'error');
+        wp_die(esc_html($endpoint_validation->get_error_message()));
+    }
     
     $oauth_client = new AOAUTH_OAuth_Client($provider);
     $auth_url = $oauth_client->get_authorization_url($state, $oidc_nonce);
@@ -1153,7 +1179,7 @@ class AOAUTH_SSO_Handler {
 
         $user = get_userdata($user_id);
         $provider_email = isset($user_info['email']) ? sanitize_email($user_info['email']) : '';
-        $provider_subject = $this->get_provider_subject($user_info);
+        $provider_subject = AOAUTH_Core::get_provider_subject_from_user_info($user_info);
 
         if (!$user || empty($provider_email)) {
             $this->logger->log('account_linking_failed', array(
@@ -1186,16 +1212,45 @@ class AOAUTH_SSO_Handler {
         return true;
     }
 
-    private function get_provider_subject($user_info) {
-        foreach (array('subject', 'sub', 'id', 'user_id') as $subject_key) {
-            if (!empty($user_info[$subject_key])) {
-                return sanitize_text_field((string) $user_info[$subject_key]);
+    private function validate_provider_oauth_endpoints($provider) {
+        $required_urls = array(
+            'authorization_endpoint' => __('Authorization Endpoint', 'aoauth-client-sso'),
+            'token_endpoint' => __('Token Endpoint', 'aoauth-client-sso'),
+        );
+
+        foreach ($required_urls as $key => $label) {
+            if (empty($provider[$key]) || !$this->security->validate_oauth_endpoint_url($provider[$key])) {
+                return new WP_Error(
+                    'unsafe_oauth_endpoint',
+                    $this->get_oauth_endpoint_validation_message($label)
+                );
             }
         }
 
-        return '';
+        $optional_urls = array(
+            'userinfo_endpoint' => __('UserInfo Endpoint', 'aoauth-client-sso'),
+            'jwks_uri' => __('JWKS URI', 'aoauth-client-sso'),
+        );
+
+        foreach ($optional_urls as $key => $label) {
+            if (!empty($provider[$key]) && !$this->security->validate_oauth_endpoint_url($provider[$key])) {
+                return new WP_Error(
+                    'unsafe_oauth_endpoint',
+                    $this->get_oauth_endpoint_validation_message($label)
+                );
+            }
+        }
+
+        return true;
     }
-    
+
+    private function get_oauth_endpoint_validation_message($endpoint_label) {
+        return sprintf(
+            __('%s must be a public HTTPS URL. Private, local, and plain HTTP endpoints are blocked by default.', 'aoauth-client-sso'),
+            $endpoint_label
+        );
+    }
+
     private function consume_bot_protection_verification_for_login($provider_slug, $requested_flow_id = '') {
         $settings = get_option('aoauth_settings', array());
         $bot_enabled = (!empty($settings['enable_turnstile']) && !empty($settings['turnstile_site_key']) && !empty($settings['turnstile_secret_key']))

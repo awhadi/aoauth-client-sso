@@ -160,6 +160,57 @@ class AOAUTH_Security {
         
         return $sanitized;
     }
+
+    public function validate_oauth_endpoint_url($url) {
+        $url = esc_url_raw($url);
+        if (empty($url)) {
+            return false;
+        }
+
+        $parsed_url = wp_parse_url($url);
+        if (!$parsed_url || empty($parsed_url['host']) || empty($parsed_url['scheme'])) {
+            return false;
+        }
+
+        $scheme = strtolower($parsed_url['scheme']);
+        $host = strtolower(trim($parsed_url['host'], '[]'));
+        $allow_development_endpoints = defined('AOAUTH_ALLOW_PRIVATE_OAUTH_ENDPOINTS') && AOAUTH_ALLOW_PRIVATE_OAUTH_ENDPOINTS === true;
+
+        if ($scheme !== 'https' && !($allow_development_endpoints && $scheme === 'http')) {
+            return false;
+        }
+
+        if ($this->is_restricted_endpoint_host($host)) {
+            return $allow_development_endpoints;
+        }
+
+        return true;
+    }
+
+    private function is_restricted_endpoint_host($host) {
+        if ($host === '' || $host === 'localhost' || $this->string_ends_with($host, '.localhost') || $this->string_ends_with($host, '.local')) {
+            return true;
+        }
+
+        if (strpos($host, '.') === false && strpos($host, ':') === false) {
+            return true;
+        }
+
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            return filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
+        }
+
+        return false;
+    }
+
+    private function string_ends_with($value, $suffix) {
+        $suffix_length = strlen($suffix);
+        if ($suffix_length === 0) {
+            return true;
+        }
+
+        return substr($value, -$suffix_length) === $suffix;
+    }
     
     public static function get_nested_value($array, $path) {
         if (empty($path) || !is_array($array)) {

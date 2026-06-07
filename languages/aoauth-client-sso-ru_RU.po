@@ -468,7 +468,7 @@ msgstr "Provider not found"
 
 #: admin/class-admin.php:756
 msgid "Discovery URL is required"
-msgstr "Discovery URL is required"
+msgstr "URL обнаружения обязателен"
 
 #: admin/class-admin.php:800
 msgid "enabled"
@@ -2131,3 +2131,18 @@ msgstr ""
 
 #~ msgid "SSO Actions"
 #~ msgstr "Действия SSO"
+
+msgid "Discovery URL"
+msgstr "URL обнаружения"
+
+msgid "UserInfo Endpoint"
+msgstr "Конечная точка UserInfo"
+
+msgid "JWKS URI"
+msgstr "URI JWKS"
+
+msgid "%s must be a public HTTPS URL. Private, local, and plain HTTP endpoints are blocked by default."
+msgstr "%s должен быть общедоступным HTTPS-URL. Частные, локальные и обычные HTTP-конечные точки по умолчанию блокируются."
+
+msgid "Identity token signing keys are not configured."
+msgstr "Ключи подписи токена удостоверения не настроены."

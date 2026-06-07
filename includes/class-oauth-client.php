@@ -13,6 +13,8 @@ class AOAUTH_OAuth_Client {
     }
     
     public function get_authorization_url($state = '', $nonce = '') {
+        $this->assert_safe_oauth_endpoint($this->config['authorization_endpoint'], __('Authorization Endpoint', 'aoauth-client-sso'));
+
         if (empty($state)) {
             $state = $this->security->generate_state();
         }
@@ -43,6 +45,7 @@ class AOAUTH_OAuth_Client {
     $debug = aoauth_core()->get_debug();
     $debug->log_start('AOAUTH_OAuth_Client::get_tokens');
     
+    $this->assert_safe_oauth_endpoint($this->config['token_endpoint'], __('Token Endpoint', 'aoauth-client-sso'));
     $state = isset($_GET['state']) ? sanitize_text_field($_GET['state']) : '';
     
     $params = array(
@@ -135,6 +138,8 @@ class AOAUTH_OAuth_Client {
         if (empty($this->config['userinfo_endpoint'])) {
             throw new Exception('No UserInfo endpoint configured');
         }
+
+        $this->assert_safe_oauth_endpoint($this->config['userinfo_endpoint'], __('UserInfo Endpoint', 'aoauth-client-sso'));
         
         $response = wp_remote_get($this->config['userinfo_endpoint'], array(
             'headers' => array(
@@ -160,6 +165,7 @@ class AOAUTH_OAuth_Client {
     }
     
     public function discover_endpoints($url) {
+        $this->assert_safe_oauth_endpoint($url, __('Discovery URL', 'aoauth-client-sso'));
         $url = rtrim($url, '/');
         
         // Try standard OpenID Connect discovery
@@ -215,5 +221,11 @@ class AOAUTH_OAuth_Client {
         }
         
         throw new Exception('Could not discover endpoints. Please provide them manually.');
+    }
+
+    private function assert_safe_oauth_endpoint($url, $label) {
+        if (!$this->security->validate_oauth_endpoint_url($url)) {
+            throw new Exception(sprintf(__('%s must be a public HTTPS URL. Private, local, and plain HTTP endpoints are blocked by default.', 'aoauth-client-sso'), $label));
+        }
     }
 }

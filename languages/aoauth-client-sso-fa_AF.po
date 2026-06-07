@@ -466,7 +466,7 @@ msgstr "Provider not found"
 
 #: admin/class-admin.php:756
 msgid "Discovery URL is required"
-msgstr "Discovery URL is required"
+msgstr "آدرس کشف الزامی است"
 
 #: admin/class-admin.php:800
 msgid "enabled"
@@ -2112,3 +2112,18 @@ msgstr ""
 
 #~ msgid "SSO Actions"
 #~ msgstr "اقدامات SSO"
+
+msgid "Discovery URL"
+msgstr "آدرس کشف"
+
+msgid "UserInfo Endpoint"
+msgstr "نقطهٔ پایانی اطلاعات کاربر"
+
+msgid "JWKS URI"
+msgstr "نشانی JWKS"
+
+msgid "%s must be a public HTTPS URL. Private, local, and plain HTTP endpoints are blocked by default."
+msgstr "%s باید یک آدرس عمومی HTTPS باشد. نقاط پایانی خصوصی، محلی و HTTP ساده به‌صورت پیش‌فرض مسدود می‌شوند."
+
+msgid "Identity token signing keys are not configured."
+msgstr "کلیدهای امضای نشانهٔ هویت پیکربندی نشده‌اند."

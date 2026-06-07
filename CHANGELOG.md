@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.6.0] - 2026-06-07
+
+### Added
+- Added `.gitignore` coverage for `.DS_Store` release junk files.
+
+### Changed
+- Hardened OAuth/OIDC endpoint validation to require public HTTPS endpoints by default for authorization, token, userinfo, JWKS, and discovery URLs.
+- Required configured signing keys before accepting ID token claims in High security mode.
+- Consolidated provider subject extraction into a shared core helper.
+- Merged the tiny settings and tab view partials into admin render helpers while keeping each settings tab in its own view file.
+- Changed the WordPress admin left-menu label from `aOAUTH SSO` to `OAUTH SSO` while keeping the plugin name and page title unchanged.
+- Removed the unused SVG admin menu icon asset.
+
 ## [2.5.1] - 2026-06-07
 
 ### Changed

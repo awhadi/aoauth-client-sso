@@ -469,7 +469,7 @@ msgstr "Provider not found"
 
 #: admin/class-admin.php:756
 msgid "Discovery URL is required"
-msgstr "Discovery URL is required"
+msgstr "Keşif URL'si gereklidir"
 
 #: admin/class-admin.php:800
 msgid "enabled"
@@ -2130,3 +2130,18 @@ msgstr ""
 
 #~ msgid "SSO Actions"
 #~ msgstr "SSO işlemleri"
+
+msgid "Discovery URL"
+msgstr "Keşif URL'si"
+
+msgid "UserInfo Endpoint"
+msgstr "UserInfo uç noktası"
+
+msgid "JWKS URI"
+msgstr "JWKS URI"
+
+msgid "%s must be a public HTTPS URL. Private, local, and plain HTTP endpoints are blocked by default."
+msgstr "%s herkese açık bir HTTPS URL'si olmalıdır. Özel, yerel ve düz HTTP uç noktaları varsayılan olarak engellenir."
+
+msgid "Identity token signing keys are not configured."
+msgstr "Kimlik belirteci imzalama anahtarları yapılandırılmamış."
