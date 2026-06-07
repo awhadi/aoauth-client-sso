@@ -36,8 +36,6 @@ class AOAUTH_Core {
     public function init() {
         $this->debug->log_start('AOAUTH_Core::init');
         
-        load_plugin_textdomain('aoauth-client-sso', false, dirname(AOAUTH_PLUGIN_BASENAME) . '/languages');
-        
         add_action('login_enqueue_scripts', array($this, 'enqueue_login_assets'));
         add_action('login_footer', array($this, 'render_login_buttons_for_selected_position'));
         
@@ -330,20 +328,22 @@ class AOAUTH_Core {
         }
         
         if ($turnstile_enabled) {
+            // phpcs:ignore PluginCheck.CodeAnalysis.EnqueuedResourceOffloading.OffloadedContent -- Cloudflare Turnstile must load its verification API from Cloudflare when this optional provider is enabled.
             wp_enqueue_script(
                 'cloudflare-turnstile',
                 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit',
                 array(),
-                null,
+                AOAUTH_VERSION,
                 true
             );
             $this->debug->debug('Turnstile script enqueued');
         } elseif ($recaptcha_enabled) {
+            // phpcs:ignore PluginCheck.CodeAnalysis.EnqueuedResourceOffloading.OffloadedContent -- Google reCAPTCHA must load its verification API from Google when this optional provider is enabled.
             wp_enqueue_script(
                 'google-recaptcha',
                 'https://www.google.com/recaptcha/api.js?render=' . urlencode($settings['recaptcha_site_key']),
                 array(),
-                null,
+                AOAUTH_VERSION,
                 true
             );
             $this->debug->debug('reCAPTCHA script enqueued');
@@ -361,7 +361,7 @@ class AOAUTH_Core {
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('aoauth_public_nonce'),
             'spinner_url' => includes_url('images/spinner.gif'),
-            'firefox' => strpos($_SERVER['HTTP_USER_AGENT'] ?? '', 'Firefox') !== false,
+            'firefox' => strpos(isset($_SERVER['HTTP_USER_AGENT']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])) : '', 'Firefox') !== false,
             'debug_enabled' => $this->debug->is_enabled(),
             'translations' => array(
                 'authenticating' => __('Authenticating...', 'aoauth-client-sso'),
@@ -444,7 +444,9 @@ class AOAUTH_Core {
         global $action;
 
         $login_action = isset($action) ? sanitize_key($action) : '';
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Login action is a read-only WordPress login screen selector.
         if ($login_action === '' && isset($_REQUEST['action'])) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Login action is a read-only WordPress login screen selector.
             $login_action = sanitize_key(wp_unslash($_REQUEST['action']));
         }
 
@@ -482,7 +484,8 @@ class AOAUTH_Core {
             $layout = 'two-column';
         }
         $position = ($settings['login_button_position'] ?? 'below_form') === 'inside_form' ? 'inside-form' : 'below-form';
-        $redirect_to = isset($_REQUEST['redirect_to']) ? sanitize_url($_REQUEST['redirect_to']) : admin_url();
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Redirect target is only used to build signed SSO login links and is validated during login handling.
+        $redirect_to = isset($_REQUEST['redirect_to']) ? sanitize_url(wp_unslash($_REQUEST['redirect_to'])) : admin_url();
         
         echo '<div class="aoauth-login-buttons aoauth-theme-' . esc_attr($theme) . ' aoauth-layout-' . esc_attr($layout) . ' aoauth-position-' . esc_attr($position) . '">';
         echo '<div class="aoauth-login-divider"><span>' . esc_html__('Or login with', 'aoauth-client-sso') . '</span></div>';

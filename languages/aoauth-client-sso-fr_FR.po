@@ -2168,3 +2168,9 @@ msgstr "%s doit être une URL HTTPS publique. Les points de terminaison privés,
 
 msgid "Identity token signing keys are not configured."
 msgstr "Les clés de signature du jeton d’identité ne sont pas configurées."
+
+msgid "Unlinked %1$d accounts. Failed: %2$d"
+msgstr "%1$d comptes dissociés. Échecs : %2$d"
+
+msgid "Bot verification failed. Score %1$s is below threshold of %2$s."
+msgstr "La vérification anti-robot a échoué. Le score %1$s est inférieur au seuil de %2$s."

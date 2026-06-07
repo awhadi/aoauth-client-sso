@@ -1,7 +1,7 @@
 <?php if (!defined('ABSPATH')) exit;
-$current_page = isset($_GET['page']) ? $_GET['page'] : '';
-$log_limit = 50;
-$total_pages = $log_limit > 0 ? (int) ceil((int) $total_logs / $log_limit) : 1;
+$aoauth_current_page = 'aoauth-logs';
+$aoauth_log_limit = 50;
+$aoauth_total_pages = $aoauth_log_limit > 0 ? (int) ceil((int) $total_logs / $aoauth_log_limit) : 1;
 ?>
 <div class="aoauth-admin-wrap">
     <div class="aoauth-admin-header">
@@ -18,7 +18,7 @@ $total_pages = $log_limit > 0 ? (int) ceil((int) $total_logs / $log_limit) : 1;
         </div>
     </div>
     
-    <?php $this->render_admin_tabs($current_page); ?>
+    <?php $this->render_admin_tabs($aoauth_current_page); ?>
     
     <div class="aoauth-admin-content">
         <?php if (!empty($settings['enable_logs'])): ?>
@@ -55,7 +55,11 @@ $total_pages = $log_limit > 0 ? (int) ceil((int) $total_logs / $log_limit) : 1;
         </form>
         
         <div class="aoauth-log-results-summary">
-            <?php echo esc_html(sprintf(_n('%d log entry found.', '%d log entries found.', (int) $total_logs, 'aoauth-client-sso'), (int) $total_logs)); ?>
+            <?php echo esc_html(sprintf(
+                /* translators: %d: number of log entries found. */
+                _n('%d log entry found.', '%d log entries found.', (int) $total_logs, 'aoauth-client-sso'),
+                (int) $total_logs
+            )); ?>
         </div>
 
         <div class="aoauth-logs-table-wrap">
@@ -71,21 +75,21 @@ $total_pages = $log_limit > 0 ? (int) ceil((int) $total_logs / $log_limit) : 1;
                     </tr>
                 </thead>
                 <tbody id="aoauth-logs-tbody">
-                    <?php foreach ($logs as $log): ?>
+                    <?php foreach ($logs as $aoauth_log): ?>
                         <tr>
-                            <td><?php echo esc_html(ucfirst(str_replace('_', ' ', $log->event_type))); ?></td>
-                            <td><?php echo esc_html($log->provider ?: '-'); ?></td>
-                            <td><span class="aoauth-status-badge aoauth-status-<?php echo esc_attr($log->status); ?>"><?php echo esc_html(ucfirst($log->status)); ?></span></td>
-                            <td><?php echo $log->username ? esc_html($log->username) : ($log->user_id ? esc_html($log->user_id) : '-'); ?></td>
-                            <td><?php echo esc_html($log->ip_address); ?></td>
-                            <td><?php echo esc_html($log->created_at); ?></td>
+                            <td><?php echo esc_html(ucfirst(str_replace('_', ' ', $aoauth_log->event_type))); ?></td>
+                            <td><?php echo esc_html($aoauth_log->provider ?: '-'); ?></td>
+                            <td><span class="aoauth-status-badge aoauth-status-<?php echo esc_attr($aoauth_log->status); ?>"><?php echo esc_html(ucfirst($aoauth_log->status)); ?></span></td>
+                            <td><?php echo $aoauth_log->username ? esc_html($aoauth_log->username) : ($aoauth_log->user_id ? esc_html($aoauth_log->user_id) : '-'); ?></td>
+                            <td><?php echo esc_html($aoauth_log->ip_address); ?></td>
+                            <td><?php echo esc_html($aoauth_log->created_at); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
         
-        <div class="aoauth-pagination" id="aoauth-logs-pagination" data-current-page="1" data-total-pages="<?php echo esc_attr($total_pages); ?>"></div>
+        <div class="aoauth-pagination" id="aoauth-logs-pagination" data-current-page="1" data-total-pages="<?php echo esc_attr($aoauth_total_pages); ?>"></div>
         <?php else: ?>
             <div class="aoauth-notice"><?php esc_html_e('Detailed logs are disabled. Enable them in Settings.', 'aoauth-client-sso'); ?></div>
         <?php endif; ?>

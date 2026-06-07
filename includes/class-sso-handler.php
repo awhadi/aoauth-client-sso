@@ -43,7 +43,7 @@ class AOAUTH_SSO_Handler {
             exit;
         }
 
-        if (!empty($_REQUEST['loggedout']) || !empty($_REQUEST['checkemail'])) {
+        if ($this->get_request_value('loggedout') !== '' || $this->get_request_value('checkemail') !== '') {
             return;
         }
 
@@ -77,12 +77,12 @@ class AOAUTH_SSO_Handler {
     }
 
     private function is_primary_login_action() {
-        $action = isset($_REQUEST['action']) ? sanitize_key(wp_unslash($_REQUEST['action'])) : '';
+        $action = sanitize_key($this->get_request_value('action'));
         return $action === '' || $action === 'login';
     }
 
     private function get_requested_redirect_url() {
-        $redirect_to = isset($_REQUEST['redirect_to']) ? esc_url_raw(wp_unslash($_REQUEST['redirect_to'])) : '';
+        $redirect_to = esc_url_raw($this->get_request_value('redirect_to'));
         if (!empty($redirect_to) && $this->security->validate_redirect_url($redirect_to)) {
             return $redirect_to;
         }
@@ -107,6 +107,20 @@ class AOAUTH_SSO_Handler {
 
     private function has_attempted_provider_auto_login() {
         return !empty($_COOKIE['aoauth_auto_login_attempted']);
+    }
+
+    private function get_query_value($key) {
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- OAuth login and callback query values are validated by nonce or stored state depending on the flow.
+        return isset($_GET[$key]) ? (string) wp_unslash($_GET[$key]) : '';
+    }
+
+    private function get_request_value($key) {
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Login request values are read before WordPress authentication and validated before use.
+        return isset($_REQUEST[$key]) ? (string) wp_unslash($_REQUEST[$key]) : '';
+    }
+
+    private function get_server_value($key) {
+        return isset($_SERVER[$key]) ? sanitize_text_field(wp_unslash($_SERVER[$key])) : '';
     }
 
     private function mark_provider_auto_login_attempted() {
@@ -261,28 +275,28 @@ class AOAUTH_SSO_Handler {
     public function handle_callback() {
     $debug = aoauth_core()->get_debug();
     
-    $is_callback = (isset($_GET['oauth']) && $_GET['oauth'] === 'callback') || 
-                   (isset($_GET['aoauth_action']) && $_GET['aoauth_action'] === 'callback');
+    $is_callback = $this->get_query_value('oauth') === 'callback' || $this->get_query_value('aoauth_action') === 'callback';
     
     if (!$is_callback) {
         return;
     }
     
     // Skip test callbacks - they go to handle_test_callback instead
-    if (isset($_GET['aoauth_test'])) {
+    if ($this->get_query_value('aoauth_test') !== '') {
         $debug->debug('Test callback detected, skipping to test handler');
         return;
     }
     
     $debug->info('=== OAUTH CALLBACK RECEIVED ===', array(
-        'REQUEST_URI' => $_SERVER['REQUEST_URI'] ?? 'unknown',
-        'GET_params' => array_keys($_GET)
+        'REQUEST_URI' => $this->get_server_value('REQUEST_URI') ?: 'unknown',
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Logs sanitized OAuth callback parameter names only; state validation follows before use.
+        'GET_params' => array_map('sanitize_key', array_keys($_GET))
     ));
     
-    $code = isset($_GET['code']) ? sanitize_text_field(wp_unslash($_GET['code'])) : '';
-    $state = isset($_GET['state']) ? sanitize_text_field(wp_unslash($_GET['state'])) : '';
-    $error = isset($_GET['error']) ? sanitize_text_field(wp_unslash($_GET['error'])) : '';
-    $error_description = isset($_GET['error_description']) ? sanitize_text_field(wp_unslash($_GET['error_description'])) : '';
+    $code = sanitize_text_field($this->get_query_value('code'));
+    $state = sanitize_text_field($this->get_query_value('state'));
+    $error = sanitize_text_field($this->get_query_value('error'));
+    $error_description = sanitize_text_field($this->get_query_value('error_description'));
     
     $debug->debug('Callback params', array(
         'code_exists' => !empty($code),
@@ -485,7 +499,11 @@ class AOAUTH_SSO_Handler {
                 $remaining = max(1, ceil(($ban_until - time()) / 60));
                 $result = new WP_Error(
                     'aoauth_login_banned',
-                    sprintf(__('Too many failed account-linking attempts. Login is temporarily blocked for %d minutes.', 'aoauth-client-sso'), $remaining)
+                    sprintf(
+                        /* translators: %d: remaining lockout time in minutes. */
+                        __('Too many failed account-linking attempts. Login is temporarily blocked for %d minutes.', 'aoauth-client-sso'),
+                        $remaining
+                    )
                 );
             } else {
                 AOAUTH_Core::link_user_provider($linked_user_id, $provider_slug, $user_info['email'], $provider_subject);
@@ -515,7 +533,8 @@ class AOAUTH_SSO_Handler {
         wp_set_auth_cookie($result, true);
         wp_set_current_user($result);
         
-        do_action('wp_login', get_userdata($result)->user_login, get_userdata($result));
+                // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Fires the core wp_login hook after SSO authentication.
+                do_action('wp_login', get_userdata($result)->user_login, get_userdata($result));
         
         // Determine where to redirect based on user role
         $redirect_url = $this->get_redirect_by_user_role($result, $redirect_to);
@@ -553,33 +572,33 @@ class AOAUTH_SSO_Handler {
     public function handle_test_callback() {
         $this->debug->log_start('AOAUTH_SSO_Handler::handle_test_callback');
         
-        if (!isset($_GET['oauth']) || $_GET['oauth'] !== 'callback') {
+        if ($this->get_query_value('oauth') !== 'callback') {
             $this->debug->debug('Not a callback request, skipping');
             $this->debug->log_end('AOAUTH_SSO_Handler::handle_test_callback');
             return;
         }
         
-        if (!isset($_GET['aoauth_test']) || $_GET['aoauth_test'] !== '1') {
+        if ($this->get_query_value('aoauth_test') !== '1') {
             $this->debug->debug('Not a test callback, skipping');
             $this->debug->log_end('AOAUTH_SSO_Handler::handle_test_callback');
             return;
         }
         
-        if (!isset($_GET['code']) || !isset($_GET['state'])) {
+        if ($this->get_query_value('code') === '' || $this->get_query_value('state') === '') {
             $this->debug->error('Missing code or state in test callback');
             $this->debug->log_end('AOAUTH_SSO_Handler::handle_test_callback');
             return;
         }
         
-        $state = sanitize_text_field($_GET['state']);
-        $code = sanitize_text_field($_GET['code']);
-        $error = isset($_GET['error']) ? sanitize_text_field($_GET['error']) : '';
+        $state = sanitize_text_field($this->get_query_value('state'));
+        $code = sanitize_text_field($this->get_query_value('code'));
+        $error = sanitize_text_field($this->get_query_value('error'));
         
         $this->debug->debug('Test callback processing', array('state' => substr($state, 0, 10) . '...'));
         
         if (!empty($error)) {
             $this->debug->error('Test callback error', array('error' => $error));
-            wp_redirect(admin_url('admin.php?page=aoauth-wizard&test=failed&error=' . urlencode($error)));
+            wp_safe_redirect(admin_url('admin.php?page=aoauth-wizard&test=failed&error=' . rawurlencode($error)));
             exit;
         }
         
@@ -588,7 +607,7 @@ class AOAUTH_SSO_Handler {
         
         if (false === $test_data) {
             $this->debug->error('Test state transient not found or expired', array('key' => $transient_key));
-            wp_redirect(admin_url('admin.php?page=aoauth-wizard&test=failed&error=' . urlencode('Test session expired or invalid state')));
+            wp_safe_redirect(admin_url('admin.php?page=aoauth-wizard&test=failed&error=' . rawurlencode('Test session expired or invalid state')));
             exit;
         }
         
@@ -600,7 +619,7 @@ class AOAUTH_SSO_Handler {
         
         if (!$provider) {
             $this->debug->error('Provider not found for test', array('slug' => $provider_slug));
-            wp_redirect(admin_url('admin.php?page=aoauth-wizard&test=failed&error=' . urlencode('Provider configuration not found')));
+            wp_safe_redirect(admin_url('admin.php?page=aoauth-wizard&test=failed&error=' . rawurlencode('Provider configuration not found')));
             exit;
         }
         
@@ -656,7 +675,7 @@ class AOAUTH_SSO_Handler {
             
             $this->debug->log_end('AOAUTH_SSO_Handler::handle_test_callback', array('success' => true));
             
-            wp_redirect(admin_url('admin.php?page=aoauth-wizard&test=success'));
+            wp_safe_redirect(admin_url('admin.php?page=aoauth-wizard&test=success'));
             exit;
             
         } catch (Exception $e) {
@@ -667,10 +686,10 @@ class AOAUTH_SSO_Handler {
                 'error' => $e->getMessage()
             ), get_current_user_id(), $provider_slug, 'error');
             
-            $error_msg = urlencode($e->getMessage());
+            $error_msg = rawurlencode($e->getMessage());
             $this->debug->log_end('AOAUTH_SSO_Handler::handle_test_callback', array('success' => false));
             
-            wp_redirect(admin_url('admin.php?page=aoauth-wizard&test=failed&error=' . $error_msg));
+            wp_safe_redirect(admin_url('admin.php?page=aoauth-wizard&test=failed&error=' . $error_msg));
             exit;
         }
     }
@@ -988,33 +1007,31 @@ class AOAUTH_SSO_Handler {
     $debug = aoauth_core()->get_debug();
     
     // Check if this is a login request
-    $is_login = (isset($_GET['oauth']) && $_GET['oauth'] === 'login') || 
-                (isset($_GET['aoauth_action']) && $_GET['aoauth_action'] === 'login');
+    $is_login = $this->get_query_value('oauth') === 'login' || $this->get_query_value('aoauth_action') === 'login';
     
     if (!$is_login) {
         return;
     }
     
     $debug->info('=== OAUTH LOGIN DETECTED ===', array(
-        'REQUEST_URI' => $_SERVER['REQUEST_URI'] ?? 'unknown',
-        'GET_params' => $_GET,
-        'provider' => $_GET['provider'] ?? 'unknown'
+        'REQUEST_URI' => $this->get_server_value('REQUEST_URI') ?: 'unknown',
+        'provider' => $this->get_query_value('provider') ?: 'unknown'
     ));
     
     // Skip test logins
-    if (isset($_GET['aoauth_test'])) {
+    if ($this->get_query_value('aoauth_test') !== '') {
         $debug->debug('Test login detected, skipping main handler');
         return;
     }
 
-    $is_account_link_request = !empty($_GET['aoauth_link_current_user']);
+    $is_account_link_request = $this->get_query_value('aoauth_link_current_user') !== '';
     if (is_user_logged_in() && !$is_account_link_request) {
         $redirect_to = $this->get_requested_redirect_url();
         wp_safe_redirect($redirect_to ?: admin_url());
         exit;
     }
     
-    $provider_slug = isset($_GET['provider']) ? sanitize_text_field(wp_unslash($_GET['provider'])) : '';
+    $provider_slug = sanitize_key($this->get_query_value('provider'));
     
     if (empty($provider_slug)) {
         $debug->error('Provider not specified');
@@ -1024,7 +1041,7 @@ class AOAUTH_SSO_Handler {
         wp_die(esc_html__('Provider not specified.', 'aoauth-client-sso'));
     }
     
-    $nonce = isset($_GET['_wpnonce']) ? $_GET['_wpnonce'] : (isset($_GET['nonce']) ? $_GET['nonce'] : '');
+    $nonce = $this->get_query_value('_wpnonce') !== '' ? sanitize_text_field($this->get_query_value('_wpnonce')) : sanitize_text_field($this->get_query_value('nonce'));
     if (!wp_verify_nonce($nonce, 'aoauth_login_' . $provider_slug)) {
         $debug->error('Nonce verification failed', array('provider' => $provider_slug));
         $this->logger->log('login_initiation_failed', array(
@@ -1034,7 +1051,7 @@ class AOAUTH_SSO_Handler {
         wp_die(esc_html__('Security check failed.', 'aoauth-client-sso'));
     }
     
-    $redirect_to = isset($_GET['redirect_to']) ? esc_url_raw(wp_unslash($_GET['redirect_to'])) : '';
+    $redirect_to = esc_url_raw($this->get_query_value('redirect_to'));
     if (!empty($redirect_to) && !$this->security->validate_redirect_url($redirect_to)) {
         $debug->warning('Invalid redirect URL', array('redirect_to' => $redirect_to));
         $redirect_to = '';
@@ -1077,8 +1094,8 @@ class AOAUTH_SSO_Handler {
         }
     }
 
-    $requested_flow_id = isset($_GET['aoauth_flow_id']) ? sanitize_text_field(wp_unslash($_GET['aoauth_flow_id'])) : '';
-    $is_auto_login_request = !empty($_GET['aoauth_auto_login']);
+    $requested_flow_id = sanitize_text_field($this->get_query_value('aoauth_flow_id'));
+    $is_auto_login_request = $this->get_query_value('aoauth_auto_login') !== '';
     if ($is_account_link_request) {
         $bot_verification = array('verified' => true, 'type' => 'authenticated_link', 'flow_id' => $this->security->generate_secure_token(18), 'provider' => $provider_slug);
     } elseif ($is_auto_login_request) {
@@ -1144,7 +1161,7 @@ class AOAUTH_SSO_Handler {
         'bot_protection' => !empty($bot_verification['type']) ? $bot_verification['type'] : 'none'
     ), null, $provider_slug, 'info');
     
-    wp_redirect($auth_url);
+    $this->redirect_to_oauth_url($auth_url);
     exit;
 }
 
@@ -1154,7 +1171,7 @@ class AOAUTH_SSO_Handler {
             return 0;
         }
 
-        $link_nonce = isset($_GET['aoauth_link_nonce']) ? sanitize_text_field(wp_unslash($_GET['aoauth_link_nonce'])) : '';
+        $link_nonce = sanitize_text_field($this->get_query_value('aoauth_link_nonce'));
         $user_id = get_current_user_id();
         if (!wp_verify_nonce($link_nonce, 'aoauth_link_current_user_' . $user_id . '_' . $provider_slug)) {
             $this->logger->log('account_linking_failed', array(
@@ -1165,6 +1182,22 @@ class AOAUTH_SSO_Handler {
         }
 
         return $user_id;
+    }
+
+    private function redirect_to_oauth_url($url) {
+        $host = wp_parse_url($url, PHP_URL_HOST);
+        if (empty($host)) {
+            wp_die(esc_html__('Invalid provider redirect URL.', 'aoauth-client-sso'));
+        }
+
+        $allow_provider_host = static function($hosts) use ($host) {
+            $hosts[] = $host;
+            return array_unique($hosts);
+        };
+
+        add_filter('allowed_redirect_hosts', $allow_provider_host);
+        wp_safe_redirect($url);
+        remove_filter('allowed_redirect_hosts', $allow_provider_host);
     }
 
     private function complete_self_service_account_linking($user_id, $user_info, $provider_slug, $flow_id, $redirect_to) {
@@ -1246,6 +1279,7 @@ class AOAUTH_SSO_Handler {
 
     private function get_oauth_endpoint_validation_message($endpoint_label) {
         return sprintf(
+            /* translators: %s: OAuth endpoint label, such as Authorization Endpoint or Token Endpoint. */
             __('%s must be a public HTTPS URL. Private, local, and plain HTTP endpoints are blocked by default.', 'aoauth-client-sso'),
             $endpoint_label
         );
@@ -1265,7 +1299,7 @@ class AOAUTH_SSO_Handler {
             );
         }
         
-        $verification = isset($_GET['aoauth_bot_verification']) ? sanitize_text_field(wp_unslash($_GET['aoauth_bot_verification'])) : '';
+        $verification = sanitize_text_field($this->get_query_value('aoauth_bot_verification'));
         if (empty($verification)) {
             return false;
         }
@@ -1323,10 +1357,6 @@ class AOAUTH_SSO_Handler {
     
     private function redirect_with_error($message) {
         $this->debug->error('Redirecting with error', array('message' => $message));
-        
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('aOAUTH Client SSO Error: ' . $message);
-        }
         
         $public_message = __('Single sign-on could not be completed. Please try again or contact the site administrator.', 'aoauth-client-sso');
         $login_url = add_query_arg('oauth_error', urlencode($public_message), wp_login_url());
@@ -1395,7 +1425,11 @@ class AOAUTH_SSO_Handler {
         ?>
         <div class="aoauth-login-buttons aoauth-account-link-buttons aoauth-theme-<?php echo esc_attr($theme); ?> aoauth-layout-<?php echo esc_attr($layout); ?>">
             <?php if (!empty($linked_providers)): ?>
-                <p class="aoauth-account-link-status"><?php echo esc_html(sprintf(__('Your account is linked to %d SSO provider(s).', 'aoauth-client-sso'), count($linked_providers))); ?></p>
+                <p class="aoauth-account-link-status"><?php echo esc_html(sprintf(
+                    /* translators: %d: number of linked SSO providers. */
+                    __('Your account is linked to %d SSO provider(s).', 'aoauth-client-sso'),
+                    count($linked_providers)
+                )); ?></p>
             <?php endif; ?>
             <div class="aoauth-providers-grid">
                 <?php foreach ($enabled_apps as $app_id => $app): ?>
@@ -1415,7 +1449,11 @@ class AOAUTH_SSO_Handler {
                     ?>
                     <a href="<?php echo esc_url($link_url); ?>" class="aoauth-button aoauth-provider-<?php echo esc_attr($app_id); ?>">
                         <span class="aoauth-button-icon"><img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . $provider_name . '.png'); ?>" alt="<?php echo esc_attr($provider_name); ?>"></span>
-                        <span class="aoauth-button-text"><?php echo esc_html(sprintf(__('Link %s', 'aoauth-client-sso'), $app['app_name'] ?? ucfirst($provider_name))); ?></span>
+                        <span class="aoauth-button-text"><?php echo esc_html(sprintf(
+                            /* translators: %s: OAuth provider application name. */
+                            __('Link %s', 'aoauth-client-sso'),
+                            $app['app_name'] ?? ucfirst($provider_name)
+                        )); ?></span>
                     </a>
                 <?php endforeach; ?>
             </div>

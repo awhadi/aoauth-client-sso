@@ -46,7 +46,8 @@ class AOAUTH_OAuth_Client {
     $debug->log_start('AOAUTH_OAuth_Client::get_tokens');
     
     $this->assert_safe_oauth_endpoint($this->config['token_endpoint'], __('Token Endpoint', 'aoauth-client-sso'));
-    $state = isset($_GET['state']) ? sanitize_text_field($_GET['state']) : '';
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- OAuth state is verified by the callback handler before token exchange.
+    $state = isset($_GET['state']) ? sanitize_text_field(wp_unslash($_GET['state'])) : '';
     
     $params = array(
         'grant_type' => 'authorization_code',
@@ -109,7 +110,7 @@ class AOAUTH_OAuth_Client {
     
     if (is_wp_error($response)) {
         $debug->error('Token request failed', array('error' => $response->get_error_message()));
-        throw new Exception($response->get_error_message());
+        throw new Exception(esc_html($response->get_error_message()));
     }
     
     $body = wp_remote_retrieve_body($response);
@@ -120,7 +121,7 @@ class AOAUTH_OAuth_Client {
             'error' => $data['error'],
             'error_description' => $data['error_description'] ?? 'none'
         ));
-        throw new Exception($data['error_description'] ?? $data['error']);
+        throw new Exception(esc_html($data['error_description'] ?? $data['error']));
     }
     
     $debug->info('Token response successful', array(
@@ -151,14 +152,14 @@ class AOAUTH_OAuth_Client {
         ));
         
         if (is_wp_error($response)) {
-            throw new Exception($response->get_error_message());
+            throw new Exception(esc_html($response->get_error_message()));
         }
         
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
         
         if (!empty($data['error'])) {
-            throw new Exception($data['error_description'] ?? $data['error']);
+            throw new Exception(esc_html($data['error_description'] ?? $data['error']));
         }
         
         return $data;
@@ -225,7 +226,11 @@ class AOAUTH_OAuth_Client {
 
     private function assert_safe_oauth_endpoint($url, $label) {
         if (!$this->security->validate_oauth_endpoint_url($url)) {
-            throw new Exception(sprintf(__('%s must be a public HTTPS URL. Private, local, and plain HTTP endpoints are blocked by default.', 'aoauth-client-sso'), $label));
+            throw new Exception(esc_html(sprintf(
+                /* translators: %s: OAuth endpoint label, such as Authorization Endpoint or Token Endpoint. */
+                __('%s must be a public HTTPS URL. Private, local, and plain HTTP endpoints are blocked by default.', 'aoauth-client-sso'),
+                $label
+            )));
         }
     }
 }

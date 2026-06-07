@@ -118,6 +118,7 @@ class AOAUTH_Logger {
         $orderby_column = isset($allowed_orderby[$orderby_key]) ? $allowed_orderby[$orderby_key] : 'l.created_at';
         $orderby_clause = $orderby_column . ' ' . $order;
         
+        // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table and order clauses are restricted to plugin-owned/allowlisted identifiers.
         $query = $wpdb->prepare(
             "SELECT l.*, u.user_login as username FROM {$this->table_name} l 
              LEFT JOIN {$wpdb->users} u ON l.user_id = u.ID 
@@ -125,7 +126,9 @@ class AOAUTH_Logger {
             $args['limit'],
             $args['offset']
         );
+        // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- Reads from the plugin's custom log table with sanitized filters.
         return $wpdb->get_results($query);
     }
     
@@ -139,20 +142,25 @@ class AOAUTH_Logger {
         if (!empty($args['date_from'])) $where[] = $wpdb->prepare('created_at >= %s', $args['date_from']);
         if (!empty($args['date_to'])) $where[] = $wpdb->prepare('created_at <= %s', $args['date_to']);
         $where_clause = implode(' AND ', $where);
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Counts rows in the plugin's custom log table; dynamic clauses are prepared above.
         return $wpdb->get_var("SELECT COUNT(*) FROM {$this->table_name} WHERE {$where_clause}");
     }
     
     public function clear_logs() {
         global $wpdb;
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Clears the plugin's custom log table on explicit admin request.
         $wpdb->query("TRUNCATE TABLE {$this->table_name}");
         $this->log('logs_cleared', array(), get_current_user_id(), null, 'info');
     }
     
     private function get_client_ip() {
         $ip = '';
-        if (!empty($_SERVER['HTTP_CLIENT_IP'])) $ip = $_SERVER['HTTP_CLIENT_IP'];
-        elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        elseif (!empty($_SERVER['REMOTE_ADDR'])) $ip = $_SERVER['REMOTE_ADDR'];
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Value is unslashed here and sanitized before return.
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) $ip = wp_unslash($_SERVER['HTTP_CLIENT_IP']);
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Value is unslashed here and sanitized before return.
+        elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) $ip = wp_unslash($_SERVER['HTTP_X_FORWARDED_FOR']);
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Value is unslashed here and sanitized before return.
+        elseif (!empty($_SERVER['REMOTE_ADDR'])) $ip = wp_unslash($_SERVER['REMOTE_ADDR']);
         return sanitize_text_field($ip);
     }
     
@@ -198,7 +206,8 @@ class AOAUTH_Logger {
             case '1_year': $days = 365; break;
         }
         
-        $date = date('Y-m-d H:i:s', strtotime("-$days days"));
+        $date = gmdate('Y-m-d H:i:s', strtotime("-$days days"));
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Deletes expired rows from the plugin's custom log table during retention cleanup.
         $wpdb->query($wpdb->prepare("DELETE FROM {$this->table_name} WHERE created_at < %s", $date));
         $this->log('old_logs_deleted', array('retention_days' => $days), null, null, 'info');
     }

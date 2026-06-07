@@ -2145,3 +2145,9 @@ msgstr "%s herkese açık bir HTTPS URL'si olmalıdır. Özel, yerel ve düz HTT
 
 msgid "Identity token signing keys are not configured."
 msgstr "Kimlik belirteci imzalama anahtarları yapılandırılmamış."
+
+msgid "Unlinked %1$d accounts. Failed: %2$d"
+msgstr "%1$d hesabın bağlantısı kaldırıldı. Başarısız: %2$d"
+
+msgid "Bot verification failed. Score %1$s is below threshold of %2$s."
+msgstr "Bot doğrulaması başarısız. %1$s puanı %2$s eşiğinin altında."

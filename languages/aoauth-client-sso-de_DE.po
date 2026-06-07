@@ -2174,3 +2174,9 @@ msgstr "%s muss eine öffentliche HTTPS-URL sein. Private, lokale und einfache H
 
 msgid "Identity token signing keys are not configured."
 msgstr "Signaturschlüssel für Identitätstoken sind nicht konfiguriert."
+
+msgid "Unlinked %1$d accounts. Failed: %2$d"
+msgstr "%1$d Konten getrennt. Fehlgeschlagen: %2$d"
+
+msgid "Bot verification failed. Score %1$s is below threshold of %2$s."
+msgstr "Bot-Verifizierung fehlgeschlagen. Wert %1$s liegt unter dem Schwellenwert %2$s."

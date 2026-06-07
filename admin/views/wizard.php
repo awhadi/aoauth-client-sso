@@ -3,7 +3,8 @@ if (!defined('ABSPATH')) {
     exit;
 }
 $edit_mode = false;
-$edit_app_id = isset($_GET['edit']) ? sanitize_text_field($_GET['edit']) : '';
+// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only wizard edit selector; saving still requires nonce verification.
+$edit_app_id = isset($_GET['edit']) ? sanitize_key(wp_unslash($_GET['edit'])) : '';
 $edit_app_data = array();
 
 if (!empty($edit_app_id) && isset($applications[$edit_app_id])) {

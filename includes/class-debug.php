@@ -89,6 +89,7 @@ class AOAUTH_Debug {
     }
     
     private function get_caller_info() {
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace -- Deep Debug intentionally records caller context only when explicitly enabled.
         $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5);
         
         for ($i = 2; $i < 5; $i++) {
@@ -113,9 +114,10 @@ class AOAUTH_Debug {
             return;
         }
         
-        $log_file = $this->log_dir . 'aoauth-debug-' . date('Y-m-d') . '.log';
+        $log_file = $this->log_dir . 'aoauth-debug-' . gmdate('Y-m-d') . '.log';
         $timestamp = current_time('Y-m-d H:i:s');
         $log_entry = sprintf("[%s] [%s] %s\n", $timestamp, $this->session_id, $message);
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Writes to the plugin's explicit Deep Debug log file only when enabled.
         error_log($log_entry, 3, $log_file);
     }
     
@@ -124,7 +126,7 @@ class AOAUTH_Debug {
             return;
         }
         
-        $log_file = $this->log_dir . 'aoauth-debug-' . date('Y-m-d') . '.log';
+        $log_file = $this->log_dir . 'aoauth-debug-' . gmdate('Y-m-d') . '.log';
         
         $timestamp = current_time('Y-m-d H:i:s');
         $caller = $this->get_caller_info();
@@ -145,6 +147,7 @@ class AOAUTH_Debug {
             $context_str
         );
         
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Writes to the plugin's explicit Deep Debug log file only when enabled.
         error_log($log_entry, 3, $log_file);
     }
     

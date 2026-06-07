@@ -1,5 +1,5 @@
 <?php if (!defined('ABSPATH')) exit;
-$current_page = isset($_GET['page']) ? $_GET['page'] : '';
+$current_page = 'aoauth-providers';
 ?>
 <div class="aoauth-admin-wrap">
     <div class="aoauth-admin-header">

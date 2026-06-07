@@ -3,7 +3,7 @@
  * Plugin Name: aOAUTH Client SSO
  * Plugin URI: https://awhadi.online
  * Description: WordPress OAuth/OIDC Single Sign-On for Google, Microsoft, GitHub, Keycloak, Auth0, Okta, WordPress, and custom identity providers.
- * Version: 2.6.0
+ * Version: 2.6.1
  * Author: Awhadi
  * Author URI: https://awhadi.online
  * License: GPL v2 or later
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('AOAUTH_VERSION', '2.6.0');
+define('AOAUTH_VERSION', '2.6.1');
 define('AOAUTH_PLUGIN_FILE', __FILE__);
 define('AOAUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AOAUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -43,8 +43,9 @@ function aoauth_activate() {
     if (version_compare(PHP_VERSION, AOAUTH_MINIMUM_PHP_VERSION, '<')) {
         deactivate_plugins(AOAUTH_PLUGIN_BASENAME);
         wp_die(sprintf(
+            /* translators: %s: minimum required PHP version. */
             esc_html__('aOAUTH Client SSO requires PHP version %s or higher.', 'aoauth-client-sso'),
-            AOAUTH_MINIMUM_PHP_VERSION
+            esc_html(AOAUTH_MINIMUM_PHP_VERSION)
         ));
     }
     
@@ -52,8 +53,9 @@ function aoauth_activate() {
     if (version_compare($wp_version, AOAUTH_MINIMUM_WP_VERSION, '<')) {
         deactivate_plugins(AOAUTH_PLUGIN_BASENAME);
         wp_die(sprintf(
+            /* translators: %s: minimum required WordPress version. */
             esc_html__('aOAUTH Client SSO requires WordPress version %s or higher.', 'aoauth-client-sso'),
-            AOAUTH_MINIMUM_WP_VERSION
+            esc_html(AOAUTH_MINIMUM_WP_VERSION)
         ));
     }
     
@@ -94,6 +96,7 @@ function aoauth_redirect_after_activation() {
         delete_transient('aoauth_activation_redirect');
         $applications = get_option('aoauth_applications', array());
         $has_configured_provider = is_array($applications) && !empty($applications);
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- WordPress sets activate-multi during plugin activation redirects.
         if (!$has_configured_provider && !isset($_GET['activate-multi'])) {
             wp_safe_redirect(admin_url('admin.php?page=aoauth-wizard'));
             exit;

@@ -2,9 +2,9 @@
 Contributors: awhadi
 Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
-Tested up to: 6.5
+Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.6.0
+Stable tag: 2.6.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,23 +20,20 @@ Automatic plugin updates can be enabled or disabled from the WordPress Plugins s
 
 == Developer Summary ==
 
-Version: 2.6.0
+Version: 2.6.1
 Date: 2026-06-07
 Author: Awhadi
 
 Summary:
-This release hardens OAuth/OIDC endpoint handling before WordPress.org release review. It blocks unsafe OAuth endpoint URLs by default, requires ID token signature verification in High security mode, consolidates provider subject extraction, removes release junk files, removes tiny unused view wrappers, removes the unused SVG admin menu asset, and keeps the WordPress admin left-menu label as OAUTH SSO.
+This release resolves Plugin Check findings before WordPress.org review while preserving the existing SSO behavior. It tightens request sanitization, escaping, translation comments, generated download output, stylesheet printing, safe redirects, tested WordPress metadata, and scoped code-standard annotations for intentional OAuth/debug/custom-table behavior.
 
 Files changed:
-- .gitignore
 - admin/class-admin.php
-- admin/images/menu-icon.svg
 - admin/views/logs.php
-- admin/views/providers.php
-- admin/views/settings.php
-- admin/views/tabs.php
 - aoauth-client-sso.php
 - includes/class-core.php
+- includes/class-debug.php
+- includes/class-logger.php
 - includes/class-oauth-client.php
 - includes/class-security.php
 - includes/class-sso-handler.php
@@ -45,17 +42,28 @@ Files changed:
 - readme.txt
 
 Security/UX notes:
+- Plugin Check cleanup keeps the active OAuth, account-linking, bot verification, logging, and admin workflows intact.
+- OAuth provider redirects now use wp_safe_redirect with a temporary allowlist for the selected provider host.
+- Account-linking standalone pages print registered WordPress styles instead of raw stylesheet tags.
+- Request data reads now consistently unslash and sanitize before use.
 - OAuth authorization, token, userinfo, JWKS, and discovery endpoints must be public HTTPS URLs by default.
 - Private, local, and plain HTTP OAuth endpoints are blocked unless explicitly allowed with AOAUTH_ALLOW_PRIVATE_OAUTH_ENDPOINTS for controlled development environments.
 - High security mode now rejects ID tokens when signing keys are missing, instead of accepting unverifiable claims.
 - The menu label is intentionally fixed as OAUTH SSO so the left WordPress admin navigation displays the requested brand text in every site language.
 - The tiny settings and tab view wrappers were merged into admin render helpers without changing the individual tab views.
-- .DS_Store files were removed from the release tree and ignored going forward.
+- .DS_Store files were removed from the release tree.
 
 Rollback plan:
-Restore version 2.5.1 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this hardening patch, restore .gitignore, admin/class-admin.php, admin/images/menu-icon.svg, admin/views/logs.php, admin/views/providers.php, admin/views/settings.php, admin/views/tabs.php, aoauth-client-sso.php, includes/class-core.php, includes/class-oauth-client.php, includes/class-security.php, includes/class-sso-handler.php, includes/class-user-manager.php, readme.txt, and CHANGELOG.md from the 2.5.1 tag.
+Restore version 2.6.0 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this Plugin Check patch, restore admin/class-admin.php, admin/views/logs.php, aoauth-client-sso.php, includes/class-core.php, includes/class-debug.php, includes/class-logger.php, includes/class-oauth-client.php, includes/class-security.php, includes/class-sso-handler.php, includes/class-user-manager.php, languages, readme.txt, and CHANGELOG.md from the 2.6.0 tag.
 
 == Changelog ==
+
+= 2.6.1 =
+* Fixed Plugin Check findings for escaping, translator comments, request unslashing, generated downloads, hidden files, and stylesheet loading.
+* Updated Tested up to to WordPress 7.0.
+* Switched OAuth provider redirects to safe redirects with a temporary provider host allowlist.
+* Removed direct PHP error logging from the SSO error redirect path.
+* Regenerated translation catalogs and compiled locale files for changed strings.
 
 = 2.6.0 =
 * Hardened OAuth/OIDC endpoint validation to require public HTTPS endpoints by default.

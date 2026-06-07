@@ -34,7 +34,11 @@ class AOAUTH_User_Manager {
         $remaining = max(1, ceil(($ban_until - time()) / 60));
         return new WP_Error(
             'aoauth_login_banned',
-            sprintf(__('Too many failed account-linking attempts. Login is temporarily blocked for %d minutes.', 'aoauth-client-sso'), $remaining)
+            sprintf(
+                /* translators: %d: remaining lockout time in minutes. */
+                __('Too many failed account-linking attempts. Login is temporarily blocked for %d minutes.', 'aoauth-client-sso'),
+                $remaining
+            )
         );
     }
     
@@ -54,7 +58,11 @@ class AOAUTH_User_Manager {
                 $remaining = max(1, ceil(($ban_until - time()) / 60));
                 return new WP_Error(
                     'aoauth_login_banned',
-                    sprintf(__('Too many failed account-linking attempts. Login is temporarily blocked for %d minutes.', 'aoauth-client-sso'), $remaining)
+                    sprintf(
+                        /* translators: %d: remaining lockout time in minutes. */
+                        __('Too many failed account-linking attempts. Login is temporarily blocked for %d minutes.', 'aoauth-client-sso'),
+                        $remaining
+                    )
                 );
             }
 
@@ -116,21 +124,23 @@ class AOAUTH_User_Manager {
     }
     
     public function handle_link_confirmation() {
-        if (!isset($_GET['oauth_link']) || $_GET['oauth_link'] !== 'confirm') {
+        if ($this->get_query_value('oauth_link') !== 'confirm') {
             return;
         }
         
-        $key = isset($_GET['key']) ? sanitize_text_field($_GET['key']) : '';
-        $email = isset($_GET['email']) ? sanitize_email($_GET['email']) : '';
-        $provider_slug = isset($_GET['provider']) ? sanitize_text_field($_GET['provider']) : '';
+        $key = sanitize_text_field($this->get_query_value('key'));
+        $email = sanitize_email($this->get_query_value('email'));
+        $provider_slug = sanitize_key($this->get_query_value('provider'));
         
         if (empty($key) || empty($email) || empty($provider_slug)) {
             wp_die(esc_html__('Invalid linking request.', 'aoauth-client-sso'));
         }
         
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['aoauth_link_password'])) {
-            $password = $_POST['aoauth_link_password'];
-            $nonce = $_POST['_wpnonce'] ?? '';
+        $request_method = isset($_SERVER['REQUEST_METHOD']) ? sanitize_key(wp_unslash($_SERVER['REQUEST_METHOD'])) : '';
+        if ($request_method === 'POST' && isset($_POST['aoauth_link_password'])) {
+            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Passwords must remain unchanged before wp_check_password().
+            $password = (string) wp_unslash($_POST['aoauth_link_password']);
+            $nonce = isset($_POST['_wpnonce']) ? sanitize_text_field(wp_unslash($_POST['_wpnonce'])) : '';
             
             if (!wp_verify_nonce($nonce, 'aoauth_link_confirm_' . $key)) {
                 wp_die(esc_html__('Security check failed.', 'aoauth-client-sso'));
@@ -168,10 +178,7 @@ class AOAUTH_User_Manager {
             <meta charset="<?php bloginfo('charset'); ?>">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title><?php esc_html_e('Account Temporarily Locked', 'aoauth-client-sso'); ?></title>
-            <link rel="stylesheet" href="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'public/css/account-linking-page.css?ver=' . AOAUTH_VERSION); ?>">
-            <?php if (AOAUTH_Core::is_dari_locale()): ?>
-                <link rel="stylesheet" href="<?php echo esc_url(AOAUTH_Core::get_dari_locale_stylesheet_url()); ?>">
-            <?php endif; ?>
+            <?php $this->print_account_linking_styles(); ?>
         </head>
         <body class="aoauth-account-linking-page aoauth-link-theme-<?php echo esc_attr($theme); ?>">
             <div class="aoauth-lockdown-container">
@@ -209,10 +216,7 @@ class AOAUTH_User_Manager {
             <meta charset="<?php bloginfo('charset'); ?>">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title><?php esc_html_e('Confirm Account Linking', 'aoauth-client-sso'); ?></title>
-            <link rel="stylesheet" href="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'public/css/account-linking-page.css?ver=' . AOAUTH_VERSION); ?>">
-            <?php if (AOAUTH_Core::is_dari_locale()): ?>
-                <link rel="stylesheet" href="<?php echo esc_url(AOAUTH_Core::get_dari_locale_stylesheet_url()); ?>">
-            <?php endif; ?>
+            <?php $this->print_account_linking_styles(); ?>
         </head>
         <body class="aoauth-account-linking-page aoauth-link-theme-<?php echo esc_attr($theme); ?>">
             <div class="aoauth-link-container">
@@ -222,7 +226,11 @@ class AOAUTH_User_Manager {
                          data-fallback-src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png'); ?>">
                 </div>
                 <h2><?php echo esc_html($page_title); ?></h2>
-                <p class="description"><?php echo sprintf(esc_html__('Confirm your WordPress password to link %s for secure SSO login.', 'aoauth-client-sso'), esc_html($provider_name)); ?></p>
+                <p class="description"><?php echo sprintf(
+                    /* translators: %s: OAuth provider name. */
+                    esc_html__('Confirm your WordPress password to link %s for secure SSO login.', 'aoauth-client-sso'),
+                    esc_html($provider_name)
+                ); ?></p>
                 <div class="email-badge"><strong><?php esc_html_e('Email:', 'aoauth-client-sso'); ?></strong> <?php echo esc_html($email); ?></div>
                 <?php if (!empty($error)) : ?>
                     <div class="error-message"><?php echo esc_html($error); ?></div>
@@ -238,6 +246,31 @@ class AOAUTH_User_Manager {
         </html>
         <?php
         exit;
+    }
+
+    private function get_query_value($key) {
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Account-link confirmation query values are validated against a transient key before use.
+        return isset($_GET[$key]) ? sanitize_text_field(wp_unslash($_GET[$key])) : '';
+    }
+
+    private function print_account_linking_styles() {
+        wp_enqueue_style(
+            'aoauth-account-linking-page',
+            AOAUTH_PLUGIN_URL . 'public/css/account-linking-page.css',
+            array(),
+            AOAUTH_VERSION
+        );
+
+        if (AOAUTH_Core::is_dari_locale()) {
+            wp_enqueue_style(
+                'aoauth-dari-locale',
+                AOAUTH_Core::get_dari_locale_stylesheet_url(),
+                array('aoauth-account-linking-page'),
+                AOAUTH_VERSION
+            );
+        }
+
+        wp_print_styles();
     }
 
     private function get_role_redirect_url($user_id) {
@@ -301,7 +334,14 @@ class AOAUTH_User_Manager {
                     $remaining = $attempts_data['max'] - $attempts_data['attempts'] - 1;
                 }
                 if ($remaining > 0) {
-                    return new WP_Error('wrong_password', sprintf(__('Incorrect password. %d attempts remaining.', 'aoauth-client-sso'), $remaining));
+                    return new WP_Error(
+                        'wrong_password',
+                        sprintf(
+                            /* translators: %d: remaining account-linking password attempts. */
+                            __('Incorrect password. %d attempts remaining.', 'aoauth-client-sso'),
+                            $remaining
+                        )
+                    );
                 } else {
                     return new WP_Error('wrong_password', __('Incorrect password. Too many failed attempts. Your account is temporarily locked.', 'aoauth-client-sso'));
                 }

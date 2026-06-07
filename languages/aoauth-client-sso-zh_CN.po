@@ -2070,3 +2070,9 @@ msgstr "%s 必须是公共 HTTPS URL。默认会阻止私有、本地和纯 HTTP
 
 msgid "Identity token signing keys are not configured."
 msgstr "未配置身份令牌签名密钥。"
+
+msgid "Unlinked %1$d accounts. Failed: %2$d"
+msgstr "已取消关联 %1$d 个帐户。失败：%2$d"
+
+msgid "Bot verification failed. Score %1$s is below threshold of %2$s."
+msgstr "机器人验证失败。分数 %1$s 低于阈值 %2$s。"

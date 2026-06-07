@@ -1994,3 +1994,9 @@ msgstr ""
 
 msgid "Identity token signing keys are not configured."
 msgstr ""
+
+msgid "Unlinked %1$d accounts. Failed: %2$d"
+msgstr ""
+
+msgid "Bot verification failed. Score %1$s is below threshold of %2$s."
+msgstr ""

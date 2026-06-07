@@ -294,7 +294,14 @@ class AOAUTH_Security {
         
         if ($lockout_until !== false && $lockout_until > time()) {
             $remaining = ceil(($lockout_until - time()) / 60);
-            return new WP_Error('locked_out', sprintf(__('Too many failed attempts. Please try again in %d minutes.', 'aoauth-client-sso'), $remaining));
+            return new WP_Error(
+                'locked_out',
+                sprintf(
+                    /* translators: %d: remaining lockout time in minutes. */
+                    __('Too many failed attempts. Please try again in %d minutes.', 'aoauth-client-sso'),
+                    $remaining
+                )
+            );
         }
         
         $attempts_key = 'aoauth_linking_attempts_' . md5($user_id . '_' . $linking_key);

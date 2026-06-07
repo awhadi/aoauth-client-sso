@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.6.1] - 2026-06-07
+
+### Changed
+- Fixed Plugin Check findings for escaping, translator comments, request unslashing, generated downloads, hidden files, and stylesheet loading.
+- Updated `Tested up to` metadata to WordPress 7.0.
+- Switched OAuth provider redirects to `wp_safe_redirect()` with a temporary provider host allowlist.
+- Removed direct PHP error logging from the SSO error redirect path.
+- Removed the hidden `.gitignore` development file from the plugin package.
+- Regenerated translation catalogs and compiled locale files for changed strings.
+
 ## [2.6.0] - 2026-06-07
 
 ### Added
