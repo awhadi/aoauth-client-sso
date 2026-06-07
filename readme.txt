@@ -4,7 +4,7 @@ Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 2.5.0
+Stable tag: 2.5.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,43 +16,40 @@ aOAUTH Client SSO is a WordPress Single Sign-On plugin that allows users to log 
 
 The plugin works with identity providers that conform to the OAuth 2.0 and OpenID Connect (OIDC) standards. Site owners can move away from password-only WordPress login, centralize authentication with existing business or social accounts, connect provider identities to WordPress users, map roles, control post-login redirects, style SSO buttons, and manage authentication from the WordPress admin area.
 
-Automatic plugin updates can be enabled or disabled from Tools. When enabled, WordPress can install new versions of this plugin automatically when an update package is available from the configured plugin update source.
+Automatic plugin updates can be enabled or disabled from the WordPress Plugins screen. When enabled, WordPress can install new versions of this plugin automatically when an update package is available from the configured plugin update source.
 
 == Developer Summary ==
 
-Version: 2.5.0
-Date: 2026-06-05
+Version: 2.5.1
+Date: 2026-06-07
 Author: Awhadi
 
 Summary:
-This release improves the WordPress plugin metadata and readme description so the copy clearly explains that the plugin adds OAuth 2.0/OpenID Connect Single Sign-On for WordPress, supports standard-compliant identity providers, and helps replace password-only login with managed provider authentication. It also adds an admin setting for WordPress automatic plugin updates and moves uninstall cleanup to the standard root uninstall.php file.
+This release moves automatic update management to the native WordPress Plugins screen so administrators can use the standard Enable auto-updates and Disable auto-updates links. It also updates the admin menu icon to a small color-inheriting "a" that follows the active WordPress admin color scheme.
 
 Files changed:
-- aoauth-client-sso.php
 - admin/class-admin.php
+- admin/css/admin-menu-icon.css
 - admin/views/tools.php
+- aoauth-client-sso.php
 - includes/class-core.php
-- languages/aoauth-client-sso-de_DE.po and .mo
-- languages/aoauth-client-sso-fa_AF.po and .mo
-- languages/aoauth-client-sso-fr_FR.po and .mo
-- languages/aoauth-client-sso-ja.po and .mo
-- languages/aoauth-client-sso-ru_RU.po and .mo
-- languages/aoauth-client-sso-tr_TR.po and .mo
-- languages/aoauth-client-sso-zh_CN.po and .mo
-- languages/aoauth-client-sso.pot
-- uninstall.php
 - CHANGELOG.md
 - readme.txt
 
 Security/UX notes:
-- Authentication, provider configuration, styling, localization loading, and data handling behavior remain unchanged.
-- Auto-update opt-in is controlled by the plugin Tools setting, scoped to this plugin basename only, and does not change update settings for other plugins.
-- Uninstall cleanup still respects the Delete Plugin Data on Uninstall setting before removing plugin tables, options, and user metadata.
+- Authentication, provider configuration, localization loading, uninstall behavior, and data handling remain unchanged.
+- Auto-update management now uses WordPress's native Plugins screen state in the auto_update_plugins site option.
+- The admin menu icon uses existing external CSS and currentColor so WordPress admin themes can recolor it.
 
 Rollback plan:
-Restore version 2.4.11 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only the description copy, restore aoauth-client-sso.php and readme.txt from the 2.4.11 tag. To roll back only auto-update and uninstall handling, restore aoauth-client-sso.php, admin/class-admin.php, admin/views/tools.php, includes/class-core.php, and remove uninstall.php.
+Restore version 2.5.0 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this patch, restore admin/class-admin.php, admin/css/admin-menu-icon.css, admin/views/tools.php, includes/class-core.php, aoauth-client-sso.php, readme.txt, and CHANGELOG.md from the 2.5.0 tag.
 
 == Changelog ==
+
+= 2.5.1 =
+* Moved auto-update management to the native WordPress Plugins screen Enable/Disable auto-updates link.
+* Removed the duplicate automatic updates toggle from Tools.
+* Changed the admin menu icon to a small color-inheriting "a".
 
 = 2.5.0 =
 * Clarified the plugin description to explain supported OAuth/OIDC provider login, standards compatibility, and the WordPress login problem it solves.

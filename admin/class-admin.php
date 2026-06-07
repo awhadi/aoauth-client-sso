@@ -56,6 +56,7 @@ class AOAUTH_Admin {
         add_action('wp_ajax_aoauth_verify_recaptcha', array($this, 'ajax_verify_recaptcha'));
         
         add_filter('plugin_action_links_' . AOAUTH_PLUGIN_BASENAME, array($this, 'add_plugin_action_links'));
+        add_filter('plugin_auto_update_setting_html', array($this, 'render_plugin_auto_update_setting'), 10, 3);
     }
     
     public function add_admin_menu() {
@@ -68,7 +69,7 @@ class AOAUTH_Admin {
             'manage_options',
             'aoauth-providers',
             array($this, 'render_connect_page'),
-            AOAUTH_PLUGIN_URL . 'admin/images/menu-icon.svg',
+            'none',
             30
         );
         
@@ -1227,7 +1228,6 @@ class AOAUTH_Admin {
             'enable_login_buttons' => $is_enabled('enable_login_buttons'),
             'enable_provider_auto_login' => $is_enabled('enable_provider_auto_login'),
             'enable_brand_badge' => $is_enabled('enable_brand_badge'),
-            'enable_auto_updates' => $is_enabled('enable_auto_updates'),
             'login_button_theme' => sanitize_text_field($settings['login_button_theme']),
             'login_button_layout' => $login_button_layout,
             'login_button_position' => $login_button_position,
@@ -2120,5 +2120,34 @@ class AOAUTH_Admin {
         array_unshift($links, $wizard_link);
         
         return $links;
+    }
+
+    public function render_plugin_auto_update_setting($html, $plugin_file, $plugin_data) {
+        if ($plugin_file !== AOAUTH_PLUGIN_BASENAME || !current_user_can('update_plugins')) {
+            return $html;
+        }
+
+        if (!empty($plugin_data['update-supported'])) {
+            return $html;
+        }
+
+        $auto_updates = (array) get_site_option('auto_update_plugins', array());
+        $is_enabled = in_array($plugin_file, $auto_updates, true);
+        $action = $is_enabled ? 'disable' : 'enable';
+        $text = $is_enabled ? __('Disable auto-updates') : __('Enable auto-updates');
+        $url = add_query_arg(
+            array(
+                'action' => $action . '-auto-update',
+                'plugin' => $plugin_file,
+            ),
+            'plugins.php'
+        );
+
+        return sprintf(
+            '<a href="%1$s" class="toggle-auto-update aria-button-if-js" data-wp-action="%2$s"><span class="dashicons dashicons-update spin hidden" aria-hidden="true"></span><span class="label">%3$s</span></a>',
+            esc_url(wp_nonce_url($url, 'updates')),
+            esc_attr($action),
+            esc_html($text)
+        );
     }
 }

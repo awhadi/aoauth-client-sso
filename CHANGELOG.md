@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.5.1] - 2026-06-07
+
+### Changed
+- Moved automatic update management to the native WordPress Plugins screen Enable/Disable auto-updates link and removed the duplicate Tools toggle.
+- Changed the admin menu icon to a small color-inheriting `a` rendered from the existing external admin menu CSS.
+
 ## [2.5.0] - 2026-06-05
 
 ### Added

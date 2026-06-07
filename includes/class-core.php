@@ -43,25 +43,9 @@ class AOAUTH_Core {
         
         add_action('wp_enqueue_scripts', array($this, 'enqueue_brand_badge'));
         add_action('wp_footer', array($this, 'render_brand_badge'));
-        add_filter('auto_update_plugin', array($this, 'enable_plugin_auto_updates'), 10, 2);
 
         $this->debug->info('Plugin initialized');
         $this->debug->log_end('AOAUTH_Core::init');
-    }
-
-    public function enable_plugin_auto_updates($update, $item) {
-        $settings = array_merge(self::get_default_settings(), get_option('aoauth_settings', array()));
-        if (empty($settings['enable_auto_updates'])) {
-            return $update;
-        }
-
-        $plugin_file = is_object($item) && isset($item->plugin) ? $item->plugin : '';
-
-        if ($plugin_file === AOAUTH_PLUGIN_BASENAME) {
-            return true;
-        }
-
-        return $update;
     }
     
     public function render_brand_badge() {
@@ -105,6 +89,7 @@ class AOAUTH_Core {
         
         $this->create_tables();
         $this->set_default_options();
+        $this->enable_auto_updates();
         $this->schedule_retention_cron();
         $this->logger->log('plugin_activated', 'Plugin activated successfully');
         
@@ -117,7 +102,6 @@ class AOAUTH_Core {
             'enable_login_buttons' => '1',
             'enable_provider_auto_login' => '0',
             'enable_brand_badge' => '1',
-            'enable_auto_updates' => '1',
             'auto_create_users' => '1',
             'default_role' => 'subscriber',
             'allow_account_linking' => '0',
@@ -260,6 +244,14 @@ class AOAUTH_Core {
         }
         
         $this->debug->log_end('AOAUTH_Core::set_default_options');
+    }
+
+    private function enable_auto_updates() {
+        $auto_updates = (array) get_site_option('auto_update_plugins', array());
+        if (!in_array(AOAUTH_PLUGIN_BASENAME, $auto_updates, true)) {
+            $auto_updates[] = AOAUTH_PLUGIN_BASENAME;
+            update_site_option('auto_update_plugins', array_values(array_unique($auto_updates)));
+        }
     }
     
     public function get_available_themes() {

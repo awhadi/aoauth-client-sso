@@ -131,20 +131,6 @@ $last_cleanup = get_option('aoauth_last_retention_run', '');
             <h3 class="aoauth-section-title"><?php esc_html_e('Data Management', 'aoauth-client-sso'); ?></h3>
             <div class="aoauth-setting-row">
                 <div class="aoauth-setting-label">
-                    <label for="enable_auto_updates"><?php esc_html_e('Enable Automatic Updates', 'aoauth-client-sso'); ?></label>
-                    <p class="aoauth-setting-help"><?php esc_html_e('Allow WordPress to install new versions of this plugin automatically when an update package is available. Disable this if you prefer to update manually after testing.', 'aoauth-client-sso'); ?></p>
-                </div>
-                <div class="aoauth-setting-control">
-                    <label class="aoauth-toggle">
-                        <input type="hidden" name="enable_auto_updates" value="0">
-                        <input type="checkbox" id="enable_auto_updates" name="enable_auto_updates" value="1" <?php checked(!empty($settings['enable_auto_updates'])); ?>>
-                        <span class="aoauth-toggle-slider"></span>
-                    </label>
-                </div>
-            </div>
-
-            <div class="aoauth-setting-row">
-                <div class="aoauth-setting-label">
                     <label for="delete_data_on_uninstall"><?php esc_html_e('Delete Plugin Data on Uninstall', 'aoauth-client-sso'); ?></label>
                 </div>
                 <div class="aoauth-setting-control">

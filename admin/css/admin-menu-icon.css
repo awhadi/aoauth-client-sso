@@ -1,6 +1,15 @@
-#toplevel_page_aoauth-providers .wp-menu-image img {
-    width: 20px;
-    height: 20px;
-    padding: 7px 0;
-    object-fit: contain;
+#toplevel_page_aoauth-providers .wp-menu-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#toplevel_page_aoauth-providers .wp-menu-image::before {
+    content: "a";
+    color: currentColor;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0;
 }
