@@ -1,4 +1,6 @@
-<?php if (!defined('ABSPATH')) exit;
+<?php
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- This template receives local view variables from the admin renderer.
+if (!defined('ABSPATH')) exit;
 $bot_enabled = !empty($settings['enable_bot_protection']) || !empty($settings['enable_turnstile']) || !empty($settings['enable_recaptcha']);
 $bot_provider = !empty($settings['bot_protection_provider']) ? $settings['bot_protection_provider'] : (!empty($settings['enable_recaptcha']) ? 'recaptcha' : 'turnstile');
 ?>

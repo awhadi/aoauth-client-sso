@@ -1,4 +1,6 @@
-<?php if (!defined('ABSPATH')) exit;
+<?php
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- This template receives local view variables from the admin renderer.
+if (!defined('ABSPATH')) exit;
 $current_theme = $settings['login_button_theme'] ?? 'modern';
 $current_overlay_variant = $settings['bot_overlay_variant'] ?? 'spotlight';
 if (!in_array($current_overlay_variant, array('spotlight', 'constellation', 'minimal'), true)) {

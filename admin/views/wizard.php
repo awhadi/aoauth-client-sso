@@ -1,4 +1,5 @@
 <?php
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- This template receives local view variables from the admin renderer.
 if (!defined('ABSPATH')) {
     exit;
 }

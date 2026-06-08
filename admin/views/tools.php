@@ -1,4 +1,6 @@
-<?php if (!defined('ABSPATH')) exit;
+<?php
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- This template receives local view variables from the admin renderer.
+if (!defined('ABSPATH')) exit;
 $debug_enabled = aoauth_core()->get_debug()->is_enabled();
 $debug_constant = 'define("OAUTH-DEBUG", "enabled");';
 $next_cleanup = wp_next_scheduled('aoauth_retention_cron');

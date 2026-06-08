@@ -1,4 +1,6 @@
-<?php if (!defined('ABSPATH')) exit;
+<?php
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- This template receives local view variables from the admin renderer.
+if (!defined('ABSPATH')) exit;
 $current_page = 'aoauth-providers';
 ?>
 <div class="aoauth-admin-wrap">
@@ -21,7 +23,7 @@ $current_page = 'aoauth-providers';
     <div class="aoauth-admin-content">
         <?php if (!empty($applications)): ?>
 <div class="aoauth-configure-header">
-    <a href="<?php echo admin_url('admin.php?page=aoauth-wizard'); ?>" class="aoauth-admin-button aoauth-admin-button-primary aoauth-add-app-btn">
+    <a href="<?php echo esc_url(admin_url('admin.php?page=aoauth-wizard')); ?>" class="aoauth-admin-button aoauth-admin-button-primary aoauth-add-app-btn">
         <span class="dashicons dashicons-plus"></span>
         <?php esc_html_e('Add New Provider', 'aoauth-client-sso'); ?>
     </a>
@@ -36,7 +38,7 @@ $current_page = 'aoauth-providers';
                     </div>
                     <h3><?php esc_html_e('No Providers Connected', 'aoauth-client-sso'); ?></h3>
                     <p><?php esc_html_e('Add your first OAuth 2.0 or OpenID Connect provider to enable Single Sign-On.', 'aoauth-client-sso'); ?></p>
-                    <a href="<?php echo admin_url('admin.php?page=aoauth-wizard'); ?>" class="aoauth-admin-button aoauth-admin-button-primary aoauth-add-app-btn">
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=aoauth-wizard')); ?>" class="aoauth-admin-button aoauth-admin-button-primary aoauth-add-app-btn">
                         <?php esc_html_e('Add New Provider', 'aoauth-client-sso'); ?>
                     </a>
                 </div>
@@ -45,7 +47,7 @@ $current_page = 'aoauth-providers';
                     <div class="aoauth-app-card" data-app-id="<?php echo esc_attr($app_id); ?>">
                         <div class="aoauth-app-info">
                             <div class="aoauth-app-icon">
-                                <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . $app['provider_name'] . '.png'); ?>" alt="<?php echo esc_attr($app['provider_name']); ?>">
+                                <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . sanitize_key($app['provider_name']) . '.png'); ?>" alt="<?php echo esc_attr($app['provider_name']); ?>">
                             </div>
                             <div class="aoauth-app-details">
                                 <h4 class="aoauth-app-name"><?php echo esc_html($app['app_name']); ?></h4>

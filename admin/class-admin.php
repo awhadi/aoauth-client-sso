@@ -56,7 +56,6 @@ class AOAUTH_Admin {
         add_action('wp_ajax_aoauth_verify_recaptcha', array($this, 'ajax_verify_recaptcha'));
         
         add_filter('plugin_action_links_' . AOAUTH_PLUGIN_BASENAME, array($this, 'add_plugin_action_links'));
-        add_filter('plugin_auto_update_setting_html', array($this, 'render_plugin_auto_update_setting'), 10, 3);
     }
     
     public function add_admin_menu() {
@@ -331,6 +330,7 @@ class AOAUTH_Admin {
                     'token_endpoint_required' => __('Please enter a Token Endpoint', 'aoauth-client-sso'),
                     'error_saving_application' => __('Error saving application', 'aoauth-client-sso'),
                     'connection_error_saving' => __('Connection error while saving', 'aoauth-client-sso'),
+                    /* translators: %s: connection error message returned by the browser request. */
                     'connection_error' => __('Connection error: %s', 'aoauth-client-sso'),
                     'provider_saved_redirecting' => __('Provider configuration saved and enabled! Redirecting...', 'aoauth-client-sso'),
                     'draft_saved' => __('Draft saved successfully!', 'aoauth-client-sso'),
@@ -391,6 +391,7 @@ class AOAUTH_Admin {
         $roles = get_editable_roles();
         $available_themes = aoauth_core()->get_available_themes();
         $sso_users = get_users(array(
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Counts users linked by this plugin-owned user meta for the Tools cleanup UI.
             'meta_key' => '_aoauth_provider',
             'fields' => 'ID'
         ));
@@ -1539,6 +1540,7 @@ class AOAUTH_Admin {
 
     private function get_oauth_endpoint_validation_message($endpoint_label) {
         return sprintf(
+            /* translators: %s: OAuth endpoint label, such as Authorization Endpoint or Token Endpoint. */
             __('%s must be a public HTTPS URL. Private, local, and plain HTTP endpoints are blocked by default.', 'aoauth-client-sso'),
             $endpoint_label
         );
@@ -2283,32 +2285,4 @@ class AOAUTH_Admin {
         return $links;
     }
 
-    public function render_plugin_auto_update_setting($html, $plugin_file, $plugin_data) {
-        if ($plugin_file !== AOAUTH_PLUGIN_BASENAME || !current_user_can('update_plugins')) {
-            return $html;
-        }
-
-        if (!empty($plugin_data['update-supported'])) {
-            return $html;
-        }
-
-        $auto_updates = (array) get_site_option('auto_update_plugins', array());
-        $is_enabled = in_array($plugin_file, $auto_updates, true);
-        $action = $is_enabled ? 'disable' : 'enable';
-        $text = $is_enabled ? __('Disable auto-updates', 'aoauth-client-sso') : __('Enable auto-updates', 'aoauth-client-sso');
-        $url = add_query_arg(
-            array(
-                'action' => $action . '-auto-update',
-                'plugin' => $plugin_file,
-            ),
-            'plugins.php'
-        );
-
-        return sprintf(
-            '<a href="%1$s" class="toggle-auto-update aria-button-if-js" data-wp-action="%2$s"><span class="dashicons dashicons-update spin hidden" aria-hidden="true"></span><span class="label">%3$s</span></a>',
-            esc_url(wp_nonce_url($url, 'updates')),
-            esc_attr($action),
-            esc_html($text)
-        );
-    }
 }

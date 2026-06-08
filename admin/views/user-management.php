@@ -1,4 +1,6 @@
-<?php if (!defined('ABSPATH')) exit;
+<?php
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- This template receives local view variables from the admin renderer.
+if (!defined('ABSPATH')) exit;
 $role_redirects = isset($settings['role_redirects']) && is_array($settings['role_redirects']) ? $settings['role_redirects'] : AOAUTH_Core::get_default_role_redirects();
 ?>
 <div class="aoauth-settings-column">

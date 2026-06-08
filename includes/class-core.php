@@ -87,7 +87,6 @@ class AOAUTH_Core {
         
         $this->create_tables();
         $this->set_default_options();
-        $this->enable_auto_updates();
         $this->schedule_retention_cron();
         $this->logger->log('plugin_activated', 'Plugin activated successfully');
         
@@ -244,14 +243,6 @@ class AOAUTH_Core {
         $this->debug->log_end('AOAUTH_Core::set_default_options');
     }
 
-    private function enable_auto_updates() {
-        $auto_updates = (array) get_site_option('auto_update_plugins', array());
-        if (!in_array(AOAUTH_PLUGIN_BASENAME, $auto_updates, true)) {
-            $auto_updates[] = AOAUTH_PLUGIN_BASENAME;
-            update_site_option('auto_update_plugins', array_values(array_unique($auto_updates)));
-        }
-    }
-    
     public function get_available_themes() {
         $this->debug->log_start('AOAUTH_Core::get_available_themes');
         
@@ -327,28 +318,6 @@ class AOAUTH_Core {
             $overlay_variant = 'spotlight';
         }
         
-        if ($turnstile_enabled) {
-            // phpcs:ignore PluginCheck.CodeAnalysis.EnqueuedResourceOffloading.OffloadedContent -- Cloudflare Turnstile must load its verification API from Cloudflare when this optional provider is enabled.
-            wp_enqueue_script(
-                'cloudflare-turnstile',
-                'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit',
-                array(),
-                AOAUTH_VERSION,
-                true
-            );
-            $this->debug->debug('Turnstile script enqueued');
-        } elseif ($recaptcha_enabled) {
-            // phpcs:ignore PluginCheck.CodeAnalysis.EnqueuedResourceOffloading.OffloadedContent -- Google reCAPTCHA must load its verification API from Google when this optional provider is enabled.
-            wp_enqueue_script(
-                'google-recaptcha',
-                'https://www.google.com/recaptcha/api.js?render=' . urlencode($settings['recaptcha_site_key']),
-                array(),
-                AOAUTH_VERSION,
-                true
-            );
-            $this->debug->debug('reCAPTCHA script enqueued');
-        }
-        
         wp_enqueue_script(
             'aoauth-public',
             AOAUTH_PLUGIN_URL . 'public/js/login-single-sign-on.js',
@@ -393,6 +362,7 @@ class AOAUTH_Core {
             $localize_data['bot_protection'] = array(
                 'type' => 'turnstile',
                 'site_key' => $settings['turnstile_site_key'],
+                'script_url' => 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit',
                 'overlay_enabled' => !empty($settings['bot_overlay_enabled']),
                 'overlay_message' => !empty($settings['bot_overlay_message']) ? $settings['bot_overlay_message'] : __('Verifying secure sign-in...', 'aoauth-client-sso'),
                 'overlay_variant' => $overlay_variant,
@@ -406,6 +376,7 @@ class AOAUTH_Core {
             $localize_data['bot_protection'] = array(
                 'type' => 'recaptcha',
                 'site_key' => $settings['recaptcha_site_key'],
+                'script_url' => 'https://www.google.com/recaptcha/api.js?render=' . rawurlencode($settings['recaptcha_site_key']),
                 'score_threshold' => floatval($settings['recaptcha_score_threshold'] ?? 0.5),
                 'overlay_enabled' => !empty($settings['bot_overlay_enabled']),
                 'overlay_message' => !empty($settings['bot_overlay_message']) ? $settings['bot_overlay_message'] : __('Verifying secure sign-in...', 'aoauth-client-sso'),
@@ -492,10 +463,10 @@ class AOAUTH_Core {
         echo '<div class="aoauth-providers-grid">';
         
         foreach ($enabled_apps as $app_id => $app) {
-            $provider_name = esc_html($app['provider_name']);
+            $provider_name = sanitize_text_field($app['provider_name']);
             $app_name = esc_html($app['app_name']);
             
-            $icon_url = AOAUTH_PLUGIN_URL . 'admin/images/providers/' . $app['provider_name'] . '.png';
+            $icon_url = AOAUTH_PLUGIN_URL . 'admin/images/providers/' . sanitize_key($provider_name) . '.png';
             
             $login_url = add_query_arg(array(
                 'oauth' => 'login',
@@ -505,7 +476,7 @@ class AOAUTH_Core {
             ), wp_login_url());
             
             echo '<a href="' . esc_url($login_url) . '" class="aoauth-button aoauth-provider-' . esc_attr($app_id) . '">';
-            echo '<span class="aoauth-button-icon"><img src="' . esc_url($icon_url) . '" alt="' . $provider_name . '" data-fallback-src="' . esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png') . '"></span>';
+            echo '<span class="aoauth-button-icon"><img src="' . esc_url($icon_url) . '" alt="' . esc_attr($provider_name) . '" data-fallback-src="' . esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png') . '"></span>';
             echo '<span class="aoauth-button-text">' . esc_html($app_name) . '</span>';
             echo '</a>';
         }
@@ -650,7 +621,9 @@ class AOAUTH_Core {
         }
 
         $users = get_users(array(
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Finds an account linked by this plugin-owned provider identity meta.
             'meta_key' => $identity_meta,
+            // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- Finds an account linked by this plugin-owned provider identity meta.
             'meta_value' => $identity_value,
             'number' => 1,
             'fields' => 'ID',

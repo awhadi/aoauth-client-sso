@@ -2,6 +2,7 @@
     var turnstileWidgetIds = {};
     var activeRequests = {};
     var turnstileTimeouts = {};
+    var externalScriptLoads = {};
 
     function translate(key, fallback) {
         if (typeof aoauth_public !== 'undefined' && aoauth_public.translations && aoauth_public.translations[key]) {
@@ -14,6 +15,46 @@
         return $('<div>').text(text || '').html();
     }
 
+    function loadExternalScript(key, url) {
+        if (!url) {
+            return $.Deferred().reject().promise();
+        }
+
+        if (externalScriptLoads[key]) {
+            return externalScriptLoads[key];
+        }
+
+        externalScriptLoads[key] = $.Deferred(function(deferred) {
+            $('<script>', {
+                src: url,
+                async: true,
+                defer: true
+            })
+                .on('load', function() {
+                    deferred.resolve();
+                })
+                .on('error', function() {
+                    deferred.reject();
+                })
+                .appendTo('head');
+        }).promise();
+
+        return externalScriptLoads[key];
+    }
+
+    function ensureBotProtectionScript(type) {
+        var protection = aoauth_public && aoauth_public.bot_protection ? aoauth_public.bot_protection : {};
+
+        if (type === 'turnstile' && typeof turnstile !== 'undefined') {
+            return $.Deferred().resolve().promise();
+        }
+
+        if (type === 'recaptcha' && typeof grecaptcha !== 'undefined') {
+            return $.Deferred().resolve().promise();
+        }
+
+        return loadExternalScript(type, protection.script_url || '');
+    }
 
     $(document).on('error', 'img[data-fallback-src], img[data-hide-on-error]', function() {
         var $image = $(this);
@@ -117,12 +158,19 @@
             
             if (protectionType === 'turnstile') {
                 if (typeof turnstile === 'undefined') {
-                    debugLog('error', 'Turnstile not loaded', {
-                        flow_id: flowId,
-                        provider: provider
-                    });
-                    hideBeautifulLoader($btn);
-                    alert(translate('bot_protection_not_loaded', 'Bot protection not loaded. Please refresh the page.'));
+                    ensureBotProtectionScript('turnstile')
+                        .done(function() {
+                            $btn.removeClass('aoauth-button-loading');
+                            handleSSOClick.call($btn[0], e);
+                        })
+                        .fail(function() {
+                            debugLog('error', 'Turnstile not loaded', {
+                                flow_id: flowId,
+                                provider: provider
+                            });
+                            hideBeautifulLoader($btn);
+                            alert(translate('bot_protection_not_loaded', 'Bot protection not loaded. Please refresh the page.'));
+                        });
                     return false;
                 }
                 
@@ -228,13 +276,20 @@
                 
             } else if (protectionType === 'recaptcha') {
                 if (typeof grecaptcha === 'undefined') {
-                    debugLog('error', 'reCAPTCHA not loaded', {
-                        flow_id: flowId,
-                        provider: provider
-                    });
-                    hideBeautifulLoader($btn);
-                    hideBotOverlay();
-                    alert(translate('bot_protection_not_loaded', 'Bot protection not loaded. Please refresh the page.'));
+                    ensureBotProtectionScript('recaptcha')
+                        .done(function() {
+                            $btn.removeClass('aoauth-button-loading');
+                            handleSSOClick.call($btn[0], e);
+                        })
+                        .fail(function() {
+                            debugLog('error', 'reCAPTCHA not loaded', {
+                                flow_id: flowId,
+                                provider: provider
+                            });
+                            hideBeautifulLoader($btn);
+                            hideBotOverlay();
+                            alert(translate('bot_protection_not_loaded', 'Bot protection not loaded. Please refresh the page.'));
+                        });
                     return false;
                 }
                 

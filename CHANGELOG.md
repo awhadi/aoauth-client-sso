@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.6.4] - 2026-06-08
+
+### Fixed
+- Fixed Plugin Check findings for hidden files, translator comments, escaping, remote script enqueues, auto-update modification detection, and scoped database/query warnings.
+- Preserved optional Turnstile and reCAPTCHA behavior by loading provider APIs from the existing external public JavaScript file instead of enqueueing off-site scripts through WordPress.
+- Removed forced auto-update enabling on activation while keeping the native Plugins screen auto-update control.
+
 ## [2.6.3] - 2026-06-08
 
 ### Fixed

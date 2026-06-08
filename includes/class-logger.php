@@ -30,6 +30,7 @@ class AOAUTH_Logger {
             'created_at' => current_time('mysql')
         );
         
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Writes to this plugin's custom audit log table.
         $wpdb->insert($this->table_name, $data);
         return $wpdb->insert_id;
     }
@@ -128,7 +129,7 @@ class AOAUTH_Logger {
         );
         // phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         
-        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared -- Reads from the plugin's custom log table with sanitized filters.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.NotPrepared,PluginCheck.Security.DirectDB.UnescapedDBParameter -- Reads from the plugin's custom log table with sanitized filters and allowlisted table/order identifiers.
         return $wpdb->get_results($query);
     }
     

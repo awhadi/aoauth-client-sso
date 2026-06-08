@@ -4,7 +4,7 @@ Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.6.3
+Stable tag: 2.6.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,28 +20,44 @@ Automatic plugin updates can be enabled or disabled from the WordPress Plugins s
 
 == Developer Summary ==
 
-Version: 2.6.3
+Version: 2.6.4
 Date: 2026-06-08
 Author: Awhadi
 
 Summary:
-This release restores callback compatibility for existing OAuth/OIDC provider configurations while keeping stricter validation when provider signing keys are configured.
+This release fixes Plugin Check findings before WordPress.org submission while preserving existing SSO, account-linking, bot verification, logging, uninstall, and native plugin auto-update behavior.
 
 Files changed:
 - aoauth-client-sso.php
-- includes/class-sso-handler.php
+- admin/class-admin.php
+- admin/views/providers.php
+- admin/views/security.php
+- admin/views/sign-in-experience.php
+- admin/views/tools.php
+- admin/views/user-management.php
+- admin/views/wizard.php
+- includes/class-core.php
+- includes/class-logger.php
+- public/js/login-single-sign-on.js
+- uninstall.php
 - CHANGELOG.md
 - readme.txt
 
 Security/UX notes:
-- Built-in OIDC metadata now applies even when saved provider names use different casing.
-- Existing providers without JWKS configured no longer fail callback processing solely because signing keys are missing.
-- If a provider has configured signing keys and signature verification fails, authentication is still blocked.
+- Optional Turnstile and reCAPTCHA APIs are no longer enqueued as off-site WordPress scripts; the existing public JavaScript loads them only when the configured bot protection provider is needed.
+- The plugin no longer force-enables automatic updates on activation; admins still use the native Plugins screen control.
+- Plugin-owned custom table and user-meta queries now have scoped code-standard annotations explaining why they are intentional.
+- Hidden macOS metadata files were removed from the release tree.
 
 Rollback plan:
-Restore version 2.6.2 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this patch, restore aoauth-client-sso.php, includes/class-sso-handler.php, readme.txt, and CHANGELOG.md from the 2.6.2 tag.
+Restore version 2.6.3 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this patch, restore admin/class-admin.php, admin/views, aoauth-client-sso.php, includes/class-core.php, includes/class-logger.php, public/js/login-single-sign-on.js, uninstall.php, readme.txt, and CHANGELOG.md from the 2.6.3 tag.
 
 == Changelog ==
+
+= 2.6.4 =
+* Fixed Plugin Check findings for hidden files, translator comments, escaping, remote script enqueues, auto-update modification detection, and scoped database/query warnings.
+* Preserved optional Turnstile and reCAPTCHA behavior by loading provider APIs from the existing public JavaScript file only when needed.
+* Removed forced auto-update enabling on activation while keeping the native Plugins screen auto-update control.
 
 = 2.6.3 =
 * Restored callback compatibility for existing OIDC providers whose saved metadata does not include JWKS signing keys.
