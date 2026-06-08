@@ -4,7 +4,7 @@ Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.6.2
+Stable tag: 2.6.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,31 +20,32 @@ Automatic plugin updates can be enabled or disabled from the WordPress Plugins s
 
 == Developer Summary ==
 
-Version: 2.6.2
+Version: 2.6.3
 Date: 2026-06-08
 Author: Awhadi
 
 Summary:
-This release fixes provider identifier handling during SSO login, account linking, provider toggles, and unlink actions so existing configured provider keys continue to match their signed nonces and stored application records.
+This release restores callback compatibility for existing OAuth/OIDC provider configurations while keeping stricter validation when provider signing keys are configured.
 
 Files changed:
-- admin/class-admin.php
 - aoauth-client-sso.php
-- includes/class-core.php
 - includes/class-sso-handler.php
-- includes/class-user-manager.php
 - CHANGELOG.md
 - readme.txt
 
 Security/UX notes:
-- Provider identifiers are preserved exactly where they are used for application lookups, nonce verification, account linking, and unlinking.
-- Slug-style sanitization remains in place for provider asset names, CSS-safe values, and admin filters where a slug is required.
-- OAuth provider redirects continue to use safe redirects with a temporary allowlist for the selected provider host.
+- Built-in OIDC metadata now applies even when saved provider names use different casing.
+- Existing providers without JWKS configured no longer fail callback processing solely because signing keys are missing.
+- If a provider has configured signing keys and signature verification fails, authentication is still blocked.
 
 Rollback plan:
-Restore version 2.6.1 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this patch, restore admin/class-admin.php, aoauth-client-sso.php, includes/class-core.php, includes/class-sso-handler.php, includes/class-user-manager.php, readme.txt, and CHANGELOG.md from the 2.6.1 tag.
+Restore version 2.6.2 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this patch, restore aoauth-client-sso.php, includes/class-sso-handler.php, readme.txt, and CHANGELOG.md from the 2.6.2 tag.
 
 == Changelog ==
+
+= 2.6.3 =
+* Restored callback compatibility for existing OIDC providers whose saved metadata does not include JWKS signing keys.
+* Applied built-in OIDC metadata defaults when saved provider names use different casing.
 
 = 2.6.2 =
 * Fixed SSO authentication for existing providers by preserving exact provider identifiers during nonce verification and application lookup.

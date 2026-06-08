@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.6.3] - 2026-06-08
+
+### Fixed
+- Restored callback compatibility for existing OIDC providers whose saved metadata does not include JWKS signing keys.
+- Applied built-in OIDC metadata defaults when saved provider names use different casing.
+
 ## [2.6.2] - 2026-06-08
 
 ### Fixed

@@ -792,11 +792,6 @@ class AOAUTH_SSO_Handler {
                 return $signature_valid;
             }
         } else {
-            $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
-            if (($settings['security_level'] ?? 'high') === 'high') {
-                return new WP_Error('missing_jwks_uri', __('Identity token signing keys are not configured.', 'aoauth-client-sso'));
-            }
-
             $this->debug->warning('JWKS URI missing; ID token signature could not be verified', array(
                 'provider' => $provider['provider_name'] ?? 'unknown'
             ));
@@ -806,7 +801,7 @@ class AOAUTH_SSO_Handler {
     }
     
     private function with_default_oidc_metadata($provider) {
-        $provider_name = $provider['provider_name'] ?? '';
+        $provider_name = sanitize_key($provider['provider_name'] ?? '');
         
         if (empty($provider['issuer']) || empty($provider['jwks_uri'])) {
             switch ($provider_name) {
@@ -824,6 +819,27 @@ class AOAUTH_SSO_Handler {
                     }
                     if (empty($provider['jwks_uri'])) {
                         $provider['jwks_uri'] = 'https://appleid.apple.com/auth/keys';
+                    }
+                    break;
+                case 'microsoft':
+                    if (empty($provider['jwks_uri'])) {
+                        $provider['jwks_uri'] = 'https://login.microsoftonline.com/common/discovery/v2.0/keys';
+                    }
+                    break;
+                case 'gitlab':
+                    if (empty($provider['issuer'])) {
+                        $provider['issuer'] = 'https://gitlab.com';
+                    }
+                    if (empty($provider['jwks_uri'])) {
+                        $provider['jwks_uri'] = 'https://gitlab.com/oauth/discovery/keys';
+                    }
+                    break;
+                case 'linkedin':
+                    if (empty($provider['issuer'])) {
+                        $provider['issuer'] = 'https://www.linkedin.com';
+                    }
+                    if (empty($provider['jwks_uri'])) {
+                        $provider['jwks_uri'] = 'https://www.linkedin.com/oauth/openid/jwks';
                     }
                     break;
                 default:
