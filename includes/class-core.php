@@ -577,7 +577,7 @@ class AOAUTH_Core {
     }
 
     public static function link_user_provider($user_id, $provider_slug, $provider_email = '', $provider_subject = '') {
-        $provider_slug = sanitize_key($provider_slug);
+        $provider_slug = sanitize_text_field($provider_slug);
         if (!$user_id || !$provider_slug) {
             return false;
         }
@@ -602,7 +602,7 @@ class AOAUTH_Core {
     }
 
     public static function unlink_user_provider($user_id, $provider_slug) {
-        $provider_slug = sanitize_key($provider_slug);
+        $provider_slug = sanitize_text_field($provider_slug);
         $linked_providers = self::get_user_linked_providers($user_id);
         unset($linked_providers[$provider_slug]);
 

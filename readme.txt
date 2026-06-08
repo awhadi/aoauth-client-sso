@@ -4,7 +4,7 @@ Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.6.1
+Stable tag: 2.6.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,43 +20,35 @@ Automatic plugin updates can be enabled or disabled from the WordPress Plugins s
 
 == Developer Summary ==
 
-Version: 2.6.1
-Date: 2026-06-07
+Version: 2.6.2
+Date: 2026-06-08
 Author: Awhadi
 
 Summary:
-This release resolves Plugin Check findings before WordPress.org review while preserving the existing SSO behavior. It tightens request sanitization, escaping, translation comments, generated download output, stylesheet printing, safe redirects, tested WordPress metadata, and scoped code-standard annotations for intentional OAuth/debug/custom-table behavior.
+This release fixes provider identifier handling during SSO login, account linking, provider toggles, and unlink actions so existing configured provider keys continue to match their signed nonces and stored application records.
 
 Files changed:
 - admin/class-admin.php
-- admin/views/logs.php
 - aoauth-client-sso.php
 - includes/class-core.php
-- includes/class-debug.php
-- includes/class-logger.php
-- includes/class-oauth-client.php
-- includes/class-security.php
 - includes/class-sso-handler.php
 - includes/class-user-manager.php
 - CHANGELOG.md
 - readme.txt
 
 Security/UX notes:
-- Plugin Check cleanup keeps the active OAuth, account-linking, bot verification, logging, and admin workflows intact.
-- OAuth provider redirects now use wp_safe_redirect with a temporary allowlist for the selected provider host.
-- Account-linking standalone pages print registered WordPress styles instead of raw stylesheet tags.
-- Request data reads now consistently unslash and sanitize before use.
-- OAuth authorization, token, userinfo, JWKS, and discovery endpoints must be public HTTPS URLs by default.
-- Private, local, and plain HTTP OAuth endpoints are blocked unless explicitly allowed with AOAUTH_ALLOW_PRIVATE_OAUTH_ENDPOINTS for controlled development environments.
-- High security mode now rejects ID tokens when signing keys are missing, instead of accepting unverifiable claims.
-- The menu label is intentionally fixed as OAUTH SSO so the left WordPress admin navigation displays the requested brand text in every site language.
-- The tiny settings and tab view wrappers were merged into admin render helpers without changing the individual tab views.
-- .DS_Store files were removed from the release tree.
+- Provider identifiers are preserved exactly where they are used for application lookups, nonce verification, account linking, and unlinking.
+- Slug-style sanitization remains in place for provider asset names, CSS-safe values, and admin filters where a slug is required.
+- OAuth provider redirects continue to use safe redirects with a temporary allowlist for the selected provider host.
 
 Rollback plan:
-Restore version 2.6.0 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this Plugin Check patch, restore admin/class-admin.php, admin/views/logs.php, aoauth-client-sso.php, includes/class-core.php, includes/class-debug.php, includes/class-logger.php, includes/class-oauth-client.php, includes/class-security.php, includes/class-sso-handler.php, includes/class-user-manager.php, languages, readme.txt, and CHANGELOG.md from the 2.6.0 tag.
+Restore version 2.6.1 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this patch, restore admin/class-admin.php, aoauth-client-sso.php, includes/class-core.php, includes/class-sso-handler.php, includes/class-user-manager.php, readme.txt, and CHANGELOG.md from the 2.6.1 tag.
 
 == Changelog ==
+
+= 2.6.2 =
+* Fixed SSO authentication for existing providers by preserving exact provider identifiers during nonce verification and application lookup.
+* Fixed account linking, provider toggles, and unlink actions to use the configured provider key instead of a lowercased slug.
 
 = 2.6.1 =
 * Fixed Plugin Check findings for escaping, translator comments, request unslashing, generated downloads, hidden files, and stylesheet loading.

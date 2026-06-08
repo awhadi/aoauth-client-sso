@@ -298,7 +298,7 @@ class AOAUTH_Admin {
             );
             
             // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only wizard edit selector; saving still requires nonce verification.
-            $edit_app_id = isset($_GET['edit']) ? sanitize_key(wp_unslash($_GET['edit'])) : '';
+            $edit_app_id = isset($_GET['edit']) ? sanitize_text_field(wp_unslash($_GET['edit'])) : '';
             $applications = get_option('aoauth_applications', array());
             $edit_app_data = null;
             
@@ -781,7 +781,7 @@ class AOAUTH_Admin {
             wp_die(-1);
         }
         
-        $app_id = isset($_POST['app_id']) ? sanitize_key(wp_unslash($_POST['app_id'])) : '';
+        $app_id = isset($_POST['app_id']) ? sanitize_text_field(wp_unslash($_POST['app_id'])) : '';
         
         if (empty($app_id)) {
             wp_send_json_error(array('message' => __('Invalid provider ID', 'aoauth-client-sso')));
@@ -856,7 +856,7 @@ class AOAUTH_Admin {
             wp_die(-1);
         }
         
-        $app_id = isset($_POST['app_id']) ? sanitize_key(wp_unslash($_POST['app_id'])) : '';
+        $app_id = isset($_POST['app_id']) ? sanitize_text_field(wp_unslash($_POST['app_id'])) : '';
         $enabled = !empty($_POST['enabled']) ? 1 : 0;
         
         $applications = get_option('aoauth_applications', array());
@@ -2012,7 +2012,7 @@ class AOAUTH_Admin {
     public function ajax_unlink_account() {
         $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
         $user_id = intval(isset($_POST['user_id']) ? wp_unslash($_POST['user_id']) : 0);
-        $provider = isset($_POST['provider']) ? sanitize_key(wp_unslash($_POST['provider'])) : '';
+        $provider = isset($_POST['provider']) ? sanitize_text_field(wp_unslash($_POST['provider'])) : '';
 
         if (!wp_verify_nonce($nonce, 'aoauth_unlink_' . $user_id)) {
             wp_send_json_error(array('message' => __('Security check failed. Please refresh the page and try again.', 'aoauth-client-sso')));
@@ -2138,7 +2138,7 @@ class AOAUTH_Admin {
         
         $token = isset($_POST['token']) ? sanitize_text_field(wp_unslash($_POST['token'])) : '';
         $flow_id = isset($_POST['flow_id']) ? sanitize_text_field(wp_unslash($_POST['flow_id'])) : '';
-        $provider = isset($_POST['provider']) ? sanitize_key(wp_unslash($_POST['provider'])) : '';
+        $provider = isset($_POST['provider']) ? sanitize_text_field(wp_unslash($_POST['provider'])) : '';
         $settings = get_option('aoauth_settings', array());
         $secret = aoauth_core()->get_security()->decrypt_secret($settings['turnstile_secret_key'] ?? '');
         
@@ -2199,7 +2199,7 @@ class AOAUTH_Admin {
         
         $token = isset($_POST['token']) ? sanitize_text_field(wp_unslash($_POST['token'])) : '';
         $flow_id = isset($_POST['flow_id']) ? sanitize_text_field(wp_unslash($_POST['flow_id'])) : '';
-        $provider = isset($_POST['provider']) ? sanitize_key(wp_unslash($_POST['provider'])) : '';
+        $provider = isset($_POST['provider']) ? sanitize_text_field(wp_unslash($_POST['provider'])) : '';
         $settings = get_option('aoauth_settings', array());
         $secret = aoauth_core()->get_security()->decrypt_secret($settings['recaptcha_secret_key'] ?? '');
         $expected_score = floatval($settings['recaptcha_score_threshold'] ?? 0.5);

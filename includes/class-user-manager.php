@@ -130,7 +130,7 @@ class AOAUTH_User_Manager {
         
         $key = sanitize_text_field($this->get_query_value('key'));
         $email = sanitize_email($this->get_query_value('email'));
-        $provider_slug = sanitize_key($this->get_query_value('provider'));
+        $provider_slug = sanitize_text_field($this->get_query_value('provider'));
         
         if (empty($key) || empty($email) || empty($provider_slug)) {
             wp_die(esc_html__('Invalid linking request.', 'aoauth-client-sso'));
@@ -169,6 +169,7 @@ class AOAUTH_User_Manager {
     
     private function render_lockdown_message($message, $provider_slug) {
         $provider_name = ucfirst($provider_slug);
+        $provider_asset_slug = sanitize_key($provider_slug);
         $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
         $theme = sanitize_html_class($settings['login_button_theme'] ?? 'modern');
         ?>
@@ -221,7 +222,7 @@ class AOAUTH_User_Manager {
         <body class="aoauth-account-linking-page aoauth-link-theme-<?php echo esc_attr($theme); ?>">
             <div class="aoauth-link-container">
                 <div class="provider-icon">
-                    <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . $provider_slug . '.png'); ?>" 
+                    <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/' . $provider_asset_slug . '.png'); ?>"
                          alt="<?php echo esc_attr($provider_name); ?>"
                          data-fallback-src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/providers/generic.png'); ?>">
                 </div>

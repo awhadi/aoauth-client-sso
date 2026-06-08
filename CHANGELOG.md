@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.6.2] - 2026-06-08
+
+### Fixed
+- Fixed SSO authentication for existing providers by preserving exact provider identifiers during nonce verification and application lookup.
+- Fixed account linking, provider toggles, and unlink actions to use the configured provider key instead of a lowercased slug.
+
 ## [2.6.1] - 2026-06-07
 
 ### Changed

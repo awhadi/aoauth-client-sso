@@ -98,7 +98,7 @@ class AOAUTH_SSO_Handler {
 
         foreach ($applications as $provider_slug => $application) {
             if (!empty($application['enabled'])) {
-                return sanitize_key($provider_slug);
+                return sanitize_text_field($provider_slug);
             }
         }
 
@@ -1031,7 +1031,7 @@ class AOAUTH_SSO_Handler {
         exit;
     }
     
-    $provider_slug = sanitize_key($this->get_query_value('provider'));
+    $provider_slug = sanitize_text_field($this->get_query_value('provider'));
     
     if (empty($provider_slug)) {
         $debug->error('Provider not specified');
