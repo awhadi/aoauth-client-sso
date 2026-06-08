@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.6.6] - 2026-06-08
+
+### Fixed
+- Fixed bot verification getting stuck by preloading the configured bot provider API and executing invisible Turnstile widgets after rendering.
+
 ## [2.6.5] - 2026-06-08
 
 ### Changed

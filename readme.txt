@@ -4,7 +4,7 @@ Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.6.5
+Stable tag: 2.6.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,29 +20,31 @@ Automatic plugin updates can be enabled or disabled from the WordPress Plugins s
 
 == Developer Summary ==
 
-Version: 2.6.5
+Version: 2.6.6
 Date: 2026-06-08
 Author: Awhadi
 
 Summary:
-This release finalizes the first Git release package by optimizing bundled provider icon assets and confirming the release tree contains only referenced plugin files.
+This release fixes bot verification startup so Turnstile and reCAPTCHA remain responsive after the Plugin Check-compatible script-loading change.
 
 Files changed:
 - aoauth-client-sso.php
-- admin/css/admin-style.css
-- admin/images/providers
+- public/js/login-single-sign-on.js
 - CHANGELOG.md
 - readme.txt
 
 Security/UX notes:
-- Provider icons remain bundled locally; only asset size changed.
-- No development junk files, hidden macOS metadata files, or obsolete review files are included in the release tree.
-- Plugin Check fixes from 2.6.4 remain in place.
+- The configured bot provider API is preloaded on the login page.
+- Invisible Turnstile widgets are explicitly executed after rendering.
+- The Plugin Check-compatible script-loading approach from 2.6.4 remains in place.
 
 Rollback plan:
-Restore version 2.6.4 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this patch, restore admin/css/admin-style.css, admin/images/providers, aoauth-client-sso.php, readme.txt, and CHANGELOG.md from the 2.6.4 tag.
+Restore version 2.6.5 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this patch, restore public/js/login-single-sign-on.js, aoauth-client-sso.php, readme.txt, and CHANGELOG.md from the 2.6.5 tag.
 
 == Changelog ==
+
+= 2.6.6 =
+* Fixed bot verification getting stuck by preloading the configured bot provider API and executing invisible Turnstile widgets after rendering.
 
 = 2.6.5 =
 * Optimized bundled provider icon assets for a smaller release package.

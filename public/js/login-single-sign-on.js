@@ -56,6 +56,18 @@
         return loadExternalScript(type, protection.script_url || '');
     }
 
+    function isBotProtectionApiReady(type) {
+        if (type === 'turnstile') {
+            return typeof turnstile !== 'undefined';
+        }
+
+        if (type === 'recaptcha') {
+            return typeof grecaptcha !== 'undefined';
+        }
+
+        return true;
+    }
+
     $(document).on('error', 'img[data-fallback-src], img[data-hide-on-error]', function() {
         var $image = $(this);
         var fallbackSrc = $image.data('fallback-src');
@@ -153,30 +165,32 @@
                 bot_protection: protectionType
             });
             
-            showBeautifulLoader($btn);
-            showBotOverlay($btn);
-            
-            if (protectionType === 'turnstile') {
-                if (typeof turnstile === 'undefined') {
-                    ensureBotProtectionScript('turnstile')
+            if (!isBotProtectionApiReady(protectionType)) {
+                showBeautifulLoader($btn);
+                ensureBotProtectionScript(protectionType)
                         .done(function() {
-                            $btn.removeClass('aoauth-button-loading');
-                            handleSSOClick.call($btn[0], e);
+                            hideBeautifulLoader($btn);
+                            $btn.trigger('click');
                         })
                         .fail(function() {
-                            debugLog('error', 'Turnstile not loaded', {
+                            debugLog('error', 'Bot protection API not loaded', {
                                 flow_id: flowId,
-                                provider: provider
+                                provider: provider,
+                                bot_protection: protectionType
                             });
                             hideBeautifulLoader($btn);
                             alert(translate('bot_protection_not_loaded', 'Bot protection not loaded. Please refresh the page.'));
                         });
-                    return false;
-                }
-                
+                return false;
+            }
+
+            showBeautifulLoader($btn);
+            showBotOverlay($btn);
+
+            if (protectionType === 'turnstile') {
                 var displayMode = aoauth_public.bot_protection.display_mode || 'invisible';
                 var containerId = 'turnstile-container-' + buttonId;
-                
+
                 createTurnstileContainer(containerId, displayMode);
                 
                 // CRITICAL FIX: Reset any existing widget first
@@ -242,6 +256,10 @@
                             cleanupTurnstile(containerId, buttonId);
                         }
                     });
+
+                    if (displayMode === 'invisible' && typeof turnstile.execute === 'function') {
+                        turnstile.execute(turnstileWidgetIds[buttonId]);
+                    }
                     
                     // CRITICAL FIX: Set a timeout to detect if Turnstile never responds
                     // This handles cases where the widget gets stuck
@@ -275,24 +293,6 @@
                 }
                 
             } else if (protectionType === 'recaptcha') {
-                if (typeof grecaptcha === 'undefined') {
-                    ensureBotProtectionScript('recaptcha')
-                        .done(function() {
-                            $btn.removeClass('aoauth-button-loading');
-                            handleSSOClick.call($btn[0], e);
-                        })
-                        .fail(function() {
-                            debugLog('error', 'reCAPTCHA not loaded', {
-                                flow_id: flowId,
-                                provider: provider
-                            });
-                            hideBeautifulLoader($btn);
-                            hideBotOverlay();
-                            alert(translate('bot_protection_not_loaded', 'Bot protection not loaded. Please refresh the page.'));
-                        });
-                    return false;
-                }
-                
                 setTimeout(function() {
                     grecaptcha.ready(function() {
                         grecaptcha.execute(aoauth_public.bot_protection.site_key, {action: 'login'}).then(function(token) {
@@ -603,6 +603,9 @@
     
     $(document).ready(function() {
         placeInsideLoginForm();
+        if (typeof aoauth_public !== 'undefined' && aoauth_public.bot_protection && aoauth_public.bot_protection.type !== 'none') {
+            ensureBotProtectionScript(aoauth_public.bot_protection.type);
+        }
         $(document).off('click.aoauth').on('click.aoauth', '.aoauth-button', handleSSOClick);
     });
 })(jQuery);
