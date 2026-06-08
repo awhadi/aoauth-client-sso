@@ -4,7 +4,7 @@ Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.6.4
+Stable tag: 2.6.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,39 +20,34 @@ Automatic plugin updates can be enabled or disabled from the WordPress Plugins s
 
 == Developer Summary ==
 
-Version: 2.6.4
+Version: 2.6.5
 Date: 2026-06-08
 Author: Awhadi
 
 Summary:
-This release fixes Plugin Check findings before WordPress.org submission while preserving existing SSO, account-linking, bot verification, logging, uninstall, and native plugin auto-update behavior.
+This release finalizes the first Git release package by optimizing bundled provider icon assets and confirming the release tree contains only referenced plugin files.
 
 Files changed:
 - aoauth-client-sso.php
-- admin/class-admin.php
-- admin/views/providers.php
-- admin/views/security.php
-- admin/views/sign-in-experience.php
-- admin/views/tools.php
-- admin/views/user-management.php
-- admin/views/wizard.php
-- includes/class-core.php
-- includes/class-logger.php
-- public/js/login-single-sign-on.js
-- uninstall.php
+- admin/css/admin-style.css
+- admin/images/providers
 - CHANGELOG.md
 - readme.txt
 
 Security/UX notes:
-- Optional Turnstile and reCAPTCHA APIs are no longer enqueued as off-site WordPress scripts; the existing public JavaScript loads them only when the configured bot protection provider is needed.
-- The plugin no longer force-enables automatic updates on activation; admins still use the native Plugins screen control.
-- Plugin-owned custom table and user-meta queries now have scoped code-standard annotations explaining why they are intentional.
-- Hidden macOS metadata files were removed from the release tree.
+- Provider icons remain bundled locally; only asset size changed.
+- No development junk files, hidden macOS metadata files, or obsolete review files are included in the release tree.
+- Plugin Check fixes from 2.6.4 remain in place.
 
 Rollback plan:
-Restore version 2.6.3 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this patch, restore admin/class-admin.php, admin/views, aoauth-client-sso.php, includes/class-core.php, includes/class-logger.php, public/js/login-single-sign-on.js, uninstall.php, readme.txt, and CHANGELOG.md from the 2.6.3 tag.
+Restore version 2.6.4 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this patch, restore admin/css/admin-style.css, admin/images/providers, aoauth-client-sso.php, readme.txt, and CHANGELOG.md from the 2.6.4 tag.
 
 == Changelog ==
+
+= 2.6.5 =
+* Optimized bundled provider icon assets for a smaller release package.
+* Updated the admin header watermark text for the release build.
+* Confirmed tracked release assets are referenced and no extra development files are present in the plugin tree.
 
 = 2.6.4 =
 * Fixed Plugin Check findings for hidden files, translator comments, escaping, remote script enqueues, auto-update modification detection, and scoped database/query warnings.

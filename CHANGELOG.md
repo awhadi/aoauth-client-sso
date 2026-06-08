@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.6.5] - 2026-06-08
+
+### Changed
+- Optimized bundled provider icon assets for a smaller release package.
+- Updated the admin header watermark text for the release build.
+- Confirmed tracked release assets are referenced and no extra development files are present in the plugin tree.
+
 ## [2.6.4] - 2026-06-08
 
 ### Fixed

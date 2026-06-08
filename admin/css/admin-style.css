@@ -16,7 +16,7 @@
 .aoauth-admin-header::before {
     bottom: -58px;
     color: rgba(255, 255, 255, 0.16);
-    content: "a";
+    content: "aOAUTH Client";
     font-family: Georgia, "Times New Roman", serif;
     font-size: 210px;
     font-weight: 700;
