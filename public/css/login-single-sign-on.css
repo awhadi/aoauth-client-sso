@@ -3,6 +3,13 @@
     text-align: center;
 }
 
+.aoauth-silent-auto-login-frame {
+    border: 0;
+    display: none;
+    height: 0;
+    width: 0;
+}
+
 .aoauth-account-link-buttons {
     text-align: left;
 }

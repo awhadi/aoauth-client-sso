@@ -12,7 +12,7 @@ class AOAUTH_OAuth_Client {
         $this->security = new AOAUTH_Security();
     }
     
-    public function get_authorization_url($state = '', $nonce = '') {
+    public function get_authorization_url($state = '', $nonce = '', $extra_params = array()) {
         $this->assert_safe_oauth_endpoint($this->config['authorization_endpoint'], __('Authorization Endpoint', 'aoauth-client-sso'));
 
         if (empty($state)) {
@@ -35,6 +35,10 @@ class AOAUTH_OAuth_Client {
             'code_challenge' => $pkce['challenge'],
             'code_challenge_method' => 'S256'
         );
+
+        if (!empty($extra_params) && is_array($extra_params)) {
+            $params = array_merge($params, array_map('sanitize_text_field', $extra_params));
+        }
         
         set_transient('aoauth_pkce_' . $state, $pkce['verifier'], 10 * MINUTE_IN_SECONDS);
         

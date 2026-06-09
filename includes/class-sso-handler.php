@@ -47,33 +47,7 @@ class AOAUTH_SSO_Handler {
             return;
         }
 
-        $settings = array_merge(AOAUTH_Core::get_default_settings(), get_option('aoauth_settings', array()));
-        if (empty($settings['enable_provider_auto_login']) || $this->has_attempted_provider_auto_login()) {
-            return;
-        }
-
-        $provider_slug = $this->get_first_enabled_provider_slug();
-        if (empty($provider_slug)) {
-            return;
-        }
-
-        $this->mark_provider_auto_login_attempted();
-        $redirect_to = $this->get_requested_redirect_url();
-        $login_url = add_query_arg(array(
-            'oauth' => 'login',
-            'provider' => $provider_slug,
-            'redirect_to' => $redirect_to ?: admin_url(),
-            'aoauth_auto_login' => '1',
-            '_wpnonce' => wp_create_nonce('aoauth_login_' . $provider_slug),
-        ), wp_login_url());
-
-        $this->logger->log('auto_login_started', array(
-            'provider' => $provider_slug,
-            'redirect_path' => $this->get_url_path_for_log($redirect_to)
-        ), null, $provider_slug, 'info');
-
-        wp_safe_redirect($login_url);
-        exit;
+        return;
     }
 
     private function is_primary_login_action() {
@@ -90,25 +64,6 @@ class AOAUTH_SSO_Handler {
         return '';
     }
 
-    private function get_first_enabled_provider_slug() {
-        $applications = get_option('aoauth_applications', array());
-        if (!is_array($applications)) {
-            return '';
-        }
-
-        foreach ($applications as $provider_slug => $application) {
-            if (!empty($application['enabled'])) {
-                return sanitize_text_field($provider_slug);
-            }
-        }
-
-        return '';
-    }
-
-    private function has_attempted_provider_auto_login() {
-        return !empty($_COOKIE['aoauth_auto_login_attempted']);
-    }
-
     private function get_query_value($key) {
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- OAuth login and callback query values are validated by nonce or stored state depending on the flow.
         return isset($_GET[$key]) ? (string) wp_unslash($_GET[$key]) : '';
@@ -123,23 +78,6 @@ class AOAUTH_SSO_Handler {
         return isset($_SERVER[$key]) ? sanitize_text_field(wp_unslash($_SERVER[$key])) : '';
     }
 
-    private function mark_provider_auto_login_attempted() {
-        $cookie_path = defined('COOKIEPATH') && COOKIEPATH ? COOKIEPATH : '/';
-        $cookie_domain = defined('COOKIE_DOMAIN') ? COOKIE_DOMAIN : '';
-
-        setcookie(
-            'aoauth_auto_login_attempted',
-            '1',
-            time() + 90,
-            $cookie_path,
-            $cookie_domain,
-            is_ssl(),
-            true
-        );
-
-        $_COOKIE['aoauth_auto_login_attempted'] = '1';
-    }
-    
     private function extract_email_from_provider($user_info, $tokens, $provider_slug) {
         $this->debug->log_start('extract_email_from_provider', array('provider' => $provider_slug));
         
@@ -297,6 +235,9 @@ class AOAUTH_SSO_Handler {
     $state = sanitize_text_field($this->get_query_value('state'));
     $error = sanitize_text_field($this->get_query_value('error'));
     $error_description = sanitize_text_field($this->get_query_value('error_description'));
+    $transient_key = !empty($state) ? 'aoauth_state_' . $state : '';
+    $state_data = !empty($transient_key) ? get_transient($transient_key) : false;
+    $is_silent_auto_login = is_array($state_data) && ($state_data['flow_type'] ?? '') === 'silent_auto_login';
     
     $debug->debug('Callback params', array(
         'code_exists' => !empty($code),
@@ -308,6 +249,15 @@ class AOAUTH_SSO_Handler {
     if (!empty($error)) {
         $message = !empty($error_description) ? $error_description : $error;
         $debug->error('OAuth error', array('error' => $error, 'description' => $error_description));
+        if ($is_silent_auto_login) {
+            delete_transient($transient_key);
+            $this->logger->log('silent_auto_login_failed', array(
+                'provider' => sanitize_text_field($state_data['provider'] ?? ''),
+                'reason' => sanitize_key($error)
+            ), null, sanitize_text_field($state_data['provider'] ?? ''), 'info');
+            $this->render_silent_auto_login_result(false, '', sanitize_key($error));
+            return;
+        }
         $this->logger->log('sso_callback_failed', array(
             'reason' => 'provider_error',
             'error' => $error
@@ -318,15 +268,16 @@ class AOAUTH_SSO_Handler {
     
     if (empty($code) || empty($state)) {
         $debug->error('Missing code or state');
+        if ($this->get_query_value('aoauth_silent_callback') !== '') {
+            $this->render_silent_auto_login_result(false, '', 'missing_code_or_state');
+            return;
+        }
         $this->logger->log('sso_callback_failed', array(
             'reason' => 'missing_code_or_state'
         ), null, null, 'error');
         $this->redirect_with_error('Invalid callback parameters.');
         return;
     }
-    
-    $transient_key = 'aoauth_state_' . $state;
-    $state_data = get_transient($transient_key);
     
     $debug->debug('State lookup', array(
         'key' => $transient_key,
@@ -335,6 +286,10 @@ class AOAUTH_SSO_Handler {
     
     if (false === $state_data) {
         $debug->error('State expired or not found');
+        if ($this->get_query_value('aoauth_silent_callback') !== '') {
+            $this->render_silent_auto_login_result(false, '', 'state_expired_or_not_found');
+            return;
+        }
         $this->logger->log('sso_callback_failed', array(
             'reason' => 'state_expired_or_not_found'
         ), null, null, 'error');
@@ -347,6 +302,7 @@ class AOAUTH_SSO_Handler {
     $provider_slug = sanitize_text_field($state_data['provider']);
     $redirect_to = !empty($state_data['redirect_to']) ? esc_url_raw($state_data['redirect_to']) : '';
     $flow_id = sanitize_text_field($state_data['flow_id'] ?? '');
+    $is_silent_auto_login = ($state_data['flow_type'] ?? '') === 'silent_auto_login';
     
     $debug->info('Processing callback', array('provider' => $provider_slug, 'redirect_to' => $redirect_to));
     
@@ -360,6 +316,10 @@ class AOAUTH_SSO_Handler {
     
     if (false === $provider) {
         $debug->error('Provider not found in config', array('slug' => $provider_slug));
+        if ($is_silent_auto_login) {
+            $this->render_silent_auto_login_result(false, '', 'provider_not_found');
+            return;
+        }
         $this->logger->log('sso_callback_failed', array(
             'flow_id' => $flow_id,
             'provider' => $provider_slug,
@@ -371,6 +331,10 @@ class AOAUTH_SSO_Handler {
     
     if (empty($provider['enabled'])) {
         $debug->error('Provider not enabled', array('slug' => $provider_slug));
+        if ($is_silent_auto_login) {
+            $this->render_silent_auto_login_result(false, '', 'provider_disabled');
+            return;
+        }
         $this->logger->log('sso_callback_failed', array(
             'flow_id' => $flow_id,
             'provider' => $provider_slug,
@@ -384,6 +348,10 @@ class AOAUTH_SSO_Handler {
     $endpoint_validation = $this->validate_provider_oauth_endpoints($provider);
     if (is_wp_error($endpoint_validation)) {
         $debug->error('Provider endpoint validation failed', array('error' => $endpoint_validation->get_error_message()));
+        if ($is_silent_auto_login) {
+            $this->render_silent_auto_login_result(false, '', 'provider_endpoint_validation_failed');
+            return;
+        }
         $this->logger->log('sso_callback_failed', array(
             'flow_id' => $flow_id,
             'provider' => $provider_slug,
@@ -415,6 +383,10 @@ class AOAUTH_SSO_Handler {
             $validated_claims = $this->validate_id_token($tokens['id_token'], $provider, $state_data);
             if (is_wp_error($validated_claims)) {
                 $debug->error('ID token validation failed', array('error' => $validated_claims->get_error_message()));
+                if ($is_silent_auto_login) {
+                    $this->render_silent_auto_login_result(false, '', 'id_token_validation_failed');
+                    return;
+                }
                 $this->logger->log('sso_authentication_failed', array(
                     'flow_id' => $flow_id,
                     'provider' => $provider_slug,
@@ -455,6 +427,15 @@ class AOAUTH_SSO_Handler {
         ));
         
         if (empty($extracted_email)) {
+            if ($is_silent_auto_login) {
+                $this->logger->log('silent_auto_login_failed', array(
+                    'flow_id' => $flow_id,
+                    'provider' => $provider_slug,
+                    'reason' => 'email_extraction_failed'
+                ), null, $provider_slug, 'info');
+                $this->render_silent_auto_login_result(false, '', 'email_extraction_failed');
+                return;
+            }
             $this->logger->log('email_extraction_failed', array(
                 'flow_id' => $flow_id,
                 'provider' => $provider_slug,
@@ -478,6 +459,50 @@ class AOAUTH_SSO_Handler {
             'username' => $user_info['username'] ?? 'missing',
             'display_name' => $user_info['display_name'] ?? 'missing'
         ));
+
+        if ($is_silent_auto_login) {
+            $provider_subject = AOAUTH_Core::get_provider_subject_from_user_info($user_info);
+            $linked_user_id = AOAUTH_Core::find_linked_user_by_provider_identity($provider_slug, $user_info['email'], $provider_subject);
+            if (!$linked_user_id) {
+                $this->logger->log('silent_auto_login_unlinked', array(
+                    'flow_id' => $flow_id,
+                    'provider' => $provider_slug,
+                    'reason' => 'linked_user_not_found'
+                ), null, $provider_slug, 'info');
+                $this->render_silent_auto_login_result(false, '', 'linked_user_not_found');
+                return;
+            }
+
+            $ban_until = aoauth_core()->get_security()->get_user_login_ban($linked_user_id);
+            if ($ban_until) {
+                $this->logger->log('silent_auto_login_failed', array(
+                    'flow_id' => $flow_id,
+                    'provider' => $provider_slug,
+                    'reason' => 'user_login_banned'
+                ), $linked_user_id, $provider_slug, 'info');
+                $this->render_silent_auto_login_result(false, '', 'user_login_banned');
+                return;
+            }
+
+            update_user_meta($linked_user_id, '_aoauth_last_login', time());
+            wp_clear_auth_cookie();
+            wp_set_auth_cookie($linked_user_id, true);
+            wp_set_current_user($linked_user_id);
+            $linked_user = get_userdata($linked_user_id);
+            if ($linked_user) {
+                // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Fires the core wp_login hook after SSO authentication.
+                do_action('wp_login', $linked_user->user_login, $linked_user);
+            }
+
+            $redirect_url = $this->get_redirect_by_user_role($linked_user_id, $redirect_to);
+            $this->logger->log('silent_auto_login_success', array(
+                'flow_id' => $flow_id,
+                'provider' => $provider_slug,
+                'redirect_path' => $this->get_url_path_for_log($redirect_url)
+            ), $linked_user_id, $provider_slug, 'success');
+            $this->render_silent_auto_login_result(true, $redirect_url, 'authenticated');
+            return;
+        }
         
         if (!empty($state_data['link_user_id'])) {
             $link_result = $this->complete_self_service_account_linking((int) $state_data['link_user_id'], $user_info, $provider_slug, $flow_id, $redirect_to);
@@ -558,6 +583,16 @@ class AOAUTH_SSO_Handler {
         
     } catch (Exception $e) {
         $debug->error('Authentication exception', array('error' => $e->getMessage()));
+        if (!empty($is_silent_auto_login)) {
+            $this->logger->log('silent_auto_login_failed', array(
+                'flow_id' => $flow_id ?? '',
+                'error' => $e->getMessage(),
+                'provider' => $provider_slug ?? '',
+                'reason' => 'authentication_exception'
+            ), null, $provider_slug ?? null, 'info');
+            $this->render_silent_auto_login_result(false, '', 'authentication_exception');
+            return;
+        }
         
         $this->logger->log('authentication_failed', array(
             'flow_id' => $flow_id,
@@ -1111,11 +1146,11 @@ class AOAUTH_SSO_Handler {
     }
 
     $requested_flow_id = sanitize_text_field($this->get_query_value('aoauth_flow_id'));
-    $is_auto_login_request = $this->get_query_value('aoauth_auto_login') !== '';
+    $is_silent_auto_login_request = $this->get_query_value('aoauth_silent_login') !== '';
     if ($is_account_link_request) {
         $bot_verification = array('verified' => true, 'type' => 'authenticated_link', 'flow_id' => $this->security->generate_secure_token(18), 'provider' => $provider_slug);
-    } elseif ($is_auto_login_request) {
-        $bot_verification = array('verified' => true, 'type' => 'auto_login', 'flow_id' => $this->security->generate_secure_token(18), 'provider' => $provider_slug);
+    } elseif ($is_silent_auto_login_request) {
+        $bot_verification = array('verified' => true, 'type' => 'silent_auto_login', 'flow_id' => $this->security->generate_secure_token(18), 'provider' => $provider_slug);
     } else {
         $bot_verification = $this->consume_bot_protection_verification_for_login($provider_slug, $requested_flow_id);
     }
@@ -1139,10 +1174,13 @@ class AOAUTH_SSO_Handler {
         'oidc_nonce' => $oidc_nonce,
         'flow_id' => $flow_id,
         'timestamp' => time(),
+        'expires_at' => time() + (10 * MINUTE_IN_SECONDS),
     );
 
     if ($is_account_link_request) {
         $state_data['link_user_id'] = $link_user_id;
+    } elseif ($is_silent_auto_login_request) {
+        $state_data['flow_type'] = 'silent_auto_login';
     }
     
     set_transient('aoauth_state_' . $state, $state_data, 10 * MINUTE_IN_SECONDS);
@@ -1161,7 +1199,11 @@ class AOAUTH_SSO_Handler {
     }
     
     $oauth_client = new AOAUTH_OAuth_Client($provider);
-    $auth_url = $oauth_client->get_authorization_url($state, $oidc_nonce);
+    $auth_url = $oauth_client->get_authorization_url(
+        $state,
+        $oidc_nonce,
+        $is_silent_auto_login_request ? array('prompt' => 'none') : array()
+    );
     
     $debug->info('Login initiated - redirecting to provider', array(
         'provider' => $provider_slug,
@@ -1377,6 +1419,39 @@ class AOAUTH_SSO_Handler {
         $public_message = __('Single sign-on could not be completed. Please try again or contact the site administrator.', 'aoauth-client-sso');
         $login_url = add_query_arg('oauth_error', urlencode($public_message), wp_login_url());
         wp_safe_redirect($login_url);
+        exit;
+    }
+
+    private function render_silent_auto_login_result($success, $redirect_url = '', $reason = '') {
+        nocache_headers();
+        status_header(200);
+
+        wp_enqueue_script(
+            'aoauth-silent-auto-login-callback',
+            AOAUTH_PLUGIN_URL . 'public/js/silent-auto-login-callback.js',
+            array(),
+            AOAUTH_VERSION,
+            false
+        );
+
+        ?>
+<!doctype html>
+<html <?php language_attributes(); ?>>
+<head>
+    <meta charset="<?php bloginfo('charset'); ?>">
+    <title><?php esc_html_e('Silent SSO check', 'aoauth-client-sso'); ?></title>
+    <?php wp_print_scripts('aoauth-silent-auto-login-callback'); ?>
+</head>
+<body>
+    <div
+        id="aoauth-silent-auto-login-result"
+        data-success="<?php echo esc_attr($success ? '1' : '0'); ?>"
+        data-redirect-url="<?php echo esc_url($redirect_url); ?>"
+        data-reason="<?php echo esc_attr($reason); ?>"
+    ></div>
+</body>
+</html>
+        <?php
         exit;
     }
     

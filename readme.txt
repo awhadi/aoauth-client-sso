@@ -4,7 +4,7 @@ Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.6.6
+Stable tag: 2.6.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,28 +20,41 @@ Automatic plugin updates can be enabled or disabled from the WordPress Plugins s
 
 == Developer Summary ==
 
-Version: 2.6.6
-Date: 2026-06-08
+Version: 2.6.7
+Date: 2026-06-09
 Author: Awhadi
 
 Summary:
-This release fixes bot verification startup so Turnstile and reCAPTCHA remain responsive after the Plugin Check-compatible script-loading change.
+This release changes provider auto-login into a true silent OIDC check that only logs in already linked WordPress users when the setting is enabled.
 
 Files changed:
 - aoauth-client-sso.php
 - public/js/login-single-sign-on.js
+- public/js/silent-auto-login-callback.js
+- public/css/login-single-sign-on.css
+- includes/class-core.php
+- includes/class-oauth-client.php
+- includes/class-sso-handler.php
+- languages
+- admin/views/sign-in-experience.php
 - CHANGELOG.md
 - readme.txt
 
 Security/UX notes:
-- The configured bot provider API is preloaded on the login page.
-- Invisible Turnstile widgets are explicitly executed after rendering.
-- The Plugin Check-compatible script-loading approach from 2.6.4 remains in place.
+- Visiting wp-login.php no longer redirects directly to the first enabled provider.
+- Silent auto-login uses hidden OIDC prompt=none checks and fails quietly when no provider session or linked WordPress user exists.
+- Silent checks never create users and never link accounts; manual SSO buttons keep the existing creation/linking behavior.
 
 Rollback plan:
-Restore version 2.6.5 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this patch, restore public/js/login-single-sign-on.js, aoauth-client-sso.php, readme.txt, and CHANGELOG.md from the 2.6.5 tag.
+Restore version 2.6.6 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this patch, restore public/js/login-single-sign-on.js, public/js/silent-auto-login-callback.js, public/css/login-single-sign-on.css, includes/class-core.php, includes/class-oauth-client.php, includes/class-sso-handler.php, admin/views/sign-in-experience.php, languages, aoauth-client-sso.php, readme.txt, and CHANGELOG.md from the v2.6.6 tag.
 
 == Changelog ==
+
+= 2.6.7 =
+* Replaced first-provider auto redirects with silent OIDC auto-login checks.
+* Limited silent auto-login to already linked WordPress users; silent checks never create users or link accounts.
+* Added hidden-iframe silent checks with prompt=none for supported OIDC providers.
+* Updated bundled translations for the new silent auto-login labels.
 
 = 2.6.6 =
 * Fixed bot verification getting stuck by preloading the configured bot provider API and executing invisible Turnstile widgets after rendering.

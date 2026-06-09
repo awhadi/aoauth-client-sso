@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file.
 
+## [2.6.7] - 2026-06-09
+
+### Changed
+- Replaced first-provider auto redirects with silent OIDC auto-login checks that only run when the existing setting is enabled.
+- Limited silent auto-login to already linked WordPress users; silent checks never create users or link accounts.
+- Added hidden-iframe silent checks with `prompt=none` and a minimal callback bridge for supported OIDC providers.
+- Updated bundled translations and compiled locale files for the new silent auto-login labels.
+
 ## [2.6.6] - 2026-06-08
 
 ### Fixed

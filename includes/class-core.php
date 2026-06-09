@@ -354,9 +354,12 @@ class AOAUTH_Core {
                 'configuration_error' => __('Configuration error. Please contact site administrator.', 'aoauth-client-sso'),
                 'site_configuration_error' => __('Site configuration error.', 'aoauth-client-sso'),
                 'verification_timeout_duplicate' => __('Verification timed out. Please refresh the page and try again.', 'aoauth-client-sso'),
-                'internal_error' => __('Internal error. Please try again.', 'aoauth-client-sso')
+                'internal_error' => __('Internal error. Please try again.', 'aoauth-client-sso'),
+                'silent_sso_check' => __('Silent SSO check', 'aoauth-client-sso')
             )
         );
+
+        $localize_data['silent_auto_login'] = $this->get_silent_auto_login_data($settings);
         
         if ($turnstile_enabled) {
             $localize_data['bot_protection'] = array(
@@ -396,9 +399,76 @@ class AOAUTH_Core {
         
         $this->debug->debug('Login assets enqueued', array(
             'theme' => $theme,
-            'bot_protection' => $localize_data['bot_protection']['type']
+            'bot_protection' => $localize_data['bot_protection']['type'],
+            'silent_auto_login' => !empty($localize_data['silent_auto_login']['enabled'])
         ));
         $this->debug->log_end('AOAUTH_Core::enqueue_login_assets');
+    }
+
+    private function get_silent_auto_login_data($settings) {
+        $data = array(
+            'enabled' => false,
+            'urls' => array(),
+            'timeout' => 8000,
+            'redirect_target' => '',
+        );
+
+        if (empty($settings['enable_provider_auto_login']) || is_user_logged_in() || !$this->is_primary_login_screen()) {
+            return $data;
+        }
+
+        $request_method = isset($_SERVER['REQUEST_METHOD']) ? sanitize_key(wp_unslash($_SERVER['REQUEST_METHOD'])) : '';
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only login-page flags used to avoid silent checks after WordPress login status actions.
+        $logged_out = isset($_REQUEST['loggedout']) ? sanitize_text_field(wp_unslash($_REQUEST['loggedout'])) : '';
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only login-page flags used to avoid silent checks after WordPress login status actions.
+        $check_email = isset($_REQUEST['checkemail']) ? sanitize_text_field(wp_unslash($_REQUEST['checkemail'])) : '';
+        if ($request_method !== 'GET' || $logged_out !== '' || $check_email !== '') {
+            return $data;
+        }
+
+        $redirect_to = '';
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only redirect target for login page silent checks.
+        if (isset($_REQUEST['redirect_to'])) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only redirect target for login page silent checks.
+            $redirect_to = esc_url_raw(wp_unslash($_REQUEST['redirect_to']));
+        }
+        if (!empty($redirect_to) && !$this->security->validate_redirect_url($redirect_to)) {
+            $redirect_to = '';
+        }
+        $data['redirect_target'] = $redirect_to ?: admin_url();
+
+        $applications = get_option('aoauth_applications', array());
+        if (!is_array($applications)) {
+            return $data;
+        }
+
+        foreach ($applications as $app_id => $application) {
+            if (empty($application['enabled']) || !$this->supports_silent_auto_login($application)) {
+                continue;
+            }
+
+            $data['urls'][] = add_query_arg(array(
+                'oauth' => 'login',
+                'provider' => sanitize_text_field($app_id),
+                'redirect_to' => $data['redirect_target'],
+                'aoauth_silent_login' => '1',
+                '_wpnonce' => wp_create_nonce('aoauth_login_' . $app_id),
+            ), wp_login_url());
+        }
+
+        $data['enabled'] = !empty($data['urls']);
+        return $data;
+    }
+
+    private function supports_silent_auto_login($application) {
+        $scopes = isset($application['scopes']) ? (array) $application['scopes'] : array();
+        $normalized_scopes = array_map('strtolower', array_map('sanitize_text_field', $scopes));
+        if (in_array('openid', $normalized_scopes, true)) {
+            return true;
+        }
+
+        $provider_name = sanitize_key($application['provider_name'] ?? '');
+        return in_array($provider_name, array('apple'), true);
     }
     
     public function render_login_buttons_for_selected_position() {
@@ -602,7 +672,7 @@ class AOAUTH_Core {
     }
 
     public static function find_linked_user_by_provider_identity($provider_slug, $provider_email = '', $provider_subject = '') {
-        $provider_slug = sanitize_key($provider_slug);
+        $provider_slug = sanitize_text_field($provider_slug);
         $provider_subject = sanitize_text_field($provider_subject);
         $provider_email = sanitize_email($provider_email);
 

@@ -3,6 +3,7 @@
     var activeRequests = {};
     var turnstileTimeouts = {};
     var externalScriptLoads = {};
+    var silentAutoLoginStarted = false;
 
     function translate(key, fallback) {
         if (typeof aoauth_public !== 'undefined' && aoauth_public.translations && aoauth_public.translations[key]) {
@@ -600,12 +601,83 @@
             }, 500);
         }
     }
+
+    function startSilentAutoLogin() {
+        if (silentAutoLoginStarted || typeof aoauth_public === 'undefined' || !aoauth_public.silent_auto_login || !aoauth_public.silent_auto_login.enabled) {
+            return;
+        }
+
+        var urls = aoauth_public.silent_auto_login.urls || [];
+        if (!urls.length || window.self !== window.top) {
+            return;
+        }
+
+        silentAutoLoginStarted = true;
+        runSilentAutoLoginCheck(urls, 0);
+    }
+
+    function runSilentAutoLoginCheck(urls, index) {
+        if (index >= urls.length) {
+            return;
+        }
+
+        var iframeId = 'aoauth-silent-auto-login-frame';
+        var timeout = parseInt(aoauth_public.silent_auto_login.timeout, 10) || 8000;
+        var completed = false;
+        var $existingFrame = $('#' + iframeId);
+        if ($existingFrame.length) {
+            $existingFrame.remove();
+        }
+
+        var timer = setTimeout(function() {
+            if (completed) {
+                return;
+            }
+            completed = true;
+            $('#' + iframeId).remove();
+            runSilentAutoLoginCheck(urls, index + 1);
+        }, timeout);
+
+        $(window)
+            .off('message.aoauthSilentAutoLogin')
+            .on('message.aoauthSilentAutoLogin', function(event) {
+                var originalEvent = event.originalEvent || {};
+                var data = originalEvent.data || {};
+                if (originalEvent.origin !== window.location.origin || !data || data.type !== 'aoauthSilentAutoLogin') {
+                    return;
+                }
+
+                if (completed) {
+                    return;
+                }
+                completed = true;
+                clearTimeout(timer);
+                $('#' + iframeId).remove();
+
+                if (data.success && data.redirectUrl) {
+                    window.location.href = data.redirectUrl;
+                    return;
+                }
+
+                runSilentAutoLoginCheck(urls, index + 1);
+            });
+
+        $('<iframe>', {
+            id: iframeId,
+            class: 'aoauth-silent-auto-login-frame',
+            src: urls[index],
+            title: translate('silent_sso_check', 'Silent SSO check'),
+            'aria-hidden': 'true',
+            tabindex: '-1'
+        }).appendTo('body');
+    }
     
     $(document).ready(function() {
         placeInsideLoginForm();
         if (typeof aoauth_public !== 'undefined' && aoauth_public.bot_protection && aoauth_public.bot_protection.type !== 'none') {
             ensureBotProtectionScript(aoauth_public.bot_protection.type);
         }
+        startSilentAutoLogin();
         $(document).off('click.aoauth').on('click.aoauth', '.aoauth-button', handleSSOClick);
     });
 })(jQuery);
