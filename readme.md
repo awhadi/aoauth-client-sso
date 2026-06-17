@@ -10,10 +10,6 @@ License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 -->
 
-<p align="center">
-  <img src="[PLACEHOLDER_LOGO_URL]" alt="aOAUTH Client SSO Logo" width="120" height="120">
-</p>
-
 <h1 align="center">aOAUTH Client SSO</h1>
 
 <p align="center">
@@ -125,7 +121,7 @@ Click **Save Changes**, then use the **"Test Login"** button (or log out and vis
 <!-- Replace the placeholders with actual image URLs from your plugin assets or GitHub repo -->
 | Admin Settings Panel | Provider Selection | User Login Screen |
 | :---: | :---: | :---: |
-| <img src="[SCREENSHOT_SETTINGS_URL]" alt="Admin Settings" width="250"> | <img src="[SCREENSHOT_PROVIDERS_URL]" alt="Provider Selection" width="250"> | <img src="[SCREENSHOT_LOGIN_URL]" alt="Login Screen" width="250"> |
+| <img src="https://plugin.awhadi.online/aoauth-client-sso/screenshots/admin-settings.png" alt="Admin Settings" width="250"> | <img src="https://plugin.awhadi.online/aoauth-client-sso/screenshots/provider-selection.png" alt="Provider Selection" width="250"> | <img src="https://plugin.awhadi.online/aoauth-client-sso/screenshots/login-screen.png" alt="Login Screen" width="250"> |
 
 ---
 
