@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## [Unreleased]
+
+### Changed
+- Merged the remote GitHub documentation and license updates into the local release candidate without replacing the current `2.6.7` plugin code.
+- Standardized the WordPress `readme.txt` and GitHub `readme.md` metadata and feature descriptions for the current release.
+- Updated translation template ownership metadata to use Awhadi release information.
+
 ## [2.6.7] - 2026-06-09
 
 ### Changed

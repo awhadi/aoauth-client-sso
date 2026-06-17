@@ -8,7 +8,7 @@ Stable tag: 2.6.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-WordPress OAuth/OIDC Single Sign-On for Google, Microsoft, GitHub, Keycloak, Auth0, Okta, WordPress, and custom identity providers.
+OAuth 2.0 and OpenID Connect Single Sign-On for WordPress with Google, Microsoft, GitHub, Keycloak, Auth0, Okta, and custom identity providers.
 
 == Description ==
 
@@ -16,37 +16,53 @@ aOAUTH Client SSO is a WordPress Single Sign-On plugin that allows users to log 
 
 The plugin works with identity providers that conform to the OAuth 2.0 and OpenID Connect (OIDC) standards. Site owners can move away from password-only WordPress login, centralize authentication with existing business or social accounts, connect provider identities to WordPress users, map roles, control post-login redirects, style SSO buttons, and manage authentication from the WordPress admin area.
 
-Automatic plugin updates can be enabled or disabled from the WordPress Plugins screen. When enabled, WordPress can install new versions of this plugin automatically when an update package is available from the configured plugin update source.
+= Main features =
 
-== Developer Summary ==
+* OAuth 2.0 and OpenID Connect login for WordPress.
+* Preconfigured providers for Google, Microsoft, GitHub, Keycloak, Auth0, Okta, OneLogin, GitLab, Facebook, LinkedIn, and Apple.
+* Custom OAuth 2.0 and OIDC provider setup.
+* Account linking for existing WordPress users.
+* Optional user provisioning with default role and role mapping.
+* Silent auto-login for already linked OIDC sessions when explicitly enabled.
+* Cloudflare Turnstile and Google reCAPTCHA bot verification support.
+* Login button themes, layouts, previews, and account-linking page styling.
+* Admin logs, backup and restore, temporary session cleanup, and uninstall cleanup.
+* Bundled translations for German, Dari Afghanistan, French, Russian, Turkish, Chinese, and Japanese.
 
-Version: 2.6.7
-Date: 2026-06-09
-Author: Awhadi
+== Installation ==
 
-Summary:
-This release changes provider auto-login into a true silent OIDC check that only logs in already linked WordPress users when the setting is enabled.
+1. Upload the plugin files to the `/wp-content/plugins/aoauth-client-sso` directory, or install the plugin through the WordPress Plugins screen.
+2. Activate the plugin through the Plugins screen in WordPress.
+3. Open **OAUTH SSO** in the WordPress admin menu.
+4. Add a provider, enter the Client ID and Client Secret, configure scopes and endpoints, then save and test the connection.
+5. Configure user creation, role mapping, security, and sign-in experience settings as needed.
 
-Files changed:
-- aoauth-client-sso.php
-- public/js/login-single-sign-on.js
-- public/js/silent-auto-login-callback.js
-- public/css/login-single-sign-on.css
-- includes/class-core.php
-- includes/class-oauth-client.php
-- includes/class-sso-handler.php
-- languages
-- admin/views/sign-in-experience.php
-- CHANGELOG.md
-- readme.txt
+== Frequently Asked Questions ==
 
-Security/UX notes:
-- Visiting wp-login.php no longer redirects directly to the first enabled provider.
-- Silent auto-login uses hidden OIDC prompt=none checks and fails quietly when no provider session or linked WordPress user exists.
-- Silent checks never create users and never link accounts; manual SSO buttons keep the existing creation/linking behavior.
+= Does the plugin create WordPress users automatically? =
 
-Rollback plan:
-Restore version 2.6.6 from the previous Git tag or plugin zip, then deactivate and reactivate the plugin if WordPress does not refresh plugin metadata automatically. To roll back only this patch, restore public/js/login-single-sign-on.js, public/js/silent-auto-login-callback.js, public/css/login-single-sign-on.css, includes/class-core.php, includes/class-oauth-client.php, includes/class-sso-handler.php, admin/views/sign-in-experience.php, languages, aoauth-client-sso.php, readme.txt, and CHANGELOG.md from the v2.6.6 tag.
+Only when user creation is enabled and the user manually starts an SSO login. Silent auto-login never creates users.
+
+= Does silent auto-login redirect everyone to the first provider? =
+
+No. When enabled, it checks supported OIDC providers in the background and only logs in already linked WordPress users with an active provider session.
+
+= Can users still use normal WordPress login? =
+
+Yes. The plugin adds SSO login options and does not remove the standard WordPress username and password form by default.
+
+= Does it support custom providers? =
+
+Yes. Custom OAuth 2.0 and OIDC providers can be configured with custom authorization, token, userinfo, JWKS, issuer, and discovery endpoints.
+
+== Screenshots ==
+
+1. SSO buttons on the WordPress login screen.
+2. Provider management in the WordPress admin area.
+3. Sign-In Experience preview and styling controls.
+4. User management and SSO account linking settings.
+5. Security settings for bot verification and login protection.
+6. SSO logs and maintenance tools.
 
 == Changelog ==
 
@@ -120,7 +136,7 @@ Restore version 2.6.6 from the previous Git tag or plugin zip, then deactivate a
 * Renamed settings tab view files to concise names and regenerated gettext files.
 
 = 2.4.7 =
-* Completed bundled translations for German, Dari (Afghanistan), French, Russian, Turkish, Chinese, and Japanese.
+* Completed bundled translations for German, Dari Afghanistan, French, Russian, Turkish, Chinese, and Japanese.
 * Regenerated compiled gettext files for all supported locales.
 
 = 2.4.6 =
@@ -130,7 +146,7 @@ Restore version 2.6.6 from the previous Git tag or plugin zip, then deactivate a
 * Localized additional front-end and admin JavaScript labels/helper states.
 
 = 2.4.5 =
-* Added German, Dari (Afghanistan), French, Russian, Turkish, Chinese, and Japanese gettext files.
+* Added German, Dari Afghanistan, French, Russian, Turkish, Chinese, and Japanese gettext files.
 * Fixed wp-login.php icon-theme button sizing for Wrap Centered layout.
 
 = 2.4.4 =
@@ -141,3 +157,8 @@ Restore version 2.6.6 from the previous Git tag or plugin zip, then deactivate a
 * Expanded the Sign-In Experience preview.
 * Fixed Wrap Centered login button sizing inside wp-login.php.
 * Removed duplicate provider wizard Test Connection toast.
+
+== Upgrade Notice ==
+
+= 2.6.7 =
+Silent auto-login now checks supported OIDC providers in the background only when enabled and only logs in already linked WordPress users.
