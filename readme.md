@@ -118,9 +118,6 @@ Click **Save Changes**, then use the **"Test Login"** button (or log out and vis
 
 ## 📸 Screenshots
 
-
-### 📸 Screenshots
-
 | Login Screen | Providers List | Sign-in Experience |
 | :---: | :---: | :---: |
 | <a href="https://plugin.awhadi.online/aoauth-client-sso/screenshots/login-screen.png"><img src="https://plugin.awhadi.online/aoauth-client-sso/screenshots/login-screen.png" alt="Login Screen" width="250"></a> | <a href="https://plugin.awhadi.online/aoauth-client-sso/screenshots/providers-list.png"><img src="https://plugin.awhadi.online/aoauth-client-sso/screenshots/providers-list.png" alt="Providers List" width="250"></a> | <a href="https://plugin.awhadi.online/aoauth-client-sso/screenshots/sign-in-experience.png"><img src="https://plugin.awhadi.online/aoauth-client-sso/screenshots/sign-in-experience.png" alt="Sign-in Experience" width="250"></a> |
