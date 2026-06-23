@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: aOAUTH Client SSO 2.4.9\n"
+"Project-Id-Version: aOAUTH Client SSO 2.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 08:53+0200\n"
+"POT-Creation-Date: 2026-06-23 00:00+0200\n"
 "PO-Revision-Date: 2026-06-04 00:00+0000\n"
 "Last-Translator: Awhadi\n"
 "Language-Team: ru_RU\n"
@@ -2196,3 +2196,108 @@ msgstr "Сохранить опыт входа"
 
 #~ msgid "Identity token signing keys are not configured."
 #~ msgstr "Ключи подписи токена удостоверения не настроены."
+
+msgid "WP-CLI Administration"
+msgstr "Администрирование WP-CLI"
+
+msgid "Manage and audit aOAUTH from a terminal connected to this WordPress installation. Run commands from the WordPress root directory while the site database is available."
+msgstr "Управляйте aOAUTH и проверяйте его из терминала, подключённого к этой установке WordPress. Запускайте команды из корневого каталога WordPress, когда база данных сайта доступна."
+
+msgid "Status commands never reveal Client IDs, Client Secrets, access tokens, or bot-protection secrets. Commands that change providers are audit logged. Configuration imports require confirmation and replace the current plugin settings and providers."
+msgstr "Команды состояния никогда не показывают Client ID, Client Secret, токены доступа или секреты защиты от ботов. Команды, изменяющие провайдеров, записываются в журнал аудита. Импорт конфигурации требует подтверждения и заменяет текущие настройки плагина и провайдеров."
+
+msgid "Configuration overview."
+msgstr "Обзор конфигурации."
+
+msgid "Displays the plugin version and administrator-facing values from Sign-In Experience, User Management, Security, Tools, role redirects, and provider availability. Use it for audits, troubleshooting, and deployment verification."
+msgstr "Показывает версию плагина и администраторские значения из разделов входа, управления пользователями, безопасности, инструментов, перенаправлений ролей и доступности провайдеров. Используйте для аудита, диагностики и проверки развёртывания."
+
+msgid "Provider inventory."
+msgstr "Список провайдеров."
+
+msgid "Lists each provider ID, display name, provider type, enabled state, and whether required credentials are present. Credential values are never printed."
+msgstr "Показывает ID провайдера, отображаемое имя, тип, состояние включения и наличие обязательных учётных данных. Значения учётных данных никогда не выводятся."
+
+msgid "Enable sign-in through a provider."
+msgstr "Включить вход через провайдера."
+
+msgid "Replace keycloak with a provider ID reported by wp aoauth providers. The command refuses to enable a provider until its Client ID and Client Secret are configured, then records the change in Activity Logs."
+msgstr "Замените keycloak на ID провайдера из wp aoauth providers. Команда не включит провайдера, пока не настроены Client ID и Client Secret, затем запишет изменение в журналы активности."
+
+msgid "Pause sign-in through a provider."
+msgstr "Приостановить вход через провайдера."
+
+msgid "Prevents new sign-in attempts through the selected provider while preserving its configuration, encrypted credentials, and linked-user records. The change is recorded in Activity Logs."
+msgstr "Запрещает новые попытки входа через выбранного провайдера, сохраняя его конфигурацию, зашифрованные учётные данные и связи пользователей. Изменение записывается в журналы активности."
+
+msgid "Create a safe configuration backup."
+msgstr "Создать безопасную резервную копию конфигурации."
+
+msgid "Exports plugin settings and provider definitions to JSON with credentials excluded by default. The backup file is restricted to the current operating-system user when supported."
+msgstr "Экспортирует настройки плагина и определения провайдеров в JSON, исключая учётные данные по умолчанию. Если поддерживается, файл резервной копии ограничивается текущим пользователем операционной системы."
+
+msgid "Create an encrypted full backup."
+msgstr "Создать зашифрованную полную резервную копию."
+
+msgid "Set AOAUTH_BACKUP_PASSWORD securely in the environment before running this command. Client IDs, Client Secrets, and bot-protection secrets are protected with password-based AES-256-GCM encryption; the password is never stored in the backup."
+msgstr "Перед запуском команды безопасно задайте AOAUTH_BACKUP_PASSWORD в окружении. Client ID, Client Secret и секреты защиты от ботов защищаются шифрованием AES-256-GCM на основе пароля; пароль никогда не сохраняется в резервной копии."
+
+msgid "Restore a validated configuration."
+msgstr "Восстановить проверенную конфигурацию."
+
+msgid "Reviews the file and asks for confirmation before replacing the current settings and providers. Create a current backup first. For encrypted backups, set the same AOAUTH_BACKUP_PASSWORD used during export. Use --yes only in controlled automation."
+msgstr "Проверяет файл и запрашивает подтверждение перед заменой текущих настроек и провайдеров. Сначала создайте актуальную резервную копию. Для зашифрованных копий задайте тот же AOAUTH_BACKUP_PASSWORD, который использовался при экспорте. Используйте --yes только в контролируемой автоматизации."
+
+msgid "Machine-readable output."
+msgstr "Машиночитаемый вывод."
+
+msgid "Returns status data as JSON for monitoring, deployment checks, or configuration audits. The status and providers commands also support table, CSV, and YAML output."
+msgstr "Возвращает данные состояния в JSON для мониторинга, проверок развёртывания или аудитов конфигурации. Команды status и providers также поддерживают вывод table, CSV и YAML."
+
+msgid "Command reference."
+msgstr "Справочник команд."
+
+msgid "Displays all available aOAUTH commands. Use wp help aoauth status, wp help aoauth export, or another command path for its options, safeguards, and examples."
+msgstr "Показывает все доступные команды aOAUTH. Используйте wp help aoauth status, wp help aoauth export или другой путь команды для просмотра параметров, защит и примеров."
+
+msgid "Enter your WordPress administrator password to continue."
+msgstr "Введите пароль администратора WordPress, чтобы продолжить."
+
+msgid "Confirm your WordPress administrator password to continue."
+msgstr "Подтвердите пароль администратора WordPress, чтобы продолжить."
+
+msgid "Administrator confirmation is unavailable. Please sign in again."
+msgstr "Подтверждение администратора недоступно. Войдите снова."
+
+msgid "The WordPress administrator password is incorrect."
+msgstr "Пароль администратора WordPress неверен."
+
+msgid "Administrator confirmation required"
+msgstr "Требуется подтверждение администратора"
+
+msgid "For your protection, exports and imports require your current WordPress administrator password. Leave the backup password blank to exclude credentials. Enter a backup password to include or restore encrypted secrets."
+msgstr "Для вашей защиты экспорт и импорт требуют текущий пароль администратора WordPress. Оставьте пароль резервной копии пустым, чтобы исключить учётные данные. Введите пароль резервной копии, чтобы включить или восстановить зашифрованные секреты."
+
+msgid "Confirm your WordPress administrator password before downloading plugin settings. Add a backup password only when you need encrypted Client IDs, Client Secrets, and bot-protection secrets in the file."
+msgstr "Подтвердите пароль администратора WordPress перед загрузкой настроек плагина. Добавляйте пароль резервной копии только если в файле нужны зашифрованные Client ID, Client Secret и секреты защиты от ботов."
+
+msgid "Confirm your WordPress administrator password before restoring plugin settings. If the backup contains encrypted credentials, enter the same backup password used during export."
+msgstr "Подтвердите пароль администратора WordPress перед восстановлением настроек плагина. Если резервная копия содержит зашифрованные учётные данные, введите тот же пароль, который использовался при экспорте."
+
+msgid "Confirm Backup Action"
+msgstr "Подтвердить действие с резервной копией"
+
+msgid "WordPress administrator password"
+msgstr "Пароль администратора WordPress"
+
+msgid "Backup password"
+msgstr "Пароль резервной копии"
+
+msgid "Optional for settings-only backups. Required only for encrypted credential backups."
+msgstr "Необязательно для резервных копий только настроек. Требуется только для зашифрованных копий учётных данных."
+
+msgid "Confirm backup password"
+msgstr "Подтвердите пароль резервной копии"
+
+msgid "Continue"
+msgstr "Продолжить"

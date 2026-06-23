@@ -5,7 +5,7 @@ Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.6.7
+Stable tag: 2.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 -->
@@ -34,7 +34,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
     <img src="https://img.shields.io/badge/PHP-7.4%2B-777BB4" alt="PHP Version">
   </a>
   <a href="https://github.com/awhadi/aoauth-client-sso/blob/main/CHANGELOG.md">
-    <img src="https://img.shields.io/badge/Changelog-2.6.7-brightgreen" alt="Changelog">
+    <img src="https://img.shields.io/badge/Changelog-2.9.0-brightgreen" alt="Changelog">
   </a>
 </p>
 
@@ -60,6 +60,7 @@ The plugin acts as an OAuth/OIDC client, sends users to the selected provider fo
 - **Bot verification support** with Cloudflare Turnstile and Google reCAPTCHA.
 - **Sign-in experience controls** for button layout, themes, previews, and account-linking pages.
 - **Admin tools** for logs, backup and restore, temporary session cleanup, and safe uninstall cleanup.
+- **WP-CLI support** for safe activation, status checks, and credential-free provider inspection.
 - **Bundled translations** for German, Dari Afghanistan, French, Russian, Turkish, Chinese, and Japanese.
 
 ---
@@ -114,6 +115,22 @@ For OIDC providers, use discovery or provide issuer and JWKS metadata so identit
 
 ---
 
+## WP-CLI
+
+```bash
+wp aoauth status
+wp aoauth providers
+wp aoauth provider disable keycloak
+wp aoauth provider enable keycloak
+wp aoauth export aoauth-backup.json
+wp aoauth import aoauth-backup.json --yes
+wp aoauth providers --format=json
+```
+
+Status and provider output never reveal client IDs, client secrets, access tokens, or bot-protection secrets. Provider changes are audit logged. Exports exclude credentials by default; encrypted credential backups require `--include-credentials` and the `AOAUTH_BACKUP_PASSWORD` environment variable. Imports require confirmation and replace current settings and providers.
+
+---
+
 ## Screenshots
 
 | Login Screen | Providers List | Sign-In Experience |
@@ -127,6 +144,42 @@ For OIDC providers, use discovery or provide issuer and JWKS metadata so identit
 ---
 
 ## Changelog
+
+### [2.9.0] - 2026-06-23
+
+- Added bundled translations for the Tools-screen WP-CLI command reference and backup confirmation interface.
+- Added WordPress administrator password confirmation before browser-based configuration export and import actions.
+- Replaced visible browser password prompts with masked modal password fields.
+- Removed the plugin logo image from admin page headers so the header presents the plugin name only.
+
+### [2.8.3] - 2026-06-20
+
+- Improved the Tools-screen WP-CLI documentation with professional operational, security, backup, restore, and automation guidance.
+
+### [2.8.2] - 2026-06-20
+
+- Fixed detailed WP-CLI help formatting and added practical examples.
+
+### [2.8.1] - 2026-06-20
+
+- Replaced technical WP-CLI status keys and values with the administrator-facing labels used in the WordPress UI.
+
+### [2.8.0] - 2026-06-20
+
+- Expanded secure status output to cover all operational settings.
+- Added provider enable and disable commands with credential checks.
+- Added secure configuration export and import commands.
+- Added optional password-encrypted credential backups using an environment variable.
+
+### [2.7.1] - 2026-06-20
+
+- Added a WP-CLI Shortcuts card to the Tools screen with a separate explanation for each command.
+
+### [2.7.0] - 2026-06-20
+
+- Added read-only WP-CLI commands for plugin status and provider inspection.
+- Prevented WP-CLI activation from leaving a browser setup redirect.
+- Skipped browser-only SSO, account-linking, and admin hooks during CLI requests.
 
 ### [2.6.7] - 2026-06-09
 

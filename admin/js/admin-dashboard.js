@@ -3,6 +3,68 @@
         return (aoauth_admin.translations && aoauth_admin.translations[key]) || fallback;
     }
 
+    function requestConfigPasswords(mode) {
+        var deferred = $.Deferred();
+        var $modal = $('#aoauth-config-password-modal');
+        var $adminPassword = $('#aoauth-admin-password-confirm');
+        var $backupPassword = $('#aoauth-backup-password');
+        var $backupPasswordConfirm = $('#aoauth-backup-password-confirm');
+        var $backupPasswordConfirmRow = $('#aoauth-backup-password-confirm-row');
+        var message = mode === 'import' ? $modal.data('import-message') : $modal.data('export-message');
+
+        function closeModal() {
+            $adminPassword.val('');
+            $backupPassword.val('');
+            $backupPasswordConfirm.val('');
+            $modal.addClass('aoauth-is-hidden');
+            $('#aoauth-confirm-config-password, #aoauth-cancel-config-password').off('.aoauthConfigPassword');
+            $modal.off('.aoauthConfigPassword');
+        }
+
+        $('#aoauth-config-password-message').text(message || '');
+        $backupPasswordConfirmRow.toggleClass('aoauth-is-hidden', mode === 'import');
+        $modal.removeClass('aoauth-is-hidden');
+        $adminPassword.trigger('focus');
+
+        $('#aoauth-confirm-config-password').on('click.aoauthConfigPassword', function() {
+            var adminPassword = $adminPassword.val();
+            var backupPassword = $backupPassword.val();
+            var backupPasswordConfirmation = $backupPasswordConfirm.val();
+
+            if (!adminPassword) {
+                aoauthShowToast(adminText('admin_password_required', 'Enter your WordPress administrator password to continue.'), 'error');
+                $adminPassword.trigger('focus');
+                return;
+            }
+
+            if (mode === 'export' && backupPassword !== backupPasswordConfirmation) {
+                aoauthShowToast(adminText('backup_passwords_mismatch', 'Backup passwords do not match. Settings were not downloaded.'), 'error');
+                $backupPasswordConfirm.trigger('focus');
+                return;
+            }
+
+            deferred.resolve({
+                adminPassword: adminPassword,
+                backupPassword: backupPassword
+            });
+            closeModal();
+        });
+
+        $('#aoauth-cancel-config-password').on('click.aoauthConfigPassword', function() {
+            deferred.reject();
+            closeModal();
+        });
+
+        $modal.on('click.aoauthConfigPassword', function(event) {
+            if ($(event.target).is($modal)) {
+                deferred.reject();
+                closeModal();
+            }
+        });
+
+        return deferred.promise();
+    }
+
     $(document).on('error', 'img[data-fallback-src], img[data-hide-on-error]', function() {
         var $image = $(this);
         var fallbackSrc = $image.data('fallback-src');
@@ -450,35 +512,21 @@
         // EXPORT CONFIG
         // ============================================
         $('#aoauth-export-config-btn').on('click', function() {
-            var password = window.prompt('Optional: enter a backup password to include encrypted Client IDs, Client Secrets, and bot protection secret keys. Leave blank to download settings only; no secrets will be included.');
-            if (password === null) {
-                return;
-            }
+            requestConfigPasswords('export').done(function(passwords) {
+                var $form = $('<form>', {
+                    method: 'POST',
+                    action: aoauth_admin.ajaxurl
+                }).append(
+                    $('<input>', { type: 'hidden', name: 'action', value: 'aoauth_export_config' }),
+                    $('<input>', { type: 'hidden', name: 'nonce', value: aoauth_admin.nonce }),
+                    $('<input>', { type: 'hidden', name: 'admin_password', value: passwords.adminPassword }),
+                    $('<input>', { type: 'hidden', name: 'backup_password', value: passwords.backupPassword })
+                );
 
-            if (password !== '') {
-                var confirmation = window.prompt('Confirm the backup password. If this does not match, the settings download will be cancelled.');
-                if (confirmation === null) {
-                    return;
-                }
-
-                if (password !== confirmation) {
-                    aoauthShowToast('Backup passwords do not match. Settings were not downloaded.', 'error');
-                    return;
-                }
-            }
-
-            var $form = $('<form>', {
-                method: 'POST',
-                action: aoauth_admin.ajaxurl
-            }).append(
-                $('<input>', { type: 'hidden', name: 'action', value: 'aoauth_export_config' }),
-                $('<input>', { type: 'hidden', name: 'nonce', value: aoauth_admin.nonce }),
-                $('<input>', { type: 'hidden', name: 'backup_password', value: password })
-            );
-
-            $('body').append($form);
-            $form.trigger('submit');
-            $form.remove();
+                $('body').append($form);
+                $form.trigger('submit');
+                $form.remove();
+            });
         });
         
         // ============================================
@@ -491,33 +539,36 @@
         $('#aoauth-import-file').on('change', function(e) {
             var file = e.target.files[0];
             if (!file) return;
-            
-            var formData = new FormData();
-            formData.append('action', 'aoauth_import_config');
-            formData.append('nonce', aoauth_admin.nonce);
-            formData.append('config_file', file);
-            formData.append('backup_password', window.prompt('If this backup was exported with a password, enter it now. Leave blank for non-encrypted backups.') || '');
             $(this).val('');
-            
-            $.ajax({
-                url: aoauth_admin.ajaxurl,
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(res) {
-                    if (res.success) {
-                        aoauthShowToast(res.data.message, 'success');
-                        setTimeout(function() {
-                            location.reload();
-                        }, 1200);
-                    } else {
-                        aoauthShowToast(res.data.message, 'error');
+
+            requestConfigPasswords('import').done(function(passwords) {
+                var formData = new FormData();
+                formData.append('action', 'aoauth_import_config');
+                formData.append('nonce', aoauth_admin.nonce);
+                formData.append('config_file', file);
+                formData.append('admin_password', passwords.adminPassword);
+                formData.append('backup_password', passwords.backupPassword);
+
+                $.ajax({
+                    url: aoauth_admin.ajaxurl,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(res) {
+                        if (res.success) {
+                            aoauthShowToast(res.data.message, 'success');
+                            setTimeout(function() {
+                                location.reload();
+                            }, 1200);
+                        } else {
+                            aoauthShowToast(res.data.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        aoauthShowToast(adminText('import_failed', 'Import failed'), 'error');
                     }
-                },
-                error: function() {
-                    aoauthShowToast('Import failed', 'error');
-                }
+                });
             });
         });
         

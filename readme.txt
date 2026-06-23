@@ -4,7 +4,7 @@ Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.6.7
+Stable tag: 2.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,7 @@ The plugin works with identity providers that conform to the OAuth 2.0 and OpenI
 * Cloudflare Turnstile and Google reCAPTCHA bot verification support.
 * Login button themes, layouts, previews, and account-linking page styling.
 * Admin logs, backup and restore, temporary session cleanup, and uninstall cleanup.
+* WP-CLI status and provider inspection commands for automation and diagnostics.
 * Bundled translations for German, Dari Afghanistan, French, Russian, Turkish, Chinese, and Japanese.
 
 == Installation ==
@@ -36,6 +37,20 @@ The plugin works with identity providers that conform to the OAuth 2.0 and OpenI
 3. Open **OAUTH SSO** in the WordPress admin menu.
 4. Add a provider, enter the Client ID and Client Secret, configure scopes and endpoints, then save and test the connection.
 5. Configure user creation, role mapping, security, and sign-in experience settings as needed.
+
+== WP-CLI ==
+
+Use `wp aoauth status` to inspect comprehensive non-sensitive sign-in, user, security, bot protection, logging, cleanup, and provider configuration.
+
+Use `wp aoauth providers` to list configured providers and credential-presence status without exposing client IDs, client secrets, tokens, or other credentials.
+
+Use `wp aoauth provider enable <id>` or `wp aoauth provider disable <id>` to change an existing provider without deleting its configuration.
+
+Use `wp aoauth export aoauth-backup.json` to export settings without credentials, or add `--include-credentials` after setting the `AOAUTH_BACKUP_PASSWORD` environment variable to create a password-encrypted credential backup.
+
+Use `wp aoauth import aoauth-backup.json --yes` to validate and restore a backup. Imports replace current plugin settings and providers.
+
+Both commands support `--format=table`, `--format=json`, `--format=csv`, and `--format=yaml`.
 
 == Frequently Asked Questions ==
 
@@ -65,6 +80,35 @@ Yes. Custom OAuth 2.0 and OIDC providers can be configured with custom authoriza
 6. SSO logs and maintenance tools.
 
 == Changelog ==
+
+= 2.9.0 =
+* Added bundled translations for the Tools-screen WP-CLI command reference and backup confirmation interface.
+* Added WordPress administrator password confirmation before browser-based configuration export and import actions.
+* Replaced visible browser password prompts with masked modal password fields.
+* Removed the plugin logo image from admin page headers so the header presents the plugin name only.
+
+= 2.8.3 =
+* Improved the Tools-screen WP-CLI documentation with professional security, operational impact, backup, restore, and automation guidance.
+
+= 2.8.2 =
+* Fixed detailed WP-CLI help formatting and added practical command examples.
+
+= 2.8.1 =
+* Replaced technical WP-CLI status keys and values with the same administrator-facing labels used in the plugin UI.
+
+= 2.8.0 =
+* Expanded WP-CLI status output to include comprehensive non-sensitive configuration.
+* Added provider enable and disable commands with credential checks and audit logging.
+* Added secure settings/provider export and import commands.
+* Added optional password-encrypted credential backups through an environment variable.
+
+= 2.7.1 =
+* Added explained WP-CLI command shortcuts to the Tools screen.
+
+= 2.7.0 =
+* Added read-only WP-CLI commands for plugin status and provider inspection.
+* Prevented WP-CLI activation from leaving a browser setup redirect.
+* Skipped browser-only SSO, account-linking, and admin hooks during CLI requests.
 
 = 2.6.7 =
 * Replaced first-provider auto redirects with silent OIDC auto-login checks.
@@ -160,5 +204,49 @@ Yes. Custom OAuth 2.0 and OIDC providers can be configured with custom authoriza
 
 == Upgrade Notice ==
 
+= 2.9.0 =
+Adds translated WP-CLI documentation and requires administrator password confirmation before browser-based configuration export and import.
+
+= 2.8.3 =
+Improves the in-dashboard WP-CLI administration reference and security guidance.
+
+= 2.8.2 =
+Improves the readability and examples shown by `wp help aoauth`.
+
+= 2.8.1 =
+Makes comprehensive WP-CLI status output easier to read by matching the WordPress admin labels.
+
+= 2.8.0 =
+Adds comprehensive secure WP-CLI administration for status, providers, and configuration backups.
+
+= 2.7.1 =
+Adds an in-dashboard WP-CLI command reference to the Tools screen.
+
+= 2.7.0 =
+Adds safe WP-CLI activation and read-only status/provider commands without exposing provider credentials.
+
 = 2.6.7 =
 Silent auto-login now checks supported OIDC providers in the background only when enabled and only logs in already linked WordPress users.
+
+== Developer Release Notes ==
+
+= Version =
+2.9.0
+
+= Date =
+2026-06-23
+
+= Author =
+Awhadi
+
+= Summary =
+Added translated WP-CLI documentation, strengthened browser backup and restore confirmation, and removed the logo image from plugin admin headers.
+
+= Files changed =
+`aoauth-client-sso.php`, `includes/class-wp-cli-command.php`, `admin/class-admin.php`, `admin/views/tools.php`, `admin/views/providers.php`, `admin/views/logs.php`, `admin/views/wizard.php`, `admin/js/admin-dashboard.js`, `admin/css/admin-style.css`, `admin/css/wizard-style.css`, bundled language files, `CHANGELOG.md`, `readme.md`, and `readme.txt`.
+
+= Security and UX notes =
+Browser-based configuration export and import now require a current WordPress administrator password in a masked modal field. Credential exports remain excluded by default, encrypted full backups still require a separate backup password, and WP-CLI status/provider commands continue to mask secrets.
+
+= Rollback plan =
+Restore version 2.8.3 and reactivate it. No database migration or option schema change is required.

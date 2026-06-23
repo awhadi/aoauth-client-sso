@@ -153,7 +153,7 @@ $last_cleanup = get_option('aoauth_last_retention_run', '');
     <div class="aoauth-tools-card">
         <h3><?php esc_html_e('Backup & Restore', 'aoauth-client-sso'); ?></h3>
         <p><?php esc_html_e('Export settings and providers, or restore a saved JSON backup.', 'aoauth-client-sso'); ?></p>
-        <p class="aoauth-note"><?php esc_html_e('Leave the backup password blank to exclude credentials. Enter a password to include encrypted secrets.', 'aoauth-client-sso'); ?></p>
+        <p class="aoauth-note"><?php esc_html_e('For your protection, exports and imports require your current WordPress administrator password. Leave the backup password blank to exclude credentials. Enter a backup password to include or restore encrypted secrets.', 'aoauth-client-sso'); ?></p>
         <div class="aoauth-tools-buttons">
             <button type="button" id="aoauth-export-config-btn" class="aoauth-admin-button aoauth-admin-button-primary"><?php esc_html_e('Download Settings', 'aoauth-client-sso'); ?></button>
             <form id="aoauth-import-form" class="aoauth-inline-form">
@@ -177,6 +177,50 @@ $last_cleanup = get_option('aoauth_last_retention_run', '');
         </div>
     </div>
 
+    <div class="aoauth-tools-card">
+        <h3><?php esc_html_e('WP-CLI Administration', 'aoauth-client-sso'); ?></h3>
+        <p><?php esc_html_e('Manage and audit aOAUTH from a terminal connected to this WordPress installation. Run commands from the WordPress root directory while the site database is available.', 'aoauth-client-sso'); ?></p>
+        <p class="aoauth-note"><strong><?php esc_html_e('Security:', 'aoauth-client-sso'); ?></strong> <?php esc_html_e('Status commands never reveal Client IDs, Client Secrets, access tokens, or bot-protection secrets. Commands that change providers are audit logged. Configuration imports require confirmation and replace the current plugin settings and providers.', 'aoauth-client-sso'); ?></p>
+        <div class="aoauth-shortcode-reference">
+            <div>
+                <code>wp aoauth status</code>
+                <p><strong><?php esc_html_e('Configuration overview.', 'aoauth-client-sso'); ?></strong> <?php esc_html_e('Displays the plugin version and administrator-facing values from Sign-In Experience, User Management, Security, Tools, role redirects, and provider availability. Use it for audits, troubleshooting, and deployment verification.', 'aoauth-client-sso'); ?></p>
+            </div>
+            <div>
+                <code>wp aoauth providers</code>
+                <p><strong><?php esc_html_e('Provider inventory.', 'aoauth-client-sso'); ?></strong> <?php esc_html_e('Lists each provider ID, display name, provider type, enabled state, and whether required credentials are present. Credential values are never printed.', 'aoauth-client-sso'); ?></p>
+            </div>
+            <div>
+                <code>wp aoauth provider enable keycloak</code>
+                <p><strong><?php esc_html_e('Enable sign-in through a provider.', 'aoauth-client-sso'); ?></strong> <?php esc_html_e('Replace keycloak with a provider ID reported by wp aoauth providers. The command refuses to enable a provider until its Client ID and Client Secret are configured, then records the change in Activity Logs.', 'aoauth-client-sso'); ?></p>
+            </div>
+            <div>
+                <code>wp aoauth provider disable keycloak</code>
+                <p><strong><?php esc_html_e('Pause sign-in through a provider.', 'aoauth-client-sso'); ?></strong> <?php esc_html_e('Prevents new sign-in attempts through the selected provider while preserving its configuration, encrypted credentials, and linked-user records. The change is recorded in Activity Logs.', 'aoauth-client-sso'); ?></p>
+            </div>
+            <div>
+                <code>wp aoauth export aoauth-backup.json</code>
+                <p><strong><?php esc_html_e('Create a safe configuration backup.', 'aoauth-client-sso'); ?></strong> <?php esc_html_e('Exports plugin settings and provider definitions to JSON with credentials excluded by default. The backup file is restricted to the current operating-system user when supported.', 'aoauth-client-sso'); ?></p>
+            </div>
+            <div>
+                <code>wp aoauth export aoauth-backup.json --include-credentials</code>
+                <p><strong><?php esc_html_e('Create an encrypted full backup.', 'aoauth-client-sso'); ?></strong> <?php esc_html_e('Set AOAUTH_BACKUP_PASSWORD securely in the environment before running this command. Client IDs, Client Secrets, and bot-protection secrets are protected with password-based AES-256-GCM encryption; the password is never stored in the backup.', 'aoauth-client-sso'); ?></p>
+            </div>
+            <div>
+                <code>wp aoauth import aoauth-backup.json</code>
+                <p><strong><?php esc_html_e('Restore a validated configuration.', 'aoauth-client-sso'); ?></strong> <?php esc_html_e('Reviews the file and asks for confirmation before replacing the current settings and providers. Create a current backup first. For encrypted backups, set the same AOAUTH_BACKUP_PASSWORD used during export. Use --yes only in controlled automation.', 'aoauth-client-sso'); ?></p>
+            </div>
+            <div>
+                <code>wp aoauth status --format=json</code>
+                <p><strong><?php esc_html_e('Machine-readable output.', 'aoauth-client-sso'); ?></strong> <?php esc_html_e('Returns status data as JSON for monitoring, deployment checks, or configuration audits. The status and providers commands also support table, CSV, and YAML output.', 'aoauth-client-sso'); ?></p>
+            </div>
+            <div>
+                <code>wp help aoauth</code>
+                <p><strong><?php esc_html_e('Command reference.', 'aoauth-client-sso'); ?></strong> <?php esc_html_e('Displays all available aOAUTH commands. Use wp help aoauth status, wp help aoauth export, or another command path for its options, safeguards, and examples.', 'aoauth-client-sso'); ?></p>
+            </div>
+        </div>
+    </div>
+
     <div class="aoauth-tools-card danger-zone">
         <h3><?php esc_html_e('Danger Zone', 'aoauth-client-sso'); ?></h3>
         <p><?php esc_html_e('Reset settings, remove providers, and delete logs. This action cannot be undone.', 'aoauth-client-sso'); ?></p>
@@ -192,6 +236,30 @@ $last_cleanup = get_option('aoauth_last_retention_run', '');
         <div class="aoauth-modal-buttons">
             <button id="aoauth-confirm-reset" class="aoauth-admin-button aoauth-admin-button-danger" disabled><?php esc_html_e('Confirm Reset', 'aoauth-client-sso'); ?></button>
             <button id="aoauth-cancel-reset" class="aoauth-admin-button aoauth-admin-button-secondary"><?php esc_html_e('Cancel', 'aoauth-client-sso'); ?></button>
+        </div>
+    </div>
+</div>
+
+<div id="aoauth-config-password-modal" class="aoauth-modal aoauth-is-hidden" data-export-message="<?php echo esc_attr__('Confirm your WordPress administrator password before downloading plugin settings. Add a backup password only when you need encrypted Client IDs, Client Secrets, and bot-protection secrets in the file.', 'aoauth-client-sso'); ?>" data-import-message="<?php echo esc_attr__('Confirm your WordPress administrator password before restoring plugin settings. If the backup contains encrypted credentials, enter the same backup password used during export.', 'aoauth-client-sso'); ?>">
+    <div class="aoauth-modal-content">
+        <h3><?php esc_html_e('Confirm Backup Action', 'aoauth-client-sso'); ?></h3>
+        <p id="aoauth-config-password-message"></p>
+        <div class="aoauth-modal-field">
+            <label for="aoauth-admin-password-confirm"><?php esc_html_e('WordPress administrator password', 'aoauth-client-sso'); ?></label>
+            <input type="password" id="aoauth-admin-password-confirm" class="aoauth-form-control" autocomplete="current-password">
+        </div>
+        <div class="aoauth-modal-field">
+            <label for="aoauth-backup-password"><?php esc_html_e('Backup password', 'aoauth-client-sso'); ?></label>
+            <input type="password" id="aoauth-backup-password" class="aoauth-form-control" autocomplete="new-password">
+            <p class="aoauth-setting-help"><?php esc_html_e('Optional for settings-only backups. Required only for encrypted credential backups.', 'aoauth-client-sso'); ?></p>
+        </div>
+        <div id="aoauth-backup-password-confirm-row" class="aoauth-modal-field">
+            <label for="aoauth-backup-password-confirm"><?php esc_html_e('Confirm backup password', 'aoauth-client-sso'); ?></label>
+            <input type="password" id="aoauth-backup-password-confirm" class="aoauth-form-control" autocomplete="new-password">
+        </div>
+        <div class="aoauth-modal-buttons">
+            <button type="button" id="aoauth-confirm-config-password" class="aoauth-admin-button aoauth-admin-button-primary"><?php esc_html_e('Continue', 'aoauth-client-sso'); ?></button>
+            <button type="button" id="aoauth-cancel-config-password" class="aoauth-admin-button aoauth-admin-button-secondary"><?php esc_html_e('Cancel', 'aoauth-client-sso'); ?></button>
         </div>
     </div>
 </div>

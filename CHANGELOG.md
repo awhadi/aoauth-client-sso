@@ -4,7 +4,62 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [2.9.0] - 2026-06-23
+
+### Added
+- Added bundled translations for the new Tools-screen WP-CLI command reference and backup confirmation interface.
+- Added WordPress administrator password confirmation before browser-based configuration export and import actions.
+
 ### Changed
+- Replaced visible browser password prompts with masked modal password fields for backup and restore workflows.
+- Removed the plugin logo image from admin page headers so the header presents the plugin name only.
+
+### Security
+- Browser exports and imports now require a fresh WordPress administrator password check in addition to nonce and capability checks.
+- Credential exports remain excluded by default and encrypted credential exports still require a separate backup password.
+
+## [2.8.3] - 2026-06-20
+
+### Changed
+- Reworked the Tools-screen WP-CLI reference into professional administrator documentation with clear purposes, operational effects, safeguards, backup guidance, and automation notes.
+
+## [2.8.2] - 2026-06-20
+
+### Fixed
+- Fixed detailed WP-CLI help rendering literal option metadata.
+- Added practical examples to status, provider, export, and import command help.
+
+## [2.8.1] - 2026-06-20
+
+### Changed
+- Replaced internal WP-CLI status option keys with the same administrator-facing labels and choice names used in the plugin UI.
+- Added readable units for time and opacity values in status output.
+
+## [2.8.0] - 2026-06-20
+
+### Added
+- Expanded `wp aoauth status` to report comprehensive non-sensitive configuration grouped by runtime, sign-in, users, security, and tools.
+- Added `wp aoauth provider enable <id>` and `wp aoauth provider disable <id>` with credential checks and audit logging.
+- Added secure JSON configuration export and import commands with explicit overwrite/confirmation controls.
+- Added optional password-encrypted credential backups using the `AOAUTH_BACKUP_PASSWORD` environment variable.
+
+### Changed
+- Expanded provider output to report credential presence without exposing Client IDs or Client Secrets.
+- Reused the admin backup and restore implementation for WP-CLI imports and exports.
+
+## [2.7.1] - 2026-06-20
+
+### Added
+- Added a WP-CLI Shortcuts card to the Tools screen with each supported command in its own explained reference block.
+
+## [2.7.0] - 2026-06-20
+
+### Added
+- Added read-only `wp aoauth status` and `wp aoauth providers` commands with table, JSON, CSV, and YAML output.
+
+### Changed
+- Prevented browser-only SSO, account-linking, and admin hooks from loading during WP-CLI requests.
+- Prevented WP-CLI activation from leaving a setup-wizard redirect for the next browser request.
 - Merged the remote GitHub documentation and license updates into the local release candidate without replacing the current `2.6.7` plugin code.
 - Standardized the WordPress `readme.txt` and GitHub `readme.md` metadata and feature descriptions for the current release.
 - Updated translation template ownership metadata to use Awhadi release information.

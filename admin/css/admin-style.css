@@ -63,14 +63,6 @@
     }
 }
 
-/* Header Logo - No animation, just hover effect */
-.aoauth-header-logo {
-    width: 54px;
-    height: 54px;
-    transition: transform 0.2s ease, filter 0.2s ease;
-}
-
-
 /* Header Title - Restored glow animation */
 .aoauth-header-title {
     font-size: 28px;
@@ -1895,6 +1887,18 @@
     width: 90%;
     text-align: center;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.aoauth-modal-field {
+    margin: 16px 0;
+    text-align: left;
+}
+
+.aoauth-modal-field label {
+    color: #1d2327;
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
 }
 
 .aoauth-modal-buttons {

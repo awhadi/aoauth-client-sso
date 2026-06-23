@@ -6,7 +6,6 @@ $current_page = 'aoauth-providers';
 <div class="aoauth-admin-wrap">
     <div class="aoauth-admin-header">
         <div class="aoauth-header-brand">
-            <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/logo.png'); ?>" alt="aOAUTH Client SSO" class="aoauth-header-logo">
             <div>
                 <h1 class="aoauth-header-title"><?php esc_html_e('aOAUTH Client SSO', 'aoauth-client-sso'); ?></h1>
                 <p class="aoauth-header-tagline"><?php esc_html_e('Secure OAuth 2.0 / OpenID Connect Single Sign-On', 'aoauth-client-sso'); ?></p>

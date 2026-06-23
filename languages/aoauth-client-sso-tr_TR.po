@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: aOAUTH Client SSO 2.4.9\n"
+"Project-Id-Version: aOAUTH Client SSO 2.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 08:53+0200\n"
+"POT-Creation-Date: 2026-06-23 00:00+0200\n"
 "PO-Revision-Date: 2026-06-04 00:00+0000\n"
 "Last-Translator: Awhadi\n"
 "Language-Team: tr_TR\n"
@@ -2196,3 +2196,108 @@ msgstr "Oturum açma deneyimini kaydet"
 
 #~ msgid "Identity token signing keys are not configured."
 #~ msgstr "Kimlik belirteci imzalama anahtarları yapılandırılmamış."
+
+msgid "WP-CLI Administration"
+msgstr "WP-CLI Yönetimi"
+
+msgid "Manage and audit aOAUTH from a terminal connected to this WordPress installation. Run commands from the WordPress root directory while the site database is available."
+msgstr "Bu WordPress kurulumuna bağlı bir terminalden aOAUTH’u yönetin ve denetleyin. Site veritabanı kullanılabilirken komutları WordPress kök dizininden çalıştırın."
+
+msgid "Status commands never reveal Client IDs, Client Secrets, access tokens, or bot-protection secrets. Commands that change providers are audit logged. Configuration imports require confirmation and replace the current plugin settings and providers."
+msgstr "Durum komutları Client ID, Client Secret, erişim belirteci veya bot koruma sırlarını asla göstermez. Sağlayıcıları değiştiren komutlar denetim günlüğüne yazılır. Yapılandırma içe aktarmaları onay gerektirir ve mevcut eklenti ayarları ile sağlayıcıları değiştirir."
+
+msgid "Configuration overview."
+msgstr "Yapılandırma özeti."
+
+msgid "Displays the plugin version and administrator-facing values from Sign-In Experience, User Management, Security, Tools, role redirects, and provider availability. Use it for audits, troubleshooting, and deployment verification."
+msgstr "Eklenti sürümünü ve Oturum Açma Deneyimi, Kullanıcı Yönetimi, Güvenlik, Araçlar, rol yönlendirmeleri ve sağlayıcı kullanılabilirliği için yöneticiye dönük değerleri gösterir. Denetim, sorun giderme ve dağıtım doğrulaması için kullanın."
+
+msgid "Provider inventory."
+msgstr "Sağlayıcı envanteri."
+
+msgid "Lists each provider ID, display name, provider type, enabled state, and whether required credentials are present. Credential values are never printed."
+msgstr "Her sağlayıcının kimliğini, görünen adını, türünü, etkin durumunu ve gerekli kimlik bilgilerinin mevcut olup olmadığını listeler. Kimlik bilgisi değerleri asla yazdırılmaz."
+
+msgid "Enable sign-in through a provider."
+msgstr "Bir sağlayıcı üzerinden oturum açmayı etkinleştir."
+
+msgid "Replace keycloak with a provider ID reported by wp aoauth providers. The command refuses to enable a provider until its Client ID and Client Secret are configured, then records the change in Activity Logs."
+msgstr "keycloak değerini wp aoauth providers tarafından bildirilen bir sağlayıcı kimliğiyle değiştirin. Komut, Client ID ve Client Secret yapılandırılana kadar sağlayıcıyı etkinleştirmez; ardından değişikliği Etkinlik Günlüklerine kaydeder."
+
+msgid "Pause sign-in through a provider."
+msgstr "Bir sağlayıcı üzerinden oturum açmayı duraklat."
+
+msgid "Prevents new sign-in attempts through the selected provider while preserving its configuration, encrypted credentials, and linked-user records. The change is recorded in Activity Logs."
+msgstr "Seçilen sağlayıcı üzerinden yeni oturum açma denemelerini engeller; yapılandırmayı, şifreli kimlik bilgilerini ve bağlı kullanıcı kayıtlarını korur. Değişiklik Etkinlik Günlüklerine kaydedilir."
+
+msgid "Create a safe configuration backup."
+msgstr "Güvenli bir yapılandırma yedeği oluştur."
+
+msgid "Exports plugin settings and provider definitions to JSON with credentials excluded by default. The backup file is restricted to the current operating-system user when supported."
+msgstr "Eklenti ayarlarını ve sağlayıcı tanımlarını, kimlik bilgileri varsayılan olarak hariç tutularak JSON biçiminde dışa aktarır. Desteklenirse yedek dosyası geçerli işletim sistemi kullanıcısıyla sınırlandırılır."
+
+msgid "Create an encrypted full backup."
+msgstr "Şifreli tam yedek oluştur."
+
+msgid "Set AOAUTH_BACKUP_PASSWORD securely in the environment before running this command. Client IDs, Client Secrets, and bot-protection secrets are protected with password-based AES-256-GCM encryption; the password is never stored in the backup."
+msgstr "Bu komutu çalıştırmadan önce AOAUTH_BACKUP_PASSWORD değerini ortamda güvenli şekilde ayarlayın. Client ID’ler, Client Secret’lar ve bot koruma sırları parola tabanlı AES-256-GCM şifreleme ile korunur; parola yedekte asla saklanmaz."
+
+msgid "Restore a validated configuration."
+msgstr "Doğrulanmış bir yapılandırmayı geri yükle."
+
+msgid "Reviews the file and asks for confirmation before replacing the current settings and providers. Create a current backup first. For encrypted backups, set the same AOAUTH_BACKUP_PASSWORD used during export. Use --yes only in controlled automation."
+msgstr "Geçerli ayarları ve sağlayıcıları değiştirmeden önce dosyayı inceler ve onay ister. Önce güncel bir yedek oluşturun. Şifreli yedekler için dışa aktarımda kullanılan aynı AOAUTH_BACKUP_PASSWORD değerini ayarlayın. --yes seçeneğini yalnızca kontrollü otomasyonda kullanın."
+
+msgid "Machine-readable output."
+msgstr "Makine tarafından okunabilir çıktı."
+
+msgid "Returns status data as JSON for monitoring, deployment checks, or configuration audits. The status and providers commands also support table, CSV, and YAML output."
+msgstr "İzleme, dağıtım kontrolleri veya yapılandırma denetimleri için durum verilerini JSON olarak döndürür. status ve providers komutları tablo, CSV ve YAML çıktısını da destekler."
+
+msgid "Command reference."
+msgstr "Komut başvurusu."
+
+msgid "Displays all available aOAUTH commands. Use wp help aoauth status, wp help aoauth export, or another command path for its options, safeguards, and examples."
+msgstr "Kullanılabilir tüm aOAUTH komutlarını gösterir. Seçenekler, korumalar ve örnekler için wp help aoauth status, wp help aoauth export veya başka bir komut yolunu kullanın."
+
+msgid "Enter your WordPress administrator password to continue."
+msgstr "Devam etmek için WordPress yönetici parolanızı girin."
+
+msgid "Confirm your WordPress administrator password to continue."
+msgstr "Devam etmek için WordPress yönetici parolanızı doğrulayın."
+
+msgid "Administrator confirmation is unavailable. Please sign in again."
+msgstr "Yönetici doğrulaması kullanılamıyor. Lütfen tekrar oturum açın."
+
+msgid "The WordPress administrator password is incorrect."
+msgstr "WordPress yönetici parolası hatalı."
+
+msgid "Administrator confirmation required"
+msgstr "Yönetici doğrulaması gerekli"
+
+msgid "For your protection, exports and imports require your current WordPress administrator password. Leave the backup password blank to exclude credentials. Enter a backup password to include or restore encrypted secrets."
+msgstr "Güvenliğiniz için dışa ve içe aktarma işlemleri geçerli WordPress yönetici parolanızı gerektirir. Kimlik bilgilerini hariç tutmak için yedek parolasını boş bırakın. Şifreli sırları dahil etmek veya geri yüklemek için bir yedek parolası girin."
+
+msgid "Confirm your WordPress administrator password before downloading plugin settings. Add a backup password only when you need encrypted Client IDs, Client Secrets, and bot-protection secrets in the file."
+msgstr "Eklenti ayarlarını indirmeden önce WordPress yönetici parolanızı doğrulayın. Dosyada şifreli Client ID, Client Secret ve bot koruma sırları gerektiğinde yalnızca yedek parolası ekleyin."
+
+msgid "Confirm your WordPress administrator password before restoring plugin settings. If the backup contains encrypted credentials, enter the same backup password used during export."
+msgstr "Eklenti ayarlarını geri yüklemeden önce WordPress yönetici parolanızı doğrulayın. Yedek şifreli kimlik bilgileri içeriyorsa dışa aktarımda kullanılan aynı yedek parolasını girin."
+
+msgid "Confirm Backup Action"
+msgstr "Yedekleme işlemini doğrula"
+
+msgid "WordPress administrator password"
+msgstr "WordPress yönetici parolası"
+
+msgid "Backup password"
+msgstr "Yedek parolası"
+
+msgid "Optional for settings-only backups. Required only for encrypted credential backups."
+msgstr "Yalnızca ayar yedekleri için isteğe bağlıdır. Sadece şifreli kimlik bilgisi yedekleri için gereklidir."
+
+msgid "Confirm backup password"
+msgstr "Yedek parolasını doğrula"
+
+msgid "Continue"
+msgstr "Devam et"

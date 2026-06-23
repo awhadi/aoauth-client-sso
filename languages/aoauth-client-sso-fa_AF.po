@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: aOAUTH Client SSO 2.4.9\n"
+"Project-Id-Version: aOAUTH Client SSO 2.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 08:53+0200\n"
+"POT-Creation-Date: 2026-06-23 00:00+0200\n"
 "PO-Revision-Date: 2026-06-04 00:00+0000\n"
 "Last-Translator: Awhadi\n"
 "Language-Team: fa_AF\n"
@@ -2174,3 +2174,108 @@ msgstr "ذخیره تجربه ورود"
 
 #~ msgid "Identity token signing keys are not configured."
 #~ msgstr "کلیدهای امضای نشانهٔ هویت پیکربندی نشده‌اند."
+
+msgid "WP-CLI Administration"
+msgstr "مدیریت WP-CLI"
+
+msgid "Manage and audit aOAUTH from a terminal connected to this WordPress installation. Run commands from the WordPress root directory while the site database is available."
+msgstr "aOAUTH را از ترمینالی که به این نصب وردپرس وصل است مدیریت و بررسی کنید. فرمان‌ها را از ریشهٔ وردپرس اجرا کنید، در حالی که پایگاه دادهٔ سایت در دسترس است."
+
+msgid "Status commands never reveal Client IDs, Client Secrets, access tokens, or bot-protection secrets. Commands that change providers are audit logged. Configuration imports require confirmation and replace the current plugin settings and providers."
+msgstr "فرمان‌های وضعیت هرگز Client ID، Client Secret، توکن‌های دسترسی یا رازهای محافظت ربات را نشان نمی‌دهند. فرمان‌هایی که ارائه‌دهنده‌ها را تغییر می‌دهند در گزارش ممیزی ثبت می‌شوند. واردکردن پیکربندی نیاز به تأیید دارد و تنظیمات و ارائه‌دهنده‌های فعلی افزونه را جایگزین می‌کند."
+
+msgid "Configuration overview."
+msgstr "نمای کلی پیکربندی."
+
+msgid "Displays the plugin version and administrator-facing values from Sign-In Experience, User Management, Security, Tools, role redirects, and provider availability. Use it for audits, troubleshooting, and deployment verification."
+msgstr "نسخهٔ افزونه و مقدارهای قابل مشاهده برای مدیر را از تجربهٔ ورود، مدیریت کاربر، امنیت، ابزارها، تغییرمسیرهای نقش و دسترسی ارائه‌دهنده‌ها نشان می‌دهد. برای ممیزی، عیب‌یابی و بررسی استقرار استفاده کنید."
+
+msgid "Provider inventory."
+msgstr "فهرست ارائه‌دهنده‌ها."
+
+msgid "Lists each provider ID, display name, provider type, enabled state, and whether required credentials are present. Credential values are never printed."
+msgstr "شناسه، نام نمایشی، نوع، وضعیت فعال بودن و موجود بودن اعتبارنامه‌های لازم هر ارائه‌دهنده را فهرست می‌کند. مقدارهای اعتبارنامه هرگز چاپ نمی‌شوند."
+
+msgid "Enable sign-in through a provider."
+msgstr "ورود از طریق یک ارائه‌دهنده را فعال کنید."
+
+msgid "Replace keycloak with a provider ID reported by wp aoauth providers. The command refuses to enable a provider until its Client ID and Client Secret are configured, then records the change in Activity Logs."
+msgstr "keycloak را با شناسهٔ ارائه‌دهنده‌ای که wp aoauth providers نشان می‌دهد جایگزین کنید. تا زمانی که Client ID و Client Secret تنظیم نشده باشند، فرمان ارائه‌دهنده را فعال نمی‌کند و سپس تغییر را در گزارش‌های فعالیت ثبت می‌کند."
+
+msgid "Pause sign-in through a provider."
+msgstr "ورود از طریق یک ارائه‌دهنده را متوقف کنید."
+
+msgid "Prevents new sign-in attempts through the selected provider while preserving its configuration, encrypted credentials, and linked-user records. The change is recorded in Activity Logs."
+msgstr "تلاش‌های ورود تازه از طریق ارائه‌دهندهٔ انتخاب‌شده را جلوگیری می‌کند، در حالی که پیکربندی، اعتبارنامه‌های رمزگذاری‌شده و رکوردهای کاربران پیوندشده حفظ می‌شوند. این تغییر در گزارش‌های فعالیت ثبت می‌شود."
+
+msgid "Create a safe configuration backup."
+msgstr "یک پشتیبان امن از پیکربندی بسازید."
+
+msgid "Exports plugin settings and provider definitions to JSON with credentials excluded by default. The backup file is restricted to the current operating-system user when supported."
+msgstr "تنظیمات افزونه و تعریف‌های ارائه‌دهنده را به JSON صادر می‌کند و اعتبارنامه‌ها به‌صورت پیش‌فرض حذف می‌شوند. اگر پشتیبانی شود، فایل پشتیبان به کاربر فعلی سیستم‌عامل محدود می‌شود."
+
+msgid "Create an encrypted full backup."
+msgstr "یک پشتیبان کامل رمزگذاری‌شده بسازید."
+
+msgid "Set AOAUTH_BACKUP_PASSWORD securely in the environment before running this command. Client IDs, Client Secrets, and bot-protection secrets are protected with password-based AES-256-GCM encryption; the password is never stored in the backup."
+msgstr "پیش از اجرای این فرمان، AOAUTH_BACKUP_PASSWORD را به‌صورت امن در محیط تنظیم کنید. Client IDها، Client Secretها و رازهای محافظت ربات با رمزگذاری AES-256-GCM مبتنی بر رمز محافظت می‌شوند؛ رمز هرگز در پشتیبان ذخیره نمی‌شود."
+
+msgid "Restore a validated configuration."
+msgstr "یک پیکربندی بررسی‌شده را بازیابی کنید."
+
+msgid "Reviews the file and asks for confirmation before replacing the current settings and providers. Create a current backup first. For encrypted backups, set the same AOAUTH_BACKUP_PASSWORD used during export. Use --yes only in controlled automation."
+msgstr "فایل را بررسی می‌کند و پیش از جایگزینی تنظیمات و ارائه‌دهنده‌های فعلی تأیید می‌خواهد. نخست یک پشتیبان تازه بسازید. برای پشتیبان‌های رمزگذاری‌شده، همان AOAUTH_BACKUP_PASSWORD زمان صدور را تنظیم کنید. --yes را فقط در خودکارسازی کنترل‌شده استفاده کنید."
+
+msgid "Machine-readable output."
+msgstr "خروجی قابل خواندن توسط ماشین."
+
+msgid "Returns status data as JSON for monitoring, deployment checks, or configuration audits. The status and providers commands also support table, CSV, and YAML output."
+msgstr "داده‌های وضعیت را به صورت JSON برای نظارت، بررسی استقرار یا ممیزی پیکربندی برمی‌گرداند. فرمان‌های status و providers از خروجی table، CSV و YAML نیز پشتیبانی می‌کنند."
+
+msgid "Command reference."
+msgstr "مرجع فرمان‌ها."
+
+msgid "Displays all available aOAUTH commands. Use wp help aoauth status, wp help aoauth export, or another command path for its options, safeguards, and examples."
+msgstr "همهٔ فرمان‌های در دسترس aOAUTH را نشان می‌دهد. برای گزینه‌ها، محافظت‌ها و نمونه‌ها از wp help aoauth status، wp help aoauth export یا مسیر فرمان دیگر استفاده کنید."
+
+msgid "Enter your WordPress administrator password to continue."
+msgstr "برای ادامه رمز مدیر وردپرس خود را وارد کنید."
+
+msgid "Confirm your WordPress administrator password to continue."
+msgstr "برای ادامه رمز مدیر وردپرس خود را تأیید کنید."
+
+msgid "Administrator confirmation is unavailable. Please sign in again."
+msgstr "تأیید مدیر در دسترس نیست. لطفاً دوباره وارد شوید."
+
+msgid "The WordPress administrator password is incorrect."
+msgstr "رمز مدیر وردپرس نادرست است."
+
+msgid "Administrator confirmation required"
+msgstr "تأیید مدیر لازم است"
+
+msgid "For your protection, exports and imports require your current WordPress administrator password. Leave the backup password blank to exclude credentials. Enter a backup password to include or restore encrypted secrets."
+msgstr "برای محافظت شما، صدور و واردکردن به رمز فعلی مدیر وردپرس نیاز دارد. برای حذف اعتبارنامه‌ها، رمز پشتیبان را خالی بگذارید. برای شامل‌کردن یا بازیابی رازهای رمزگذاری‌شده، رمز پشتیبان وارد کنید."
+
+msgid "Confirm your WordPress administrator password before downloading plugin settings. Add a backup password only when you need encrypted Client IDs, Client Secrets, and bot-protection secrets in the file."
+msgstr "پیش از دانلود تنظیمات افزونه، رمز مدیر وردپرس خود را تأیید کنید. فقط زمانی رمز پشتیبان اضافه کنید که به Client IDها، Client Secretها و رازهای محافظت ربات به‌صورت رمزگذاری‌شده در فایل نیاز دارید."
+
+msgid "Confirm your WordPress administrator password before restoring plugin settings. If the backup contains encrypted credentials, enter the same backup password used during export."
+msgstr "پیش از بازیابی تنظیمات افزونه، رمز مدیر وردپرس خود را تأیید کنید. اگر پشتیبان شامل اعتبارنامه‌های رمزگذاری‌شده است، همان رمز پشتیبان زمان صدور را وارد کنید."
+
+msgid "Confirm Backup Action"
+msgstr "تأیید اقدام پشتیبان"
+
+msgid "WordPress administrator password"
+msgstr "رمز مدیر وردپرس"
+
+msgid "Backup password"
+msgstr "رمز پشتیبان"
+
+msgid "Optional for settings-only backups. Required only for encrypted credential backups."
+msgstr "برای پشتیبان‌های فقط تنظیمات اختیاری است. فقط برای پشتیبان‌های اعتبارنامهٔ رمزگذاری‌شده لازم است."
+
+msgid "Confirm backup password"
+msgstr "تأیید رمز پشتیبان"
+
+msgid "Continue"
+msgstr "ادامه"

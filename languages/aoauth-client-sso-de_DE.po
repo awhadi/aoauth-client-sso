@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: aOAUTH Client SSO 2.4.9\n"
+"Project-Id-Version: aOAUTH Client SSO 2.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 08:53+0200\n"
+"POT-Creation-Date: 2026-06-23 00:00+0200\n"
 "PO-Revision-Date: 2026-06-04 00:00+0000\n"
 "Last-Translator: Awhadi\n"
 "Language-Team: de_DE\n"
@@ -2227,3 +2227,108 @@ msgstr "Anmeldeerlebnis speichern"
 
 #~ msgid "Identity token signing keys are not configured."
 #~ msgstr "Signaturschlüssel für Identitätstoken sind nicht konfiguriert."
+
+msgid "WP-CLI Administration"
+msgstr "WP-CLI-Administration"
+
+msgid "Manage and audit aOAUTH from a terminal connected to this WordPress installation. Run commands from the WordPress root directory while the site database is available."
+msgstr "Verwalten und prüfen Sie aOAUTH über ein Terminal, das mit dieser WordPress-Installation verbunden ist. Führen Sie Befehle im WordPress-Stammverzeichnis aus, während die Site-Datenbank verfügbar ist."
+
+msgid "Status commands never reveal Client IDs, Client Secrets, access tokens, or bot-protection secrets. Commands that change providers are audit logged. Configuration imports require confirmation and replace the current plugin settings and providers."
+msgstr "Statusbefehle zeigen niemals Client-IDs, Client Secrets, Zugriffstoken oder Bot-Schutz-Geheimnisse. Befehle, die Anbieter ändern, werden protokolliert. Konfigurationsimporte erfordern eine Bestätigung und ersetzen die aktuellen Plugin-Einstellungen und Anbieter."
+
+msgid "Configuration overview."
+msgstr "Konfigurationsübersicht."
+
+msgid "Displays the plugin version and administrator-facing values from Sign-In Experience, User Management, Security, Tools, role redirects, and provider availability. Use it for audits, troubleshooting, and deployment verification."
+msgstr "Zeigt die Plugin-Version und administratorseitige Werte aus Anmeldeerlebnis, Benutzerverwaltung, Sicherheit, Werkzeuge, Rollenweiterleitungen und Anbieter-Verfügbarkeit. Verwenden Sie dies für Audits, Fehlerbehebung und Bereitstellungsprüfungen."
+
+msgid "Provider inventory."
+msgstr "Anbieterübersicht."
+
+msgid "Lists each provider ID, display name, provider type, enabled state, and whether required credentials are present. Credential values are never printed."
+msgstr "Listet Anbieter-ID, Anzeigename, Anbietertyp, Aktivierungsstatus und das Vorhandensein erforderlicher Zugangsdaten auf. Zugangsdatenwerte werden niemals ausgegeben."
+
+msgid "Enable sign-in through a provider."
+msgstr "Anmeldung über einen Anbieter aktivieren."
+
+msgid "Replace keycloak with a provider ID reported by wp aoauth providers. The command refuses to enable a provider until its Client ID and Client Secret are configured, then records the change in Activity Logs."
+msgstr "Ersetzen Sie keycloak durch eine Anbieter-ID aus wp aoauth providers. Der Befehl aktiviert einen Anbieter erst, wenn Client-ID und Client Secret konfiguriert sind, und protokolliert danach die Änderung in den Aktivitätsprotokollen."
+
+msgid "Pause sign-in through a provider."
+msgstr "Anmeldung über einen Anbieter pausieren."
+
+msgid "Prevents new sign-in attempts through the selected provider while preserving its configuration, encrypted credentials, and linked-user records. The change is recorded in Activity Logs."
+msgstr "Verhindert neue Anmeldeversuche über den ausgewählten Anbieter, während Konfiguration, verschlüsselte Zugangsdaten und verknüpfte Benutzerdatensätze erhalten bleiben. Die Änderung wird in den Aktivitätsprotokollen aufgezeichnet."
+
+msgid "Create a safe configuration backup."
+msgstr "Eine sichere Konfigurationssicherung erstellen."
+
+msgid "Exports plugin settings and provider definitions to JSON with credentials excluded by default. The backup file is restricted to the current operating-system user when supported."
+msgstr "Exportiert Plugin-Einstellungen und Anbieterdefinitionen als JSON, wobei Zugangsdaten standardmäßig ausgeschlossen sind. Die Sicherungsdatei wird, wenn unterstützt, auf den aktuellen Betriebssystembenutzer beschränkt."
+
+msgid "Create an encrypted full backup."
+msgstr "Eine verschlüsselte vollständige Sicherung erstellen."
+
+msgid "Set AOAUTH_BACKUP_PASSWORD securely in the environment before running this command. Client IDs, Client Secrets, and bot-protection secrets are protected with password-based AES-256-GCM encryption; the password is never stored in the backup."
+msgstr "Setzen Sie AOAUTH_BACKUP_PASSWORD vor dem Ausführen dieses Befehls sicher in der Umgebung. Client-IDs, Client Secrets und Bot-Schutz-Geheimnisse werden mit passwortbasierter AES-256-GCM-Verschlüsselung geschützt; das Passwort wird niemals in der Sicherung gespeichert."
+
+msgid "Restore a validated configuration."
+msgstr "Eine geprüfte Konfiguration wiederherstellen."
+
+msgid "Reviews the file and asks for confirmation before replacing the current settings and providers. Create a current backup first. For encrypted backups, set the same AOAUTH_BACKUP_PASSWORD used during export. Use --yes only in controlled automation."
+msgstr "Prüft die Datei und fragt nach Bestätigung, bevor aktuelle Einstellungen und Anbieter ersetzt werden. Erstellen Sie zuerst eine aktuelle Sicherung. Legen Sie bei verschlüsselten Sicherungen dasselbe AOAUTH_BACKUP_PASSWORD wie beim Export fest. Verwenden Sie --yes nur in kontrollierter Automatisierung."
+
+msgid "Machine-readable output."
+msgstr "Maschinenlesbare Ausgabe."
+
+msgid "Returns status data as JSON for monitoring, deployment checks, or configuration audits. The status and providers commands also support table, CSV, and YAML output."
+msgstr "Gibt Statusdaten als JSON für Monitoring, Bereitstellungsprüfungen oder Konfigurationsaudits zurück. Die Befehle status und providers unterstützen außerdem Tabellen-, CSV- und YAML-Ausgabe."
+
+msgid "Command reference."
+msgstr "Befehlsreferenz."
+
+msgid "Displays all available aOAUTH commands. Use wp help aoauth status, wp help aoauth export, or another command path for its options, safeguards, and examples."
+msgstr "Zeigt alle verfügbaren aOAUTH-Befehle. Verwenden Sie wp help aoauth status, wp help aoauth export oder einen anderen Befehlspfad für Optionen, Schutzmaßnahmen und Beispiele."
+
+msgid "Enter your WordPress administrator password to continue."
+msgstr "Geben Sie Ihr WordPress-Administratorpasswort ein, um fortzufahren."
+
+msgid "Confirm your WordPress administrator password to continue."
+msgstr "Bestätigen Sie Ihr WordPress-Administratorpasswort, um fortzufahren."
+
+msgid "Administrator confirmation is unavailable. Please sign in again."
+msgstr "Die Administratorbestätigung ist nicht verfügbar. Bitte melden Sie sich erneut an."
+
+msgid "The WordPress administrator password is incorrect."
+msgstr "Das WordPress-Administratorpasswort ist falsch."
+
+msgid "Administrator confirmation required"
+msgstr "Administratorbestätigung erforderlich"
+
+msgid "For your protection, exports and imports require your current WordPress administrator password. Leave the backup password blank to exclude credentials. Enter a backup password to include or restore encrypted secrets."
+msgstr "Zu Ihrem Schutz erfordern Exporte und Importe Ihr aktuelles WordPress-Administratorpasswort. Lassen Sie das Sicherungspasswort leer, um Zugangsdaten auszuschließen. Geben Sie ein Sicherungspasswort ein, um verschlüsselte Geheimnisse einzuschließen oder wiederherzustellen."
+
+msgid "Confirm your WordPress administrator password before downloading plugin settings. Add a backup password only when you need encrypted Client IDs, Client Secrets, and bot-protection secrets in the file."
+msgstr "Bestätigen Sie Ihr WordPress-Administratorpasswort, bevor Sie Plugin-Einstellungen herunterladen. Fügen Sie nur dann ein Sicherungspasswort hinzu, wenn die Datei verschlüsselte Client-IDs, Client Secrets und Bot-Schutz-Geheimnisse enthalten soll."
+
+msgid "Confirm your WordPress administrator password before restoring plugin settings. If the backup contains encrypted credentials, enter the same backup password used during export."
+msgstr "Bestätigen Sie Ihr WordPress-Administratorpasswort, bevor Sie Plugin-Einstellungen wiederherstellen. Wenn die Sicherung verschlüsselte Zugangsdaten enthält, geben Sie dasselbe Sicherungspasswort ein, das beim Export verwendet wurde."
+
+msgid "Confirm Backup Action"
+msgstr "Sicherungsaktion bestätigen"
+
+msgid "WordPress administrator password"
+msgstr "WordPress-Administratorpasswort"
+
+msgid "Backup password"
+msgstr "Sicherungspasswort"
+
+msgid "Optional for settings-only backups. Required only for encrypted credential backups."
+msgstr "Optional für reine Einstellungssicherungen. Nur für verschlüsselte Zugangsdaten-Sicherungen erforderlich."
+
+msgid "Confirm backup password"
+msgstr "Sicherungspasswort bestätigen"
+
+msgid "Continue"
+msgstr "Fortfahren"

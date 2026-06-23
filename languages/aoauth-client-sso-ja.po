@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: aOAUTH Client SSO 2.4.9\n"
+"Project-Id-Version: aOAUTH Client SSO 2.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 08:53+0200\n"
+"POT-Creation-Date: 2026-06-23 00:00+0200\n"
 "PO-Revision-Date: 2026-06-04 00:00+0000\n"
 "Last-Translator: Awhadi\n"
 "Language-Team: ja\n"
@@ -2187,3 +2187,108 @@ msgstr "サインイン体験を保存"
 
 #~ msgid "Identity token signing keys are not configured."
 #~ msgstr "ID トークンの署名キーが設定されていません。"
+
+msgid "WP-CLI Administration"
+msgstr "WP-CLI 管理"
+
+msgid "Manage and audit aOAUTH from a terminal connected to this WordPress installation. Run commands from the WordPress root directory while the site database is available."
+msgstr "この WordPress インストールに接続されたターミナルから aOAUTH を管理および監査します。サイトのデータベースが利用可能な状態で、WordPress ルートディレクトリからコマンドを実行してください。"
+
+msgid "Status commands never reveal Client IDs, Client Secrets, access tokens, or bot-protection secrets. Commands that change providers are audit logged. Configuration imports require confirmation and replace the current plugin settings and providers."
+msgstr "ステータスコマンドは、クライアント ID、クライアントシークレット、アクセストークン、ボット保護シークレットを表示しません。プロバイダーを変更するコマンドは監査ログに記録されます。設定のインポートには確認が必要で、現在のプラグイン設定とプロバイダーを置き換えます。"
+
+msgid "Configuration overview."
+msgstr "設定の概要。"
+
+msgid "Displays the plugin version and administrator-facing values from Sign-In Experience, User Management, Security, Tools, role redirects, and provider availability. Use it for audits, troubleshooting, and deployment verification."
+msgstr "プラグインのバージョンと、サインイン体験、ユーザー管理、セキュリティ、ツール、ロールリダイレクト、プロバイダーの利用状況に関する管理者向けの値を表示します。監査、トラブルシューティング、デプロイ確認に使用します。"
+
+msgid "Provider inventory."
+msgstr "プロバイダー一覧。"
+
+msgid "Lists each provider ID, display name, provider type, enabled state, and whether required credentials are present. Credential values are never printed."
+msgstr "各プロバイダーの ID、表示名、種類、有効状態、必要な認証情報の有無を一覧表示します。認証情報の値は出力されません。"
+
+msgid "Enable sign-in through a provider."
+msgstr "プロバイダー経由のサインインを有効化します。"
+
+msgid "Replace keycloak with a provider ID reported by wp aoauth providers. The command refuses to enable a provider until its Client ID and Client Secret are configured, then records the change in Activity Logs."
+msgstr "keycloak を wp aoauth providers で表示されるプロバイダー ID に置き換えてください。クライアント ID とクライアントシークレットが設定されるまで、このコマンドはプロバイダーを有効化せず、その後変更をアクティビティログに記録します。"
+
+msgid "Pause sign-in through a provider."
+msgstr "プロバイダー経由のサインインを一時停止します。"
+
+msgid "Prevents new sign-in attempts through the selected provider while preserving its configuration, encrypted credentials, and linked-user records. The change is recorded in Activity Logs."
+msgstr "選択したプロバイダー経由の新しいサインイン試行を防ぎつつ、設定、暗号化された認証情報、リンク済みユーザー記録を保持します。変更はアクティビティログに記録されます。"
+
+msgid "Create a safe configuration backup."
+msgstr "安全な設定バックアップを作成します。"
+
+msgid "Exports plugin settings and provider definitions to JSON with credentials excluded by default. The backup file is restricted to the current operating-system user when supported."
+msgstr "プラグイン設定とプロバイダー定義を JSON にエクスポートします。認証情報は既定で除外されます。対応している場合、バックアップファイルは現在の OS ユーザーに制限されます。"
+
+msgid "Create an encrypted full backup."
+msgstr "暗号化された完全バックアップを作成します。"
+
+msgid "Set AOAUTH_BACKUP_PASSWORD securely in the environment before running this command. Client IDs, Client Secrets, and bot-protection secrets are protected with password-based AES-256-GCM encryption; the password is never stored in the backup."
+msgstr "このコマンドを実行する前に、AOAUTH_BACKUP_PASSWORD を環境に安全に設定してください。クライアント ID、クライアントシークレット、ボット保護シークレットは、パスワードベースの AES-256-GCM 暗号化で保護されます。パスワードはバックアップに保存されません。"
+
+msgid "Restore a validated configuration."
+msgstr "検証済みの設定を復元します。"
+
+msgid "Reviews the file and asks for confirmation before replacing the current settings and providers. Create a current backup first. For encrypted backups, set the same AOAUTH_BACKUP_PASSWORD used during export. Use --yes only in controlled automation."
+msgstr "現在の設定とプロバイダーを置き換える前にファイルを確認し、確認を求めます。先に現在のバックアップを作成してください。暗号化バックアップでは、エクスポート時と同じ AOAUTH_BACKUP_PASSWORD を設定します。--yes は管理された自動化でのみ使用してください。"
+
+msgid "Machine-readable output."
+msgstr "機械可読出力。"
+
+msgid "Returns status data as JSON for monitoring, deployment checks, or configuration audits. The status and providers commands also support table, CSV, and YAML output."
+msgstr "監視、デプロイ確認、設定監査向けにステータスデータを JSON で返します。status と providers コマンドは、table、CSV、YAML 出力にも対応しています。"
+
+msgid "Command reference."
+msgstr "コマンドリファレンス。"
+
+msgid "Displays all available aOAUTH commands. Use wp help aoauth status, wp help aoauth export, or another command path for its options, safeguards, and examples."
+msgstr "利用可能なすべての aOAUTH コマンドを表示します。オプション、安全対策、例を確認するには、wp help aoauth status、wp help aoauth export、または別のコマンドパスを使用してください。"
+
+msgid "Enter your WordPress administrator password to continue."
+msgstr "続行するには WordPress 管理者パスワードを入力してください。"
+
+msgid "Confirm your WordPress administrator password to continue."
+msgstr "続行するには WordPress 管理者パスワードを確認してください。"
+
+msgid "Administrator confirmation is unavailable. Please sign in again."
+msgstr "管理者確認を利用できません。もう一度サインインしてください。"
+
+msgid "The WordPress administrator password is incorrect."
+msgstr "WordPress 管理者パスワードが正しくありません。"
+
+msgid "Administrator confirmation required"
+msgstr "管理者確認が必要です"
+
+msgid "For your protection, exports and imports require your current WordPress administrator password. Leave the backup password blank to exclude credentials. Enter a backup password to include or restore encrypted secrets."
+msgstr "保護のため、エクスポートとインポートには現在の WordPress 管理者パスワードが必要です。認証情報を除外するにはバックアップパスワードを空のままにします。暗号化されたシークレットを含める、または復元する場合はバックアップパスワードを入力してください。"
+
+msgid "Confirm your WordPress administrator password before downloading plugin settings. Add a backup password only when you need encrypted Client IDs, Client Secrets, and bot-protection secrets in the file."
+msgstr "プラグイン設定をダウンロードする前に WordPress 管理者パスワードを確認してください。ファイルに暗号化されたクライアント ID、クライアントシークレット、ボット保護シークレットが必要な場合のみバックアップパスワードを追加します。"
+
+msgid "Confirm your WordPress administrator password before restoring plugin settings. If the backup contains encrypted credentials, enter the same backup password used during export."
+msgstr "プラグイン設定を復元する前に WordPress 管理者パスワードを確認してください。バックアップに暗号化された認証情報が含まれる場合は、エクスポート時と同じバックアップパスワードを入力してください。"
+
+msgid "Confirm Backup Action"
+msgstr "バックアップ操作を確認"
+
+msgid "WordPress administrator password"
+msgstr "WordPress 管理者パスワード"
+
+msgid "Backup password"
+msgstr "バックアップパスワード"
+
+msgid "Optional for settings-only backups. Required only for encrypted credential backups."
+msgstr "設定のみのバックアップでは任意です。暗号化された認証情報バックアップでのみ必要です。"
+
+msgid "Confirm backup password"
+msgstr "バックアップパスワードを確認"
+
+msgid "Continue"
+msgstr "続行"

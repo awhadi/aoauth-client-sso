@@ -19,9 +19,7 @@ if (!empty($edit_app_id) && isset($applications[$edit_app_id])) {
 ?>
 <div class="aoauth-wizard-container">
     <div class="aoauth-wizard-header">
-        <div class="aoauth-wizard-logo">
-            <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/logo.png'); ?>" alt="aOAUTH Client SSO">
-        </div>
+        <h1 class="aoauth-wizard-title"><?php esc_html_e('aOAUTH Client SSO', 'aoauth-client-sso'); ?></h1>
         <div class="aoauth-wizard-actions">
             <?php if ($edit_mode): ?>
                 <a href="<?php echo esc_url(admin_url('admin.php?page=aoauth-providers')); ?>" class="aoauth-wizard-skip aoauth-admin-button aoauth-admin-button-secondary">

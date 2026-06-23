@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: aOAUTH Client SSO 2.4.9\n"
+"Project-Id-Version: aOAUTH Client SSO 2.9.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-09 08:53+0200\n"
+"POT-Creation-Date: 2026-06-23 00:00+0200\n"
 "PO-Revision-Date: 2026-06-04 00:00+0000\n"
 "Last-Translator: Awhadi\n"
 "Language-Team: zh_CN\n"
@@ -2112,3 +2112,108 @@ msgstr "保存登录体验"
 
 #~ msgid "Identity token signing keys are not configured."
 #~ msgstr "未配置身份令牌签名密钥。"
+
+msgid "WP-CLI Administration"
+msgstr "WP-CLI 管理"
+
+msgid "Manage and audit aOAUTH from a terminal connected to this WordPress installation. Run commands from the WordPress root directory while the site database is available."
+msgstr "从连接到此 WordPress 安装的终端管理和审计 aOAUTH。请在站点数据库可用时，从 WordPress 根目录运行命令。"
+
+msgid "Status commands never reveal Client IDs, Client Secrets, access tokens, or bot-protection secrets. Commands that change providers are audit logged. Configuration imports require confirmation and replace the current plugin settings and providers."
+msgstr "状态命令绝不会显示客户端 ID、客户端密钥、访问令牌或机器人防护密钥。更改提供商的命令会写入审计日志。导入配置需要确认，并会替换当前插件设置和提供商。"
+
+msgid "Configuration overview."
+msgstr "配置概览。"
+
+msgid "Displays the plugin version and administrator-facing values from Sign-In Experience, User Management, Security, Tools, role redirects, and provider availability. Use it for audits, troubleshooting, and deployment verification."
+msgstr "显示插件版本，以及登录体验、用户管理、安全、工具、角色重定向和提供商可用性中的管理员可见值。可用于审计、故障排查和部署验证。"
+
+msgid "Provider inventory."
+msgstr "提供商清单。"
+
+msgid "Lists each provider ID, display name, provider type, enabled state, and whether required credentials are present. Credential values are never printed."
+msgstr "列出每个提供商的 ID、显示名称、类型、启用状态以及所需凭据是否存在。凭据值绝不会输出。"
+
+msgid "Enable sign-in through a provider."
+msgstr "启用通过提供商登录。"
+
+msgid "Replace keycloak with a provider ID reported by wp aoauth providers. The command refuses to enable a provider until its Client ID and Client Secret are configured, then records the change in Activity Logs."
+msgstr "将 keycloak 替换为 wp aoauth providers 返回的提供商 ID。在配置客户端 ID 和客户端密钥之前，该命令会拒绝启用提供商；随后会将更改记录到活动日志。"
+
+msgid "Pause sign-in through a provider."
+msgstr "暂停通过提供商登录。"
+
+msgid "Prevents new sign-in attempts through the selected provider while preserving its configuration, encrypted credentials, and linked-user records. The change is recorded in Activity Logs."
+msgstr "阻止通过所选提供商进行新的登录尝试，同时保留其配置、加密凭据和已关联用户记录。该更改会记录到活动日志。"
+
+msgid "Create a safe configuration backup."
+msgstr "创建安全的配置备份。"
+
+msgid "Exports plugin settings and provider definitions to JSON with credentials excluded by default. The backup file is restricted to the current operating-system user when supported."
+msgstr "将插件设置和提供商定义导出为 JSON，默认排除凭据。在支持时，备份文件会限制为当前操作系统用户可访问。"
+
+msgid "Create an encrypted full backup."
+msgstr "创建加密的完整备份。"
+
+msgid "Set AOAUTH_BACKUP_PASSWORD securely in the environment before running this command. Client IDs, Client Secrets, and bot-protection secrets are protected with password-based AES-256-GCM encryption; the password is never stored in the backup."
+msgstr "运行此命令前，请在环境中安全设置 AOAUTH_BACKUP_PASSWORD。客户端 ID、客户端密钥和机器人防护密钥会使用基于密码的 AES-256-GCM 加密保护；密码绝不会存储在备份中。"
+
+msgid "Restore a validated configuration."
+msgstr "恢复已验证的配置。"
+
+msgid "Reviews the file and asks for confirmation before replacing the current settings and providers. Create a current backup first. For encrypted backups, set the same AOAUTH_BACKUP_PASSWORD used during export. Use --yes only in controlled automation."
+msgstr "在替换当前设置和提供商前检查文件并请求确认。请先创建当前备份。对于加密备份，请设置导出时使用的同一个 AOAUTH_BACKUP_PASSWORD。仅在受控自动化中使用 --yes。"
+
+msgid "Machine-readable output."
+msgstr "机器可读输出。"
+
+msgid "Returns status data as JSON for monitoring, deployment checks, or configuration audits. The status and providers commands also support table, CSV, and YAML output."
+msgstr "以 JSON 返回状态数据，用于监控、部署检查或配置审计。status 和 providers 命令也支持 table、CSV 和 YAML 输出。"
+
+msgid "Command reference."
+msgstr "命令参考。"
+
+msgid "Displays all available aOAUTH commands. Use wp help aoauth status, wp help aoauth export, or another command path for its options, safeguards, and examples."
+msgstr "显示所有可用的 aOAUTH 命令。使用 wp help aoauth status、wp help aoauth export 或其他命令路径查看选项、安全措施和示例。"
+
+msgid "Enter your WordPress administrator password to continue."
+msgstr "请输入您的 WordPress 管理员密码以继续。"
+
+msgid "Confirm your WordPress administrator password to continue."
+msgstr "请确认您的 WordPress 管理员密码以继续。"
+
+msgid "Administrator confirmation is unavailable. Please sign in again."
+msgstr "管理员确认不可用。请重新登录。"
+
+msgid "The WordPress administrator password is incorrect."
+msgstr "WordPress 管理员密码不正确。"
+
+msgid "Administrator confirmation required"
+msgstr "需要管理员确认"
+
+msgid "For your protection, exports and imports require your current WordPress administrator password. Leave the backup password blank to exclude credentials. Enter a backup password to include or restore encrypted secrets."
+msgstr "为保护您的安全，导出和导入都需要当前 WordPress 管理员密码。将备份密码留空可排除凭据。输入备份密码可包含或恢复加密密钥。"
+
+msgid "Confirm your WordPress administrator password before downloading plugin settings. Add a backup password only when you need encrypted Client IDs, Client Secrets, and bot-protection secrets in the file."
+msgstr "下载插件设置前，请确认您的 WordPress 管理员密码。仅当文件需要包含加密的客户端 ID、客户端密钥和机器人防护密钥时，才添加备份密码。"
+
+msgid "Confirm your WordPress administrator password before restoring plugin settings. If the backup contains encrypted credentials, enter the same backup password used during export."
+msgstr "恢复插件设置前，请确认您的 WordPress 管理员密码。如果备份包含加密凭据，请输入导出时使用的同一个备份密码。"
+
+msgid "Confirm Backup Action"
+msgstr "确认备份操作"
+
+msgid "WordPress administrator password"
+msgstr "WordPress 管理员密码"
+
+msgid "Backup password"
+msgstr "备份密码"
+
+msgid "Optional for settings-only backups. Required only for encrypted credential backups."
+msgstr "仅设置备份可选。只有加密凭据备份才需要。"
+
+msgid "Confirm backup password"
+msgstr "确认备份密码"
+
+msgid "Continue"
+msgstr "继续"

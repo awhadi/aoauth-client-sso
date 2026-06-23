@@ -3,7 +3,7 @@
  * Plugin Name: aOAUTH Client SSO
  * Plugin URI: https://awhadi.online
  * Description: WordPress OAuth/OIDC Single Sign-On for Google, Microsoft, GitHub, Keycloak, Auth0, Okta, WordPress, and custom identity providers.
- * Version: 2.6.7
+ * Version: 2.9.0
  * Author: Awhadi
  * Author URI: https://awhadi.online
  * License: GPL v2 or later
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('AOAUTH_VERSION', '2.6.7');
+define('AOAUTH_VERSION', '2.9.0');
 define('AOAUTH_PLUGIN_FILE', __FILE__);
 define('AOAUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AOAUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -35,6 +35,16 @@ require_once AOAUTH_PLUGIN_DIR . 'includes/class-user-mapping.php';
 require_once AOAUTH_PLUGIN_DIR . 'includes/class-user-manager.php';
 require_once AOAUTH_PLUGIN_DIR . 'includes/class-providers-manager.php';
 require_once AOAUTH_PLUGIN_DIR . 'admin/class-admin.php';
+
+function aoauth_is_wp_cli() {
+    return defined('WP_CLI') && WP_CLI;
+}
+
+if (aoauth_is_wp_cli()) {
+    require_once AOAUTH_PLUGIN_DIR . 'includes/class-wp-cli-command.php';
+    WP_CLI::add_command('aoauth', 'AOAUTH_WP_CLI_Command');
+    WP_CLI::add_command('aoauth provider', 'AOAUTH_WP_CLI_Provider_Command');
+}
 
 register_activation_hook(__FILE__, 'aoauth_activate');
 register_deactivation_hook(__FILE__, 'aoauth_deactivate');
@@ -62,7 +72,9 @@ function aoauth_activate() {
     $core = aoauth_core();
     $core->activate();
     
-    set_transient('aoauth_activation_redirect', true, 30);
+    if (!aoauth_is_wp_cli()) {
+        set_transient('aoauth_activation_redirect', true, 30);
+    }
 }
 
 function aoauth_deactivate() {
@@ -75,9 +87,13 @@ function aoauth_core() {
 }
 
 function aoauth_init() {
+    if (aoauth_is_wp_cli()) {
+        return;
+    }
+
     $core = aoauth_core();
     $core->init();
-    
+
     if (is_admin()) {
         $admin = new AOAUTH_Admin();
         $admin->init();
@@ -92,6 +108,10 @@ function aoauth_init() {
 add_action('plugins_loaded', 'aoauth_init');
 
 function aoauth_redirect_after_activation() {
+    if (aoauth_is_wp_cli()) {
+        return;
+    }
+
     if (get_transient('aoauth_activation_redirect')) {
         delete_transient('aoauth_activation_redirect');
         $applications = get_option('aoauth_applications', array());

@@ -20,8 +20,11 @@
     border-bottom: 1px solid #e5e7eb;
 }
 
-.aoauth-wizard-logo img {
-    height: 36px;
+.aoauth-wizard-title {
+    color: #111827;
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
 }
 
 .aoauth-wizard-actions {

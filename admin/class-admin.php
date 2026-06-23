@@ -262,6 +262,7 @@ class AOAUTH_Admin {
                 'error_clearing_logs' => __('Error clearing logs', 'aoauth-client-sso'),
                 'copied_to_clipboard' => __('Copied to clipboard!', 'aoauth-client-sso'),
                 'backup_passwords_mismatch' => __('Backup passwords do not match. Settings were not downloaded.', 'aoauth-client-sso'),
+                'admin_password_required' => __('Enter your WordPress administrator password to continue.', 'aoauth-client-sso'),
                 'import_failed' => __('Import failed', 'aoauth-client-sso'),
                 'factory_reset_failed' => __('Factory reset failed', 'aoauth-client-sso'),
                 'maintenance_failed' => __('Maintenance action failed.', 'aoauth-client-sso'),
@@ -435,7 +436,6 @@ class AOAUTH_Admin {
         <div class="aoauth-admin-wrap">
             <div class="aoauth-admin-header">
                 <div class="aoauth-header-brand">
-                    <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/logo.png'); ?>" alt="aOAUTH Client SSO" class="aoauth-header-logo">
                     <div>
                         <h1 class="aoauth-header-title"><?php esc_html_e('aOAUTH Client SSO', 'aoauth-client-sso'); ?></h1>
                         <p class="aoauth-header-tagline"><?php esc_html_e('Secure OAuth 2.0 / OpenID Connect Single Sign-On', 'aoauth-client-sso'); ?></p>
@@ -986,10 +986,26 @@ class AOAUTH_Admin {
             wp_die(-1);
         }
 
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Password must remain unchanged for verification.
+        $admin_password = isset($_POST['admin_password']) ? (string) wp_unslash($_POST['admin_password']) : '';
+        $password_check = $this->verify_sensitive_admin_action_password($admin_password);
+        if (is_wp_error($password_check)) {
+            wp_die(esc_html($password_check->get_error_message()), esc_html__('Administrator confirmation required', 'aoauth-client-sso'), array('response' => 403));
+        }
+
         // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Backup password must remain unchanged for encryption.
         $backup_password = isset($_POST['backup_password']) ? (string) wp_unslash($_POST['backup_password']) : '';
-        $include_encrypted_credentials = strlen($backup_password) > 0;
-        
+        $config = $this->prepare_export_configuration($backup_password);
+        $json = wp_json_encode($config, JSON_PRETTY_PRINT);
+        header('Content-Type: application/json');
+        header('Content-Disposition: attachment; filename="aoauth-config-' . gmdate('Y-m-d') . '.json"');
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Outputs a generated JSON download, not HTML.
+        echo $json;
+        exit;
+    }
+
+    public function prepare_export_configuration($backup_password = '') {
+        $include_encrypted_credentials = $backup_password !== '';
         $config = array(
             'settings' => get_option('aoauth_settings', array()),
             'applications' => get_option('aoauth_applications', array()),
@@ -1029,13 +1045,25 @@ class AOAUTH_Admin {
                 }
             }
         }
-        
-        $json = json_encode($config, JSON_PRETTY_PRINT);
-        header('Content-Type: application/json');
-        header('Content-Disposition: attachment; filename="aoauth-config-' . gmdate('Y-m-d') . '.json"');
-        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Outputs a generated JSON download, not HTML.
-        echo $json;
-        exit;
+
+        return $config;
+    }
+
+    private function verify_sensitive_admin_action_password($password) {
+        if ($password === '') {
+            return new WP_Error('admin_password_required', __('Confirm your WordPress administrator password to continue.', 'aoauth-client-sso'));
+        }
+
+        $user = wp_get_current_user();
+        if (!$user || empty($user->ID) || empty($user->user_pass)) {
+            return new WP_Error('admin_user_unavailable', __('Administrator confirmation is unavailable. Please sign in again.', 'aoauth-client-sso'));
+        }
+
+        if (!wp_check_password($password, $user->user_pass, $user->ID)) {
+            return new WP_Error('admin_password_invalid', __('The WordPress administrator password is incorrect.', 'aoauth-client-sso'));
+        }
+
+        return true;
     }
 
     private function encrypt_backup_value($value, $password) {
@@ -1100,6 +1128,13 @@ class AOAUTH_Admin {
         if (!current_user_can('manage_options')) {
             wp_die(-1);
         }
+
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Password must remain unchanged for verification.
+        $admin_password = isset($_POST['admin_password']) ? (string) wp_unslash($_POST['admin_password']) : '';
+        $password_check = $this->verify_sensitive_admin_action_password($admin_password);
+        if (is_wp_error($password_check)) {
+            wp_send_json_error(array('message' => $password_check->get_error_message()));
+        }
         
         if (empty($_FILES['config_file']) || !isset($_FILES['config_file']['error']) || $_FILES['config_file']['error'] !== UPLOAD_ERR_OK || empty($_FILES['config_file']['tmp_name'])) {
             wp_send_json_error(array('message' => __('No file uploaded or upload error.', 'aoauth-client-sso')));
@@ -1110,11 +1145,25 @@ class AOAUTH_Admin {
         $config = json_decode($file_content, true);
         // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Backup password must remain unchanged for decryption.
         $backup_password = isset($_POST['backup_password']) ? (string) wp_unslash($_POST['backup_password']) : '';
-        
-        if (!$config || !isset($config['settings']) || !isset($config['applications'])) {
-            wp_send_json_error(array('message' => __('Invalid configuration file.', 'aoauth-client-sso')));
+
+        $result = $this->import_configuration($config, $backup_password);
+        if (is_wp_error($result)) {
+            wp_send_json_error(array('message' => $result->get_error_message()));
         }
-        
+
+        wp_send_json_success(array('message' => $result['message']));
+    }
+
+    public function import_configuration($config, $backup_password = '') {
+        if (
+            !is_array($config)
+            || !isset($config['settings'], $config['applications'])
+            || !is_array($config['settings'])
+            || !is_array($config['applications'])
+        ) {
+            return new WP_Error('invalid_configuration', __('Invalid configuration file.', 'aoauth-client-sso'));
+        }
+
         $settings = is_array($config['settings']) ? $config['settings'] : array();
         $encrypted_credentials_restored = false;
         $secrets_excluded = isset($config['credentials']) && $config['credentials'] === 'excluded';
@@ -1123,7 +1172,7 @@ class AOAUTH_Admin {
             if (isset($settings[$secret_key])) {
                 $decrypted_secret = $this->decrypt_backup_value($settings[$secret_key], $backup_password);
                 if (is_wp_error($decrypted_secret)) {
-                    wp_send_json_error(array('message' => $decrypted_secret->get_error_message()));
+                    return $decrypted_secret;
                 }
                 if (is_array($settings[$secret_key]) && !empty($settings[$secret_key]['aoauth_backup_encrypted'])) {
                     $encrypted_credentials_restored = true;
@@ -1143,7 +1192,7 @@ class AOAUTH_Admin {
                     $app_had_encrypted_credentials = is_array($app['client_id']) && !empty($app['client_id']['aoauth_backup_encrypted']);
                     $client_id = $this->decrypt_backup_value($app['client_id'], $backup_password);
                     if (is_wp_error($client_id)) {
-                        wp_send_json_error(array('message' => $client_id->get_error_message()));
+                        return $client_id;
                     }
                     $app['client_id'] = $client_id;
                 }
@@ -1152,7 +1201,7 @@ class AOAUTH_Admin {
                     $app_had_encrypted_credentials = $app_had_encrypted_credentials || (is_array($app['client_secret']) && !empty($app['client_secret']['aoauth_backup_encrypted']));
                     $client_secret = $this->decrypt_backup_value($app['client_secret'], $backup_password);
                     if (is_wp_error($client_secret)) {
-                        wp_send_json_error(array('message' => $client_secret->get_error_message()));
+                        return $client_secret;
                     }
                     $app['client_secret'] = $client_secret;
                 }
@@ -1186,7 +1235,13 @@ class AOAUTH_Admin {
         } else {
             $message = __('Configuration imported successfully. Providers without Client IDs and Secrets remain disabled.', 'aoauth-client-sso');
         }
-        wp_send_json_success(array('message' => $message));
+
+        return array(
+            'message' => $message,
+            'credentials_restored' => $encrypted_credentials_restored,
+            'credentials_excluded' => $secrets_excluded,
+            'provider_count' => count($sanitized_applications),
+        );
     }
 
     public function ajax_client_debug_log() {
