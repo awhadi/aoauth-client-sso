@@ -4,7 +4,7 @@ Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.9.1
+Stable tag: 2.9.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -80,6 +80,10 @@ Yes. Custom OAuth 2.0 and OIDC providers can be configured with custom authoriza
 6. SSO logs and maintenance tools.
 
 == Changelog ==
+
+= 2.9.2 =
+* Removed the bundled logo.png asset and remaining runtime references to it.
+* Updated optional public branding surfaces to use text-only plugin branding.
 
 = 2.9.1 =
 * Made the admin settings tabs horizontally scrollable on small screens.
@@ -208,6 +212,9 @@ Yes. Custom OAuth 2.0 and OIDC providers can be configured with custom authoriza
 
 == Upgrade Notice ==
 
+= 2.9.2 =
+Removes the bundled plugin logo asset and uses text-only branding where the logo was still referenced.
+
 = 2.9.1 =
 Improves small-screen admin tab navigation and clarifies where Deep Debug files are stored.
 
@@ -238,7 +245,7 @@ Silent auto-login now checks supported OIDC providers in the background only whe
 == Developer Release Notes ==
 
 = Version =
-2.9.1
+2.9.2
 
 = Date =
 2026-06-23
@@ -247,13 +254,13 @@ Silent auto-login now checks supported OIDC providers in the background only whe
 Awhadi
 
 = Summary =
-Improved small-screen admin tab navigation and documented the exact Deep Debug log directory and daily filename pattern.
+Removed the bundled logo asset and remaining runtime references while keeping text-only branding active.
 
 = Files changed =
-`aoauth-client-sso.php`, `admin/views/tools.php`, `admin/css/admin-style.css`, bundled language files, `CHANGELOG.md`, `readme.md`, and `readme.txt`.
+`aoauth-client-sso.php`, `includes/class-core.php`, `public/js/login-single-sign-on.js`, `public/css/sso-brand-badge.css`, `admin/images/logo.png`, `CHANGELOG.md`, `readme.md`, and `readme.txt`.
 
 = Security and UX notes =
-Small-screen tabs remain reachable with horizontal scrolling. Deep Debug documentation now names `wp-content/uploads/aoauth-debug/` and the `aoauth-debug-YYYY-MM-DD.log` filename pattern so administrators can locate troubleshooting files without guessing.
+The optional public brand badge and bot verification overlay no longer depend on a bundled logo image. Provider icons remain unchanged because they identify configured sign-in providers.
 
 = Rollback plan =
-Restore version 2.9.0 and reactivate it. No database migration or option schema change is required.
+Restore version 2.9.1 and reactivate it. No database migration or option schema change is required.

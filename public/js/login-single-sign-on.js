@@ -485,16 +485,9 @@
             recaptcha: translate('verified_recaptcha', 'Verified by Google reCAPTCHA')
         };
         var providerLabel = providerLabels[overlayConfig.type] || translate('bot_verification_active', 'Bot verification active');
-        var pluginLogo = overlayConfig.plugin_logo_url || '';
 
         $overlay.find('.aoauth-verification-provider-mark').text(providerLabel);
         var $powered = $overlay.find('.aoauth-verification-powered').empty();
-        if (pluginLogo) {
-            $('<img>', {
-                src: pluginLogo,
-                alt: ''
-            }).appendTo($powered);
-        }
         $('<span>', {
             text: translate('protected_with', 'Protected with aOAUTH Client SSO')
         }).appendTo($powered);

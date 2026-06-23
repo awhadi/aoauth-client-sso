@@ -5,7 +5,6 @@
     z-index: 999999;
     direction: ltr;
     transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-    transform: translateX(calc(100% - 42px)); 
     cursor: default;
 }
 
@@ -23,29 +22,13 @@
     overflow: hidden;
 }
 
-.aoauth-brand-logo {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255,255,255,0.15);
-    flex-shrink: 0;
-}
-
-.aoauth-brand-logo img {
-    width: 32px;
-    height: 32px;
-    display: block;
-}
-
 .aoauth-brand-text {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-size: 10px;
     font-weight: 300;
     color: white;
     white-space: nowrap;
-    padding: 0 10px 0 6px;
+    padding: 0 14px;
     letter-spacing: 0.3px;
 }
 

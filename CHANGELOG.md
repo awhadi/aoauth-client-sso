@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [2.9.2] - 2026-06-23
+
+### Changed
+- Removed the bundled `logo.png` asset and remaining runtime references to it.
+- Updated the optional public brand badge and bot-verification overlay branding to use text-only plugin branding.
+
 ## [2.9.1] - 2026-06-23
 
 ### Changed

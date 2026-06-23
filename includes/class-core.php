@@ -56,9 +56,6 @@ class AOAUTH_Core {
     ?>
     <div class="aoauth-brand-badge" aria-label="<?php esc_attr_e('Powered by aOAUTH SSO Client', 'aoauth-client-sso'); ?>">
         <div class="aoauth-brand-badge-inner">
-            <div class="aoauth-brand-logo">
-                <img src="<?php echo esc_url(AOAUTH_PLUGIN_URL . 'admin/images/logo.png'); ?>" alt="aOAUTH">
-            </div>
             <span class="aoauth-brand-text"><?php esc_html_e('Powered by aOAUTH SSO Client', 'aoauth-client-sso'); ?></span>
         </div>
     </div>
@@ -78,7 +75,6 @@ class AOAUTH_Core {
             wp_enqueue_script('aoauth-sso-brand-badge', AOAUTH_PLUGIN_URL . 'public/js/sso-brand-badge.js', array('jquery'), AOAUTH_VERSION, true);
             wp_localize_script('aoauth-sso-brand-badge', 'aoauth_brand', array(
             'message' => __('Powered by aOAUTH SSO Client', 'aoauth-client-sso'),
-            'logo_url' => AOAUTH_PLUGIN_URL . 'admin/images/logo.png',
             'close_aria' => __('Close badge', 'aoauth-client-sso'),
         ));
     }
@@ -372,7 +368,6 @@ class AOAUTH_Core {
                 'overlay_opacity' => intval($settings['bot_overlay_opacity'] ?? 86),
                 'overlay_theme' => $theme,
                 'overlay_branding_enabled' => !empty($settings['bot_overlay_branding_enabled']),
-                'plugin_logo_url' => AOAUTH_PLUGIN_URL . 'admin/images/logo.png',
                 'display_mode' => $settings['turnstile_display_mode'] ?? 'invisible'
             );
         } elseif ($recaptcha_enabled) {
@@ -386,8 +381,7 @@ class AOAUTH_Core {
                 'overlay_variant' => $overlay_variant,
                 'overlay_opacity' => intval($settings['bot_overlay_opacity'] ?? 86),
                 'overlay_theme' => $theme,
-                'overlay_branding_enabled' => !empty($settings['bot_overlay_branding_enabled']),
-                'plugin_logo_url' => AOAUTH_PLUGIN_URL . 'admin/images/logo.png'
+                'overlay_branding_enabled' => !empty($settings['bot_overlay_branding_enabled'])
             );
         } else {
             $localize_data['bot_protection'] = array(
