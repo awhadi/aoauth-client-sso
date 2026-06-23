@@ -385,6 +385,9 @@
     border-bottom: 2px solid #e5e7eb;
     padding: 0 32px;
     background: #f9fafb;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
 }
 
 .aoauth-tab {
@@ -395,6 +398,8 @@
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
     transition: all 0.2s ease;
+    flex: 0 0 auto;
+    white-space: nowrap;
 }
 
 .aoauth-tab:hover {
@@ -2252,6 +2257,23 @@
 
 /* Responsive adjustments */
 @media (max-width: 782px) {
+    .aoauth-admin-tabs {
+        gap: 8px;
+        padding: 0 16px;
+        scroll-padding-inline: 16px;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .aoauth-tab {
+        padding: 14px 12px;
+        scroll-snap-align: start;
+    }
+
+    .aoauth-tab:first-child {
+        padding-left: 12px;
+    }
+
     .aoauth-signin-layout {
         grid-template-columns: 1fr;
     }

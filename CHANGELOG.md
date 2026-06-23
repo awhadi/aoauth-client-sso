@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [2.9.1] - 2026-06-23
+
+### Changed
+- Made the admin settings tabs horizontally scrollable on small screens so Logs, Tools, and other tabs remain reachable.
+- Clarified the Tools Deep Debug section with the exact debug log directory and daily filename pattern.
+
 ## [2.9.0] - 2026-06-23
 
 ### Added

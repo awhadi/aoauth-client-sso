@@ -3,6 +3,8 @@
 if (!defined('ABSPATH')) exit;
 $debug_enabled = aoauth_core()->get_debug()->is_enabled();
 $debug_constant = 'define("OAUTH-DEBUG", "enabled");';
+$debug_log_directory = 'wp-content/uploads/aoauth-debug/';
+$debug_log_filename = 'aoauth-debug-YYYY-MM-DD.log';
 $next_cleanup = wp_next_scheduled('aoauth_retention_cron');
 $last_cleanup = get_option('aoauth_last_retention_run', '');
 ?>
@@ -81,7 +83,7 @@ $last_cleanup = get_option('aoauth_last_retention_run', '');
                 <div class="aoauth-setting-row">
                     <div class="aoauth-setting-label">
                         <label><?php esc_html_e('Deep Debug Mode', 'aoauth-client-sso'); ?></label>
-                        <p class="aoauth-setting-help"><?php esc_html_e('Applies the wp-config.php constant only after Save Tools Settings is clicked. Debug files are stored under uploads/aoauth-debug/.', 'aoauth-client-sso'); ?></p>
+                        <p class="aoauth-setting-help"><?php esc_html_e('Applies the wp-config.php constant only after Save Tools Settings is clicked. Deep Debug files are stored in the WordPress uploads directory.', 'aoauth-client-sso'); ?></p>
                     </div>
                     <div class="aoauth-setting-control">
                         <label class="aoauth-toggle">
@@ -95,8 +97,21 @@ $last_cleanup = get_option('aoauth_last_retention_run', '');
                 <div class="aoauth-code-reference">
                     <code><?php echo esc_html($debug_constant); ?></code>
                     <p class="aoauth-setting-help"><?php esc_html_e('If automatic toggling fails, place this above the "stop editing" line in wp-config.php. Remove it after troubleshooting.', 'aoauth-client-sso'); ?></p>
+                    <p class="aoauth-setting-help">
+                        <?php
+                        echo wp_kses(
+                            /* translators: 1: debug log directory, 2: debug log filename pattern. */
+                            sprintf(
+                                __('Deep Debug writes files to %1$s with the daily filename pattern %2$s.', 'aoauth-client-sso'),
+                                '<code>' . esc_html($debug_log_directory) . '</code>',
+                                '<code>' . esc_html($debug_log_filename) . '</code>'
+                            ),
+                            array('code' => array())
+                        );
+                        ?>
+                    </p>
                     <p class="aoauth-setting-help"><?php esc_html_e('Deep Debug is also active when AOAUTH_DEBUG is defined as true in wp-config.php. Disabling from this screen removes supported aOAUTH debug constants when WordPress can write to wp-config.php.', 'aoauth-client-sso'); ?></p>
-                    <p class="aoauth-setting-help"><?php esc_html_e('Apache and LiteSpeed use the generated .htaccess protection in uploads/aoauth-debug/. Nginx ignores .htaccess, so block direct access to /wp-content/uploads/aoauth-debug/ in the server block.', 'aoauth-client-sso'); ?></p>
+                    <p class="aoauth-setting-help"><?php esc_html_e('Apache and LiteSpeed use the generated .htaccess protection in wp-content/uploads/aoauth-debug/. Nginx ignores .htaccess, so block direct access to /wp-content/uploads/aoauth-debug/ in the server block.', 'aoauth-client-sso'); ?></p>
                 </div>
             </div>
         </div>

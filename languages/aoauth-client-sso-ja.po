@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: aOAUTH Client SSO 2.9.0\n"
+"Project-Id-Version: aOAUTH Client SSO 2.9.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-06-23 00:00+0200\n"
 "PO-Revision-Date: 2026-06-04 00:00+0000\n"
@@ -2292,3 +2292,12 @@ msgstr "バックアップパスワードを確認"
 
 msgid "Continue"
 msgstr "続行"
+
+msgid "Applies the wp-config.php constant only after Save Tools Settings is clicked. Deep Debug files are stored in the WordPress uploads directory."
+msgstr "「ツール設定を保存」をクリックした後にのみ wp-config.php 定数を適用します。Deep Debug ファイルは WordPress のアップロードディレクトリに保存されます。"
+
+msgid "Deep Debug writes files to %1$s with the daily filename pattern %2$s."
+msgstr "Deep Debug は %1$s に、日別のファイル名パターン %2$s でファイルを書き込みます。"
+
+msgid "Apache and LiteSpeed use the generated .htaccess protection in wp-content/uploads/aoauth-debug/. Nginx ignores .htaccess, so block direct access to /wp-content/uploads/aoauth-debug/ in the server block."
+msgstr "Apache と LiteSpeed は wp-content/uploads/aoauth-debug/ に生成された .htaccess 保護を使用します。Nginx は .htaccess を無視するため、サーバーブロックで /wp-content/uploads/aoauth-debug/ への直接アクセスをブロックしてください。"

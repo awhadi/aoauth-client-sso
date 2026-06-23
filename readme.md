@@ -5,7 +5,7 @@ Tags: oauth, oidc, sso, login, security
 Requires at least: 5.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.9.0
+Stable tag: 2.9.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 -->
@@ -34,7 +34,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
     <img src="https://img.shields.io/badge/PHP-7.4%2B-777BB4" alt="PHP Version">
   </a>
   <a href="https://github.com/awhadi/aoauth-client-sso/blob/main/CHANGELOG.md">
-    <img src="https://img.shields.io/badge/Changelog-2.9.0-brightgreen" alt="Changelog">
+    <img src="https://img.shields.io/badge/Changelog-2.9.1-brightgreen" alt="Changelog">
   </a>
 </p>
 
@@ -144,6 +144,11 @@ Status and provider output never reveal client IDs, client secrets, access token
 ---
 
 ## Changelog
+
+### [2.9.1] - 2026-06-23
+
+- Made the admin settings tabs horizontally scrollable on small screens.
+- Clarified the Tools Deep Debug section with the debug log directory and daily filename pattern.
 
 ### [2.9.0] - 2026-06-23
 
